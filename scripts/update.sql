@@ -1,0 +1,1 @@
+ALTER TYPE crawl_task_status ADD VALUE 'hide';

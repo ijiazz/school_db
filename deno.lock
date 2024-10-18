@@ -1,0 +1,16 @@
+{
+  "version": "4",
+  "specifiers": {
+    "npm:@asla/yoursql@~0.3.1": "0.3.1"
+  },
+  "npm": {
+    "@asla/yoursql@0.3.1": {
+      "integrity": "sha512-grQDbKCbVVAnXDsaqS1UWKLyUwCWxpkuEKgD3ccH4TCrpDbsSAkZbhibtikBvTygL5dNoluuwlpQdy2InSbjhA=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:@asla/yoursql@~0.3.1"
+    ]
+  }
+}
