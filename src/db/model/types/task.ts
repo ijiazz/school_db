@@ -15,7 +15,12 @@ export type SyncPublishedListTask<E = any> = {
 
 export type SavePublishedTask<E = any> = { pid: string; extra: E };
 
-export type SyncPublishedCommentTask<E = any> = { pid: string; ignoreReply?: boolean; afterDate?: Date; extra: E };
+export type SyncPublishedCommentTask<E = any> = {
+  pid: string;
+  ignoreReply?: boolean;
+  afterDate?: Date | null;
+  extra: E;
+};
 export type SyncCommentReplyTask<E = any> = { pid: string; cid: string; afterDate?: Date; extra: E };
 
 export type CrawlTaskData = SyncUserProfileTask | SyncPublishedListTask | SyncPublishedCommentTask | SavePublishedTask;

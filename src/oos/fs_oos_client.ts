@@ -2,7 +2,7 @@ import { getAllBuckets } from "../oos.ts";
 import { createFsOOS, type OOS } from "../oos/fs_oos.ts";
 import process from "node:process";
 import path from "node:path";
-import { getEnv } from "../_deps/get_env.ts";
+import { getEnv } from "../common/get_env.ts";
 
 let oos: OOS;
 export function getOOS(): OOS {

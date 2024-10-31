@@ -62,7 +62,9 @@ class FsOOS implements OOS {
     await this.checkStatus();
 
     await fs.mkdir(dir, { recursive: true });
-    await fs.rename(fromPath, filename);
+    const exists = await fileExist(filename);
+    if (exists) await fs.rm(fromPath).catch(() => {});
+    else await fs.rename(fromPath, filename);
   }
 
   async fPutObjectMany(bucket: string, list: Map<string, string>) {
@@ -79,14 +81,15 @@ class FsOOS implements OOS {
     for (const [objectName, fromPath] of list) {
       this.checkObjectName(objectName);
       const finalPath = path.resolve(dir, objectName);
-
-      fs.rename(fromPath, finalPath).then(
-        () => success.add(objectName),
-        (e) => failed.set(objectName, e)
-      );
-      promises.push(fs.rename(fromPath, finalPath));
+      const promise = fileExist(finalPath).then(async (exist) => {
+        if (exist) return fs.rm(fromPath, { force: true }).catch(() => {});
+        await fs.rename(fromPath, finalPath).then(
+          () => success.add(objectName),
+          (e) => failed.set(objectName, e)
+        );
+      });
+      promises.push(promise);
     }
-
     return {
       failed,
       successObjectName: success,

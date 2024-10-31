@@ -17,7 +17,7 @@ const pla_commentDefine = {
 
   image_uri: dbTypeMap.genArrColumn("VARCHAR"),
   comment_type: dbTypeMap.genColumn("SMALLINT", true, "0"),
-  pla_uid: dbTypeMap.genColumn("VARCHAR", true),
+  pla_uid: dbTypeMap.genColumn("VARCHAR"),
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   ip_location: dbTypeMap.genColumn("VARCHAR"),
   like_count: dbTypeMap.genColumn("INTEGER"),

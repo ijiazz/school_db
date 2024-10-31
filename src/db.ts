@@ -1,6 +1,6 @@
-export * from "./model/mod.ts";
-export * from "./model/tables.ts";
-export * from "./model/type.ts";
-export { sqlValue } from "./model/_sql_value.ts";
-export * from "./pg_client/db_query.ts";
-export * from "./pg_client/pg_client.ts";
+export * from "./db/model/mod.ts";
+export * from "./db/model/tables.ts";
+export * from "./db/model/type.ts";
+export { sqlValue } from "./db/model/_sql_value.ts";
+export * from "./db/pg_client/db_query.ts";
+export * from "./db/pg_client/pg_client.ts";
