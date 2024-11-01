@@ -10,6 +10,7 @@ export function getOOS(): OOS {
     let buckets: string[] = getAllBuckets();
     try {
       const rooDir = path.resolve(getEnv("OOS_ROOT_DIR", true));
+      console.log(`OOS: ${path.resolve(getEnv("OOS_ROOT_DIR", true))}`);
       oos = createFsOOS(rooDir, Object.values(buckets));
     } catch (error) {
       console.error(error);
