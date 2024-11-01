@@ -8,16 +8,7 @@ export interface ImageAddr {
   uri: string; // "aweme-avatar/tos-cn-avt-0015_7bb1aa99995665e1f73f90e46e706487"
   url_list: string[]; //["https://p3-pc.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_7bb1aa99995665e1f73f90e46e706487.jpeg?from=2956013662"]
 }
-export interface VideoSelectItem {
-  width: number;
-  height: number;
-  uri: string;
-  url_list: string[];
-  data_size: number;
-  file_hash: string;
-  bitrate?: number;
-  type: "h264" | "h265";
-}
+
 export namespace DouYin {
   /** 抖音 pla_user extra 字段 的 json 类型 */
   export interface UserExtra extends UserExtraBase {
@@ -26,14 +17,6 @@ export namespace DouYin {
     cover_uri?: string;
   }
   export interface PublishedExtra {
-    content?: {
-      duration?: number;
-      type: number;
-      cover_uri?: ImageAddr;
-      image_uri?: ImageAddr[];
-      audio_uri?: unknown;
-      video_uri?: VideoSelectItem[];
-    };
     /** 文本中的话题、@ 高亮与转跳 */
     text_extra?: TitleLink[];
   }
