@@ -171,7 +171,7 @@ CREATE TYPE crawl_task_status AS ENUM(
 CREATE TABLE crawl_task_queue (
     task_id SERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
-    creator VARCHAR NOT NULL,
+    creator VARCHAR,
     level SMALLINT NOT NULL DEFAULT 0,
     platform platform_flag NOT NULL,
     args JSONB NOT NULL,

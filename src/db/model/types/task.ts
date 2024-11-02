@@ -13,7 +13,14 @@ export type SyncPublishedListTask<E = any> = {
   extra: E;
 };
 
-export type SavePublishedTask<E = any> = { pid: string; extra: E };
+export type SavePublishedTask<E = any> = {
+  pid: string;
+  extra: E;
+  ignoreVideo?: boolean;
+  ignoreAudio?: boolean;
+  ignoreImage?: boolean;
+  ignoreCover?: boolean;
+};
 
 export type SyncPublishedCommentTask<E = any> = {
   pid: string;

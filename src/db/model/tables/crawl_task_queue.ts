@@ -6,7 +6,7 @@ import { CrawlTaskData } from "../types/task.ts";
 const crawl_task_queueDefine = {
   task_id: dbTypeMap.genColumn("SERIAL", true),
   name: dbTypeMap.genColumn<TaskType>("VARCHAR", true),
-  creator: dbTypeMap.genColumn("VARCHAR", true),
+  creator: dbTypeMap.genColumn("VARCHAR"),
   level: dbTypeMap.genColumn("SMALLINT", true),
   platform: dbTypeMap.genColumn("platform_flag", true),
   args: dbTypeMap.genColumn<CrawlTaskData>("JSONB", true),
