@@ -45,28 +45,39 @@ CREATE INDEX idx_file_audio_ref_count ON file_audio(ref_count);
 CREATE TABLE pla_user (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 数据创建时间
     crawl_check_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 爬虫最后一次检测时间
-    published_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步作品的时间
-    published_last_update_time TIMESTAMPTZ, -- 最后一次同步作品的时间
     extra JSONB NOT NULL DEFAULT '{}', -- 扩展信息, 不同平台结构不一样
     pla_avatar_uri VARCHAR, -- 平台用户头像 uri
-    level SMALLINT NOT NULL DEFAULT -32768, -- 权重
     -- 
     user_name VARCHAR, -- 用户名称
     ip_location VARCHAR, -- IP归属地
     avatar VARCHAR REFERENCES file_image (uri), -- 用户头像uri
 
     pla_uid VARCHAR, -- 平台用户id
-    -- follower_count INT, -- 粉丝数
-    -- following_count INT, -- 关注数
+    follower_count INT, -- 粉丝数
+    following_count INT, -- 关注数
+    signature VARCHAR, -- 用户签名
     platform platform_flag NOT NULL, -- 来源平台
-    uid BIGINT, -- FK
+    uid BIGINT, -- IJIA 学院用户的 UID。 后面将成为外键
     PRIMARY KEY (platform, pla_uid),
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
 
 CREATE INDEX idx_pla_user_avatar ON pla_user USING hash(avatar);
-CREATE INDEX idx_pla_user_published_last_full_update_time ON pla_user(level, published_last_full_update_time);
-CREATE INDEX idx_pla_user_published_last_update_time ON pla_user(level, published_last_update_time);
+CREATE INDEX idx_pla_user_user_name ON pla_user (user_name);
+
+
+CREATE TABLE watching_pla_user (
+    published_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步作品的时间
+    published_last_update_time TIMESTAMPTZ, -- 最后一次同步作品的时间
+    level SMALLINT NOT NULL DEFAULT -32768, -- 权重
+    pla_uid VARCHAR, -- 平台用户id
+    platform platform_flag NOT NULL, -- 来源平台
+    
+    FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE
+);
+CREATE INDEX idx_watching_pla_user_published_last_full_update_time ON watching_pla_user(published_last_full_update_time, level);
+CREATE INDEX idx_watching_pla_user_published_last_update_time ON watching_pla_user(published_last_update_time, level);
+
 
 CREATE TABLE pla_published (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
