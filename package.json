@@ -15,10 +15,10 @@
   "author": "Eaviyi",
   "license": "Apache",
   "peerDependencies": {
-    "@asla/yoursql": "^0.5.2"
+    "@asla/yoursql": "^0.6.0"
   },
   "dependencies": {
-    "pg": "^8.13.0",
+    "pg": "^8.13.1",
     "pg-cursor": "^2.12.1"
   },
   "devDependencies": {

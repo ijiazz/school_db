@@ -36,6 +36,5 @@ export const crawl_task_queue = createTable<DbCrawlerTaskQueue, DbCrawlerTaskQue
 );
 export const crawl_task_priority_queue = new DbTableQuery<DbCrawlerTaskPriorityQueue, {}>(
   "crawl_task_priority_queue",
-  priority_queue_columns,
   sqlValue
 );
