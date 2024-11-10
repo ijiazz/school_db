@@ -7,7 +7,7 @@ import {
   TableDefined,
   YourTable,
 } from "@asla/yoursql";
-import { enumPlatform, enumTaskType, Platform, CrawlTaskStatus } from "./tables.ts";
+import { enumPlatform, enumTaskType, Platform, CrawlTaskStatus, MediaLevel, enumMediaLevel } from "./tables.ts";
 
 export const sqlValue = SqlValuesCreator.create(pgSqlTransformer);
 
@@ -17,12 +17,15 @@ export const dbTypeMap = YourTypeMap.create({
   BOOLEAN: CustomDbType.boolean,
   BIGINT: CustomDbType.bigint,
   INTEGER: CustomDbType.number,
+  INT: CustomDbType.number,
   SMALLINT: CustomDbType.number,
   SERIAL: CustomDbType.number,
   VARCHAR: CustomDbType.string,
+  CHAR: CustomDbType.string,
   JSON: Object,
   JSONB: Object,
 
+  media_level: new CustomDbType<MediaLevel>((v) => enumMediaLevel.has(v), "media_level"),
   platform_flag: new CustomDbType<Platform>((v) => enumPlatform.has(v), "platform_flag"),
   crawl_task_status: new CustomDbType<CrawlTaskStatus>((v) => enumTaskType.has(v), "crawl_task_status"),
 });

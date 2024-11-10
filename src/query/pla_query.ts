@@ -41,7 +41,7 @@ export async function getUserList(queryable: DbQuery, option: GetUserParam & Deb
 
 function sqlPublishedList(option: GetPublishedListParam = {}) {
   const { page = 0, pageSize = 20, platform, userId, sort } = option;
-
+  //TODO 处理资源信息
   const selectable = pla_published
     .fromAs("p")
     .innerJoin(pla_user, "u", "u.pla_uid=p.pla_uid")
@@ -51,10 +51,6 @@ function sqlPublishedList(option: GetPublishedListParam = {}) {
       type: "content_type",
       ip_location: true,
       content_text: true,
-      image_uri: true,
-      audio_uri: true,
-      video_uri: true,
-      cover_uri: true,
       stat: `jsonb_build_object('collection_num', p.collection_num , 'forward_total', p.forward_num, 'digg_total', p.like_count)`,
       author: `jsonb_build_object('user_name', u.user_name, 'user_id', u.pla_uid)`,
     })

@@ -95,7 +95,7 @@ BEGIN
 END; $$ LANGUAGE plpgsql;
 
 -- 数组外键约束 - VARCHAR
-CREATE OR REPLACE FUNCTION array_fk_check(f_table_name VARCHAR, fk VARCHAR, value VARCHAR[])RETURNS VOID AS $$
+/* CREATE OR REPLACE FUNCTION array_fk_check(f_table_name VARCHAR, fk VARCHAR, value VARCHAR[])RETURNS VOID AS $$
 DECLARE 
     t_size INTEGER;
 BEGIN
@@ -106,7 +106,7 @@ BEGIN
         RAISE '违反 % 表的 % 数组外键约束', f_table_name, fk;
     END IF;
     RETURN;
-END; $$ LANGUAGE plpgsql;
+END; $$ LANGUAGE plpgsql; */
 
 CREATE OR REPLACE FUNCTION resource_ref_sync() RETURNS TRIGGER AS $$
 BEGIN
@@ -115,30 +115,13 @@ BEGIN
         PERFORM res_update_operate(OLD.avatar, NEW.avatar, 'file_image');
     WHEN 'pla_published' THEN
         PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot, 'file_image');
-        PERFORM res_update_operate(OLD.image_uri, NEW.image_uri, 'file_image');
-        PERFORM res_update_operate(OLD.cover_uri, NEW.cover_uri, 'file_image');
-        PERFORM res_update_operate(OLD.video_uri, NEW.video_uri, 'file_video');
-        PERFORM res_update_operate(OLD.audio_uri, NEW.audio_uri, 'file_audio');
     WHEN 'pla_comment' THEN
         PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot,'file_image');
-        PERFORM res_update_operate(OLD.image_uri, NEW.image_uri,'file_image');
+        PERFORM res_update_operate(OLD.additional_image, NEW.additional_image,'file_image');
+    -- WHEN 'comment_image' THEN
+    --     PERFORM res_update_operate(OLD.uri, NEW.uri,'file_image');
     ELSE
         RAISE '不支持的触发表 %', TG_TABLE_NAME;
-    END CASE;
-    RETURN NEW;
-END; $$ LANGUAGE PLPGSQL;
-
-CREATE OR REPLACE FUNCTION resource_array_fk() RETURNS TRIGGER AS $$
-BEGIN
-    CASE TG_TABLE_NAME
-    WHEN 'pla_published' THEN
-        PERFORM array_fk_check('file_image', 'uri', NEW.image_uri);
-        PERFORM array_fk_check('file_video', 'uri', NEW.video_uri);
-        PERFORM array_fk_check('file_audio', 'uri', NEW.audio_uri);
-    WHEN 'pla_comment' THEN
-        PERFORM array_fk_check('file_image', 'uri', NEW.image_uri);
-    ELSE
-        RAISE '表 % 未定义', TG_TABLE_NAME;
     END CASE;
     RETURN NEW;
 END; $$ LANGUAGE PLPGSQL;

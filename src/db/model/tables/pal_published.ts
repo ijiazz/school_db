@@ -22,11 +22,6 @@ const pla_publishedDefine = {
   collection_num: dbTypeMap.genColumn("INTEGER"),
   forward_num: dbTypeMap.genColumn("INTEGER"),
 
-  cover_uri: dbTypeMap.genColumn("VARCHAR"),
-  image_uri: dbTypeMap.genArrColumn("VARCHAR"),
-  video_uri: dbTypeMap.genArrColumn("VARCHAR"),
-  audio_uri: dbTypeMap.genArrColumn("VARCHAR"),
-
   pla_uid: dbTypeMap.genColumn("VARCHAR", true),
   published_id: dbTypeMap.genColumn("VARCHAR", true),
   platform: dbTypeMap.genColumn("platform_flag", true),
@@ -43,10 +38,6 @@ const createRequiredKeys = [
   "platform",
   "publish_time",
   "published_id",
-  "image_uri",
-  "video_uri",
-  "audio_uri",
-  "cover_uri",
 ] as const;
 const createOptionalKeys = ["extra", "content_type"] as const;
 

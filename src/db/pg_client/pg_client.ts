@@ -47,7 +47,7 @@ class PgDbClient extends DbQuery implements DbClient {
     });
   }
   #pool: Pool;
-  async begin(): Promise<DbTransactions> {
+  async begin(mode?: string): Promise<DbTransactions> {
     const client = await this.#pool.connect();
     this.#clientList.add(client);
     const onRelease = () => this.#clientList.delete(client);
@@ -55,7 +55,7 @@ class PgDbClient extends DbQuery implements DbClient {
     client.on("release", onRelease);
     client.on("end", onRelease);
     try {
-      await client.query("BEGIN");
+      await client.query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""));
       return new PgTransactions(client);
     } catch (error) {
       client.release(error instanceof Error ? error : true);

@@ -1,46 +1,20 @@
 SET client_encoding = 'UTF8';
 
-CREATE TYPE platform_flag AS ENUM(
-    'douyin',
-    'bilibili',
-    'xiaohonshu',
-    'weibo',
-    'v5sing',
-    'wangyiyun'
-);
+CREATE TYPE platform_flag AS ENUM('douyin','bilibili','xiaohonshu','weibo','v5sing','wangyiyun');
 
+----------
+-- 用户相关
+----------
 CREATE TABLE file_image (
     uri VARCHAR PRIMARY KEY,
     ref_count INTEGER NOT NULL DEFAULT 0,
     image_width SMALLINT,
     image_height SMALLINT
 );
+
 CREATE INDEX idx_file_image_ref_count ON file_image(ref_count);
 CREATE INDEX idx_file_image_image_width ON file_image(image_width);
 CREATE INDEX idx_file_image_image_height ON file_image(image_height);
-
-CREATE TABLE file_video (
-    uri VARCHAR PRIMARY KEY,
-    ref_count INTEGER NOT NULL DEFAULT 0,
-    cover_uri VARCHAR REFERENCES file_image (uri),
-    video_width SMALLINT,
-    video_height SMALLINT,
-    format VARCHAR(20),
-    duration INTEGER,
-    fps SMALLINT
-);
-CREATE INDEX idx_file_video_ref_count ON file_video(ref_count);
-CREATE INDEX idx_file_video_cover_uri ON file_video USING hash(cover_uri);
-CREATE INDEX idx_file_video_video_width ON file_video(video_width);
-CREATE INDEX idx_file_video_video_height ON file_video(video_height);
-
-CREATE TABLE file_audio (
-    uri VARCHAR PRIMARY KEY,
-    ref_count INTEGER NOT NULL DEFAULT 0,
-    format VARCHAR(20),
-    duration INTEGER
-);
-CREATE INDEX idx_file_audio_ref_count ON file_audio(ref_count); 
 
 CREATE TABLE pla_user (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 数据创建时间
@@ -65,7 +39,6 @@ CREATE TABLE pla_user (
 CREATE INDEX idx_pla_user_avatar ON pla_user USING hash(avatar);
 CREATE INDEX idx_pla_user_user_name ON pla_user (user_name);
 
-
 CREATE TABLE watching_pla_user (
     published_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步作品的时间
     published_last_update_time TIMESTAMPTZ, -- 最后一次同步作品的时间
@@ -78,6 +51,9 @@ CREATE TABLE watching_pla_user (
 CREATE INDEX idx_watching_pla_user_published_last_full_update_time ON watching_pla_user(published_last_full_update_time, level);
 CREATE INDEX idx_watching_pla_user_published_last_update_time ON watching_pla_user(published_last_update_time, level);
 
+----------
+-- 作品相关
+----------
 
 CREATE TABLE pla_published (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -99,21 +75,14 @@ CREATE TABLE pla_published (
     collection_num INTEGER, -- 收藏数量
     forward_num INTEGER, -- 转发数量
     --
-    cover_uri VARCHAR REFERENCES file_image (uri),
-    image_uri VARCHAR[],
-    video_uri VARCHAR[],
-    audio_uri VARCHAR[],
-    -- 
     pla_uid VARCHAR NOT NULL,
-    published_id VARCHAR NOT NULL,
-    platform platform_flag NOT NULL,
+    published_id VARCHAR,
+    platform platform_flag,
     PRIMARY KEY (platform, published_id),
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
 CREATE INDEX idx_pla_published_pla_uid ON pla_published(platform, pla_uid);
-CREATE INDEX idx_pla_published_user_avatar_snapshot ON pla_published USING hash(user_avatar_snapshot);
-CREATE INDEX idx_pla_published_cover_uri ON pla_published USING hash(cover_uri);
 
 CREATE INDEX idx_pla_published_crawl_check_time ON pla_published(crawl_check_time);
 CREATE INDEX idx_pla_published_comment_last_full_update_time ON pla_published(comment_last_full_update_time);
@@ -126,6 +95,82 @@ CREATE INDEX idx_pla_published_content_text ON pla_published(content_text);
 CREATE INDEX idx_pla_published_content_type ON pla_published(content_type);
 CREATE INDEX idx_pla_published_like_count ON pla_published(like_count);
 
+-- CREATE TYPE published_resource_type AS ENUM('video','audio','image','cover');
+CREATE TYPE media_level AS ENUM('origin','thumb');
+
+CREATE TABLE published_image (
+    platform platform_flag,
+    published_id VARCHAR,
+    uri VARCHAR PRIMARY KEY,
+    index SMALLINT, -- 索引。如果为空，则不显示在作品资源下
+
+    size INT, --文件大小
+    md5 CHAR(32),
+    level media_level, -- 媒体质量等级
+
+    width SMALLINT,
+    height SMALLINT,
+
+    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+);
+CREATE INDEX idx_published_image_pla_uid ON published_image(platform, published_id);
+
+CREATE TABLE published_audio (
+    platform platform_flag,
+    published_id VARCHAR,
+    uri VARCHAR PRIMARY KEY,
+    index SMALLINT, -- 索引。
+
+    size INT,
+    md5 CHAR(32),
+    level media_level,
+    format VARCHAR(20),
+
+    duration INTEGER,
+
+    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+);
+CREATE INDEX idx_published_audio_pla_uid ON published_audio(platform, published_id);
+
+CREATE TABLE published_video (
+    platform platform_flag,
+    published_id VARCHAR,
+    uri VARCHAR PRIMARY KEY,
+    index SMALLINT, -- 索引。
+
+    size INT,
+    md5 CHAR(32),
+    level media_level,
+    format VARCHAR(20), --格式 h264/h265
+
+    duration INTEGER, --时长
+    width SMALLINT,
+    height SMALLINT,
+    fps SMALLINT,   --帧速率
+    bit_rate SMALLINT, --比特率
+
+    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+);
+CREATE INDEX idx_published_video_pla_uid ON published_video(platform, published_id);
+
+----------
+----------
+
+----------
+-- 评论相关
+----------
+
+-- CREATE TABLE comment_image(
+--     platform platform_flag,
+--     comment_id VARCHAR,
+--     uri VARCHAR,
+--     index SMALLINT,
+--     level media_level,
+    
+--     PRIMARY KEY (platform, comment_id),
+--     FOREIGN KEY (platform, comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
+--     FOREIGN KEY (uri) REFERENCES file_image (uri)
+-- );
 
 CREATE TABLE pla_comment (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -140,7 +185,7 @@ CREATE TABLE pla_comment (
     user_name_snapshot VARCHAR,
     user_avatar_snapshot VARCHAR REFERENCES file_image(uri),
     comment_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
-    image_uri VARCHAR[], -- 评论附带图片
+    additional_image VARCHAR REFERENCES file_image (uri), -- 评论附带图片
     publish_time TIMESTAMPTZ,
     ip_location VARCHAR,
     like_count INTEGER,
@@ -171,6 +216,8 @@ CREATE INDEX idx_pla_comment_reply_last_sync_date ON pla_comment(reply_last_sync
 CREATE INDEX idx_pla_comment_is_delete ON pla_comment(is_delete);
 CREATE INDEX idx_pla_comment_platform_delete ON pla_comment(platform_delete);
 
+----------
+----------
 
 CREATE TYPE crawl_task_status AS ENUM(
     'waiting',

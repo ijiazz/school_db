@@ -12,6 +12,14 @@ export enum Platform {
   /** 网易云音乐 */
   wangYiMusic = "wangyiyun",
 }
+export const PLATFORM_CODE_MAP: Record<Platform, number> = {
+  [Platform.douYin]: 1,
+  [Platform.bilibili]: 2,
+  [Platform.xiaoHongShu]: 3,
+  [Platform.weibo]: 4,
+  [Platform.v5sing]: 5,
+  [Platform.wangYiMusic]: 6,
+};
 
 export enum CrawlTaskStatus {
   waiting = "waiting",
@@ -65,3 +73,23 @@ export function getResourceTypeNumber(meta: { text?: boolean; video?: boolean; a
   if (meta.text) number |= 0b0001;
   return number;
 }
+
+export enum PublishedResType {
+  video = "video",
+  audio = "audio",
+  image = "image",
+  cover = "cover",
+}
+export const enumPublishedResType = new Set([
+  PublishedResType.video,
+  PublishedResType.audio,
+  PublishedResType.image,
+  PublishedResType.cover,
+]);
+
+export enum MediaLevel {
+  other = "other",
+  origin = "origin",
+  thumb = "thumb",
+}
+export const enumMediaLevel = new Set([MediaLevel.other, MediaLevel.origin, MediaLevel.thumb]);

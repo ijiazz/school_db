@@ -45,7 +45,7 @@ export interface DbTransactions extends DbQuery {
 /** @public */
 export interface DbTransactionQuery extends DbQuery {
   /** 开启事务 */
-  begin(): Promise<DbTransactions>;
+  begin(mode?: "SERIALIZABLE" | "REPEATABLE READ" | "READ COMMITTED" | "READ UNCOMMITTED"): Promise<DbTransactions>;
 }
 export interface DbClient extends DbTransactionQuery {
   [Symbol.asyncDispose](): Promise<void>;

@@ -15,7 +15,7 @@ const pla_commentDefine = {
   user_name_snapshot: dbTypeMap.genColumn("VARCHAR"),
   user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
 
-  image_uri: dbTypeMap.genArrColumn("VARCHAR"),
+  additional_image: dbTypeMap.genColumn("VARCHAR"),
   comment_type: dbTypeMap.genColumn("SMALLINT", true, "0"),
   pla_uid: dbTypeMap.genColumn("VARCHAR"),
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
@@ -41,7 +41,7 @@ export const pla_comment_create_key = [
   "platform",
   "publish_time",
   "published_id",
-  "image_uri",
+  "additional_image",
   "root_comment_id",
   "comment_type",
 ] as const;
@@ -60,7 +60,7 @@ export type DbPlaCommentCreate = PickColumn<
   | "platform"
   | "publish_time"
   | "published_id"
-  | "image_uri"
+  | "additional_image"
   | "root_comment_id",
   "comment_type" | "extra"
 >;

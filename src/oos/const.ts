@@ -1,17 +1,17 @@
 const OOS_BUCKETS = {
   /** 用户头像。 名称格式 sha256.suffix*/
   AVATAR: "avatar",
-  /** 作品预览图。名称格式 pid-md5.suffix */
+  /** 作品预览图。名称格式 PlatformCode-pid-md5.suffix */
   PUBLISHED_COVER: "video_cover",
-  /** 作品视频。 名称格式 pid-md5.suffix */
+  /** 作品视频。 名称格式 PlatformCode-pid-md5.suffix */
   PUBLISHED_VIDEO: "height_video",
-  /** 作品图片。 名称格式 pid-md5.suffix */
+  /** 作品图片。 名称格式 PlatformCode-pid-md5.suffix */
   PUBLISHED_IMAGES: "height_images",
-  /** 作品音频。 名称格式 pid-md5.suffix */
+  /** 作品音频。 名称格式 PlatformCode-pid-md5.suffix */
   PUBLISHED_AUDIO: "heigh_audio",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
-  THUMB: "thumb", //   thumb/avatar-format-douyin-md5_xxxxxx.jpeg
+  THUMB: "thumb", //   thumb/avatar-format-md5_xxxxxx.jpeg
 } as const;
 type OosBucket = typeof OOS_BUCKETS;
 
