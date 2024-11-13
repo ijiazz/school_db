@@ -8,7 +8,6 @@ const file_base = {
   index: dbTypeMap.genColumn("SMALLINT"),
 
   size: dbTypeMap.genColumn("INT"),
-  md5: dbTypeMap.genColumn("CHAR"),
   level: dbTypeMap.genColumn("media_level"),
 } satisfies TableDefined;
 

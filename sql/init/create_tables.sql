@@ -1,20 +1,23 @@
 SET client_encoding = 'UTF8';
 
 CREATE TYPE platform_flag AS ENUM('douyin','bilibili','xiaohonshu','weibo','v5sing','wangyiyun');
+CREATE TYPE media_level AS ENUM('origin','thumb');
 
 ----------
 -- 用户相关
 ----------
-CREATE TABLE file_image (
-    uri VARCHAR PRIMARY KEY,
+CREATE TABLE user_avatar (
+    id VARCHAR PRIMARY KEY,
     ref_count INTEGER NOT NULL DEFAULT 0,
     image_width SMALLINT,
-    image_height SMALLINT
+    image_height SMALLINT,
+    size INT,    
+    level media_level,
+    origin_id VARCHAR REFERENCES user_avatar(id) --如果存在，说明是由 origin_id 处理生成的
 );
 
-CREATE INDEX idx_file_image_ref_count ON file_image(ref_count);
-CREATE INDEX idx_file_image_image_width ON file_image(image_width);
-CREATE INDEX idx_file_image_image_height ON file_image(image_height);
+CREATE INDEX idx_user_avatar_ref_count ON user_avatar(ref_count);
+CREATE INDEX idx_user_avatar_size ON user_avatar(size);
 
 CREATE TABLE pla_user (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 数据创建时间
@@ -24,18 +27,17 @@ CREATE TABLE pla_user (
     -- 
     user_name VARCHAR, -- 用户名称
     ip_location VARCHAR, -- IP归属地
-    avatar VARCHAR REFERENCES file_image (uri), -- 用户头像uri
+    avatar VARCHAR REFERENCES user_avatar(id), -- 用户头像id
 
     pla_uid VARCHAR, -- 平台用户id
     follower_count INT, -- 粉丝数
     following_count INT, -- 关注数
     signature VARCHAR, -- 用户签名
     platform platform_flag NOT NULL, -- 来源平台
-    uid BIGINT, -- IJIA 学院用户的 UID。 后面将成为外键
     PRIMARY KEY (platform, pla_uid),
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-
+CREATE INDEX idx_pla_user_p_uid ON pla_user (platform, pla_uid);
 CREATE INDEX idx_pla_user_avatar ON pla_user USING hash(avatar);
 CREATE INDEX idx_pla_user_user_name ON pla_user (user_name);
 
@@ -69,7 +71,7 @@ CREATE TABLE pla_published (
     content_text VARCHAR, -- 内容文本
     content_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
     user_name_snapshot VARCHAR,
-    user_avatar_snapshot VARCHAR REFERENCES file_image(uri),
+    user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
     ip_location VARCHAR, -- IP归属地
     like_count INTEGER, -- 点赞数量
     collection_num INTEGER, -- 收藏数量
@@ -95,9 +97,6 @@ CREATE INDEX idx_pla_published_content_text ON pla_published(content_text);
 CREATE INDEX idx_pla_published_content_type ON pla_published(content_type);
 CREATE INDEX idx_pla_published_like_count ON pla_published(like_count);
 
--- CREATE TYPE published_resource_type AS ENUM('video','audio','image','cover');
-CREATE TYPE media_level AS ENUM('origin','thumb');
-
 CREATE TABLE published_image (
     platform platform_flag,
     published_id VARCHAR,
@@ -105,7 +104,6 @@ CREATE TABLE published_image (
     index SMALLINT, -- 索引。如果为空，则不显示在作品资源下
 
     size INT, --文件大小
-    md5 CHAR(32),
     level media_level, -- 媒体质量等级
 
     width SMALLINT,
@@ -113,7 +111,7 @@ CREATE TABLE published_image (
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idx_published_image_pla_uid ON published_image(platform, published_id);
+CREATE INDEX idx_published_image_pid ON published_image(platform, published_id);
 
 CREATE TABLE published_audio (
     platform platform_flag,
@@ -122,7 +120,6 @@ CREATE TABLE published_audio (
     index SMALLINT, -- 索引。
 
     size INT,
-    md5 CHAR(32),
     level media_level,
     format VARCHAR(20),
 
@@ -130,7 +127,7 @@ CREATE TABLE published_audio (
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idx_published_audio_pla_uid ON published_audio(platform, published_id);
+CREATE INDEX idx_published_audio_pid ON published_audio(platform, published_id);
 
 CREATE TABLE published_video (
     platform platform_flag,
@@ -139,7 +136,6 @@ CREATE TABLE published_video (
     index SMALLINT, -- 索引。
 
     size INT,
-    md5 CHAR(32),
     level media_level,
     format VARCHAR(20), --格式 h264/h265
 
@@ -151,7 +147,7 @@ CREATE TABLE published_video (
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idx_published_video_pla_uid ON published_video(platform, published_id);
+CREATE INDEX idx_published_video_pid ON published_video(platform, published_id);
 
 ----------
 ----------
@@ -159,18 +155,18 @@ CREATE INDEX idx_published_video_pla_uid ON published_video(platform, published_
 ----------
 -- 评论相关
 ----------
+CREATE TABLE comment_image (
+    id VARCHAR PRIMARY KEY,
 
--- CREATE TABLE comment_image(
---     platform platform_flag,
---     comment_id VARCHAR,
---     uri VARCHAR,
---     index SMALLINT,
---     level media_level,
-    
---     PRIMARY KEY (platform, comment_id),
---     FOREIGN KEY (platform, comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
---     FOREIGN KEY (uri) REFERENCES file_image (uri)
--- );
+    size INT,
+    image_width SMALLINT,
+    image_height SMALLINT,
+
+    ref_count INTEGER NOT NULL DEFAULT 0,
+    level media_level,
+    origin_id VARCHAR REFERENCES comment_image(id) --如果存在，说明是由 origin_id 处理生成的
+);
+CREATE INDEX idx_comment_image_ref_count ON comment_image(size);
 
 CREATE TABLE pla_comment (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -183,9 +179,9 @@ CREATE TABLE pla_comment (
     --
     content_text VARCHAR,
     user_name_snapshot VARCHAR,
-    user_avatar_snapshot VARCHAR REFERENCES file_image(uri),
+    user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
     comment_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
-    additional_image VARCHAR REFERENCES file_image (uri), -- 评论附带图片
+    additional_image VARCHAR REFERENCES comment_image(id), -- 评论附带图片
     publish_time TIMESTAMPTZ,
     ip_location VARCHAR,
     like_count INTEGER,

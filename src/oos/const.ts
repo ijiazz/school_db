@@ -11,15 +11,9 @@ const OOS_BUCKETS = {
   PUBLISHED_AUDIO: "heigh_audio",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
-  THUMB: "thumb", //   thumb/avatar-format-md5_xxxxxx.jpeg
 } as const;
 type OosBucket = typeof OOS_BUCKETS;
 
-/** @public */
-export function getOosThumbBlobName(thumb: string, bucket: string, objectName: string) {
-  if (bucket === OOS_BUCKETS.THUMB) throw new Error("bucket 不能是 " + OOS_BUCKETS.THUMB);
-  return bucket.replaceAll("/", "_") + "-" + thumb + "-" + objectName;
-}
 /** @public */
 export function getAllBuckets(): string[] {
   return Object.values(OOS_BUCKETS);

@@ -6,7 +6,7 @@ DECLARE
     count INTEGER;
 BEGIN
     IF(uri IS NOT NULL) THEN
-        EXECUTE 'UPDATE '||table_name||' SET ref_count = ref_count '||op||' 1 WHERE uri = '''||uri||'''';
+        EXECUTE 'UPDATE '||table_name||' SET ref_count = ref_count '||op||' 1 WHERE id = '''||uri||'''';
         GET DIAGNOSTICS count = ROW_COUNT;
     ELSE
         count := 0;
@@ -20,7 +20,7 @@ DECLARE
     count INTEGER;
 BEGIN
     IF(array_length(uri_list, 1) IS NOT NULL) THEN
-        EXECUTE 'UPDATE '||table_name||' SET ref_count = ref_count '||op||' 1 WHERE uri IN ('''|| array_to_string(uri_list,''', ''')||''')';
+        EXECUTE 'UPDATE '||table_name||' SET ref_count = ref_count '||op||' 1 WHERE id IN ('''|| array_to_string(uri_list,''', ''')||''')';
         GET DIAGNOSTICS count = ROW_COUNT;
     ELSE
         count := 0;
@@ -112,14 +112,14 @@ CREATE OR REPLACE FUNCTION resource_ref_sync() RETURNS TRIGGER AS $$
 BEGIN
     CASE TG_TABLE_NAME
     WHEN 'pla_user' THEN
-        PERFORM res_update_operate(OLD.avatar, NEW.avatar, 'file_image');
+        PERFORM res_update_operate(OLD.avatar, NEW.avatar, 'user_avatar');
     WHEN 'pla_published' THEN
-        PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot, 'file_image');
+        PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot, 'user_avatar');
     WHEN 'pla_comment' THEN
-        PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot,'file_image');
-        PERFORM res_update_operate(OLD.additional_image, NEW.additional_image,'file_image');
+        PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot,'user_avatar');
+        PERFORM res_update_operate(OLD.additional_image, NEW.additional_image,'comment_image');
     -- WHEN 'comment_image' THEN
-    --     PERFORM res_update_operate(OLD.uri, NEW.uri,'file_image');
+    --     PERFORM res_update_operate(OLD.uri, NEW.uri,'comment_image');
     ELSE
         RAISE '不支持的触发表 %', TG_TABLE_NAME;
     END CASE;

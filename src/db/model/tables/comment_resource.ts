@@ -1,13 +1,19 @@
-import { InferTableDefined, TableDefined } from "@asla/yoursql";
+import { InferTableDefined, TableDefined, PickColumn } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../_sql_value.ts";
 
 const comment_imageDefined = {
-  platform: dbTypeMap.genColumn("platform_flag"),
-  comment_id: dbTypeMap.genColumn("VARCHAR"),
-  uri: dbTypeMap.genColumn("VARCHAR", true),
-  index: dbTypeMap.genColumn("SMALLINT", true),
-  level: dbTypeMap.genColumn("media_level", true),
+  id: dbTypeMap.genColumn("VARCHAR", true),
+  size: dbTypeMap.genColumn("INT"),
+  image_width: dbTypeMap.genColumn("SMALLINT"),
+  image_height: dbTypeMap.genColumn("SMALLINT"),
+
+  ref_count: dbTypeMap.genColumn("SMALLINT", true),
+  level: dbTypeMap.genColumn("media_level"),
+  origin_id: dbTypeMap.genColumn("VARCHAR"),
 } satisfies TableDefined;
 export type DbCommentImage = InferTableDefined<typeof comment_imageDefined>;
-export type DbDbCommentImageCreate = DbCommentImage;
+export type DbDbCommentImageCreate = PickColumn<
+  DbCommentImage,
+  "id" | "size" | "level" | "image_width" | "image_height" | "origin_id"
+>;
 export const comment_image = createTable<DbCommentImage, DbDbCommentImageCreate>("comment_image", comment_imageDefined);

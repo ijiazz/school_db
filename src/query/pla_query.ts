@@ -1,5 +1,5 @@
 import { operation } from "../common/sql.ts";
-import { DbQuery, pla_comment, pla_published, pla_user, sqlValue } from "../db.ts";
+import { DbQuery, pla_comment, pla_published, pla_user, sqlValue, user_avatar, DbUserAvatarCreate } from "../db.ts";
 import type {
   CommentReplyItemDto,
   CommentRootItemDto,
@@ -16,6 +16,18 @@ export const DEFAULT_RESOURCE = {
 };
 function uriToUrl(uri: string, origin: string) {
   return origin + "/file/" + uri;
+}
+
+export function renameAvatarUriSql(oldId: string, newImage: DbUserAvatarCreate) {
+  const newId = newImage.id;
+  if (oldId === newId) throw new Error("oldUri 不能和 newId 一致");
+  let sql = user_avatar.insert([newImage], { conflict: ["id"] });
+  sql += ";\n" + pla_user.update({ avatar: newId }, { where: "avatar=" + sqlValue(oldId) });
+  sql +=
+    ";\n" + pla_published.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
+  sql +=
+    ";\n" + pla_comment.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
+  return sql;
 }
 
 export async function getUserList(queryable: DbQuery, option: GetUserParam & DebugOption = {}): Promise<UserItemDto[]> {
