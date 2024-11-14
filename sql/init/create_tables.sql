@@ -12,8 +12,7 @@ CREATE TABLE user_avatar (
     image_width SMALLINT,
     image_height SMALLINT,
     size INT,    
-    level media_level,
-    origin_id VARCHAR REFERENCES user_avatar(id) --如果存在，说明是由 origin_id 处理生成的
+    level media_level
 );
 
 CREATE INDEX idx_user_avatar_ref_count ON user_avatar(ref_count);
@@ -50,6 +49,7 @@ CREATE TABLE watching_pla_user (
     
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE
 );
+CREATE INDEX idxfk_watching_pla_user_pla_uid ON watching_pla_user(platform, pla_uid);
 CREATE INDEX idx_watching_pla_user_published_last_full_update_time ON watching_pla_user(published_last_full_update_time, level);
 CREATE INDEX idx_watching_pla_user_published_last_update_time ON watching_pla_user(published_last_update_time, level);
 
@@ -84,7 +84,8 @@ CREATE TABLE pla_published (
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-CREATE INDEX idx_pla_published_pla_uid ON pla_published(platform, pla_uid);
+CREATE INDEX idxfk_pla_published_pla_uid ON pla_published(platform, pla_uid);
+CREATE INDEX idxfk_pla_published_user_avatar_snapshot ON pla_published USING hash(user_avatar_snapshot);
 
 CREATE INDEX idx_pla_published_crawl_check_time ON pla_published(crawl_check_time);
 CREATE INDEX idx_pla_published_comment_last_full_update_time ON pla_published(comment_last_full_update_time);
@@ -111,7 +112,7 @@ CREATE TABLE published_image (
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idx_published_image_pid ON published_image(platform, published_id);
+CREATE INDEX idxfk_published_image_pid ON published_image(platform, published_id);
 
 CREATE TABLE published_audio (
     platform platform_flag,
@@ -127,7 +128,7 @@ CREATE TABLE published_audio (
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idx_published_audio_pid ON published_audio(platform, published_id);
+CREATE INDEX idxfk_published_audio_pid ON published_audio(platform, published_id);
 
 CREATE TABLE published_video (
     platform platform_flag,
@@ -147,7 +148,7 @@ CREATE TABLE published_video (
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idx_published_video_pid ON published_video(platform, published_id);
+CREATE INDEX idxfk_published_video_pid ON published_video(platform, published_id);
 
 ----------
 ----------
@@ -163,10 +164,10 @@ CREATE TABLE comment_image (
     image_height SMALLINT,
 
     ref_count INTEGER NOT NULL DEFAULT 0,
-    level media_level,
-    origin_id VARCHAR REFERENCES comment_image(id) --如果存在，说明是由 origin_id 处理生成的
+    level media_level
 );
-CREATE INDEX idx_comment_image_ref_count ON comment_image(size);
+CREATE INDEX idx_comment_image_ref_count ON comment_image(ref_count);
+CREATE INDEX idx_comment_image_size ON comment_image(size);
 
 CREATE TABLE pla_comment (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -182,6 +183,7 @@ CREATE TABLE pla_comment (
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
     comment_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
     additional_image VARCHAR REFERENCES comment_image(id), -- 评论附带图片
+    additional_image_thumb VARCHAR REFERENCES comment_image(id), -- 评论附带图片缩略图
     publish_time TIMESTAMPTZ,
     ip_location VARCHAR,
     like_count INTEGER,
@@ -200,11 +202,13 @@ CREATE TABLE pla_comment (
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-CREATE INDEX idx_pla_comment_root_comment_id ON pla_comment(platform, root_comment_id);
-CREATE INDEX idx_pla_comment_parent_comment_id ON pla_comment(platform, parent_comment_id);
-CREATE INDEX idx_pla_comment_published_id ON pla_comment(platform, published_id);
-CREATE INDEX idx_pla_comment_pla_uid ON pla_comment(platform, pla_uid);
-CREATE INDEX idx_pla_comment_user_avatar_snapshot ON pla_comment USING hash(user_avatar_snapshot);
+CREATE INDEX idxfk_pla_comment_root_comment_id ON pla_comment(platform, root_comment_id);
+CREATE INDEX idxfk_pla_comment_parent_comment_id ON pla_comment(platform, parent_comment_id);
+CREATE INDEX idxfk_pla_comment_published_id ON pla_comment(platform, published_id);
+CREATE INDEX idxfk_pla_comment_pla_uid ON pla_comment(platform, pla_uid);
+CREATE INDEX idxfk_pla_comment_user_avatar_snapshot ON pla_comment USING hash(user_avatar_snapshot);
+CREATE INDEX idxfk_pla_comment_user_additional_image ON pla_comment USING hash(additional_image);
+CREATE INDEX idxfk_pla_comment_user_additional_image_thumb ON pla_comment USING hash(additional_image_thumb);
 
 CREATE INDEX idx_pla_comment_crawl_check_time ON pla_comment(crawl_check_time);
 CREATE INDEX idx_pla_comment_reply_last_sync_date ON pla_comment(reply_last_sync_date);

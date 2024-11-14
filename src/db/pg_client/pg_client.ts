@@ -1,11 +1,12 @@
 import { SqlQueryStatement } from "@asla/yoursql";
-import pg, { Pool, PoolClient, types } from "pg";
+import pg from "pg";
+import type { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
 import type { DbClient, DbCursor, DbTransactions, QueryResult } from "./db_query.ts";
 import { getEnv } from "../../common/get_env.ts";
 import { DbQuery } from "./db_query.ts";
-
-types.setTypeParser(types.builtins.INT8, BigInt);
+const pgTypes = pg.types;
+pgTypes.setTypeParser(pgTypes.builtins.INT8, BigInt);
 
 class PgCursor<T extends {}> implements DbCursor<T> {
   constructor(cursor: Cursor<T>, onClose?: () => void) {

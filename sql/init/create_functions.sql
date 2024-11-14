@@ -118,6 +118,7 @@ BEGIN
     WHEN 'pla_comment' THEN
         PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot,'user_avatar');
         PERFORM res_update_operate(OLD.additional_image, NEW.additional_image,'comment_image');
+        PERFORM res_update_operate(OLD.additional_image_thumb, NEW.additional_image_thumb,'comment_image');
     -- WHEN 'comment_image' THEN
     --     PERFORM res_update_operate(OLD.uri, NEW.uri,'comment_image');
     ELSE

@@ -9,11 +9,10 @@ const comment_imageDefined = {
 
   ref_count: dbTypeMap.genColumn("SMALLINT", true),
   level: dbTypeMap.genColumn("media_level"),
-  origin_id: dbTypeMap.genColumn("VARCHAR"),
 } satisfies TableDefined;
 export type DbCommentImage = InferTableDefined<typeof comment_imageDefined>;
 export type DbDbCommentImageCreate = PickColumn<
   DbCommentImage,
-  "id" | "size" | "level" | "image_width" | "image_height" | "origin_id"
+  "id" | "size" | "level" | "image_width" | "image_height"
 >;
 export const comment_image = createTable<DbCommentImage, DbDbCommentImageCreate>("comment_image", comment_imageDefined);

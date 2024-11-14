@@ -39,10 +39,9 @@ const user_avatar_define = {
   size: dbTypeMap.genColumn("SMALLINT"),
 
   level: dbTypeMap.genColumn("media_level"),
-  origin_id: dbTypeMap.genColumn("VARCHAR"),
 } satisfies TableDefined;
 
 export type DbUserAvatar = InferTableDefined<typeof user_avatar_define>;
-export type DbUserAvatarCreate = PickColumn<DbUserAvatar, "image_height" | "image_width" | "id" | "size", "origin_id">;
+export type DbUserAvatarCreate = PickColumn<DbUserAvatar, "image_height" | "image_width" | "id" | "size">;
 
 export const user_avatar = createTable<DbUserAvatar, DbUserAvatarCreate>("user_avatar", user_avatar_define);
