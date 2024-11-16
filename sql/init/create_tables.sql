@@ -11,8 +11,7 @@ CREATE TABLE user_avatar (
     ref_count INTEGER NOT NULL DEFAULT 0,
     image_width SMALLINT,
     image_height SMALLINT,
-    size INT,    
-    level media_level
+    size INT
 );
 
 CREATE INDEX idx_user_avatar_ref_count ON user_avatar(ref_count);
@@ -26,7 +25,7 @@ CREATE TABLE pla_user (
     -- 
     user_name VARCHAR, -- 用户名称
     ip_location VARCHAR, -- IP归属地
-    avatar VARCHAR REFERENCES user_avatar(id), -- 用户头像id
+    avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE, -- 用户头像id
 
     pla_uid VARCHAR, -- 平台用户id
     follower_count INT, -- 粉丝数
@@ -36,17 +35,16 @@ CREATE TABLE pla_user (
     PRIMARY KEY (platform, pla_uid),
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-CREATE INDEX idx_pla_user_p_uid ON pla_user (platform, pla_uid);
 CREATE INDEX idx_pla_user_avatar ON pla_user USING hash(avatar);
 CREATE INDEX idx_pla_user_user_name ON pla_user (user_name);
 
 CREATE TABLE watching_pla_user (
     published_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步作品的时间
     published_last_update_time TIMESTAMPTZ, -- 最后一次同步作品的时间
-    level SMALLINT NOT NULL DEFAULT -32768, -- 权重
-    pla_uid VARCHAR, -- 平台用户id
+    level SMALLINT, -- 权重
+    pla_uid VARCHAR NOT NULL, -- 平台用户id
     platform platform_flag NOT NULL, -- 来源平台
-    
+    PRIMARY KEY (platform, pla_uid),
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE
 );
 CREATE INDEX idxfk_watching_pla_user_pla_uid ON watching_pla_user(platform, pla_uid);
@@ -71,7 +69,7 @@ CREATE TABLE pla_published (
     content_text VARCHAR, -- 内容文本
     content_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
     user_name_snapshot VARCHAR,
-    user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
+    user_avatar_snapshot VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
     ip_location VARCHAR, -- IP归属地
     like_count INTEGER, -- 点赞数量
     collection_num INTEGER, -- 收藏数量
@@ -163,8 +161,7 @@ CREATE TABLE comment_image (
     image_width SMALLINT,
     image_height SMALLINT,
 
-    ref_count INTEGER NOT NULL DEFAULT 0,
-    level media_level
+    ref_count INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX idx_comment_image_ref_count ON comment_image(ref_count);
 CREATE INDEX idx_comment_image_size ON comment_image(size);
@@ -182,8 +179,8 @@ CREATE TABLE pla_comment (
     user_name_snapshot VARCHAR,
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
     comment_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
-    additional_image VARCHAR REFERENCES comment_image(id), -- 评论附带图片
-    additional_image_thumb VARCHAR REFERENCES comment_image(id), -- 评论附带图片缩略图
+    additional_image VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片
+    additional_image_thumb VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片缩略图
     publish_time TIMESTAMPTZ,
     ip_location VARCHAR,
     like_count INTEGER,
@@ -219,12 +216,7 @@ CREATE INDEX idx_pla_comment_platform_delete ON pla_comment(platform_delete);
 ----------
 ----------
 
-CREATE TYPE crawl_task_status AS ENUM(
-    'waiting',
-    'processing',
-    'success',
-    'failed'
-);
+CREATE TYPE crawl_task_status AS ENUM('waiting', 'processing', 'success', 'failed', 'hide');
 
 CREATE TABLE crawl_task_queue (
     task_id SERIAL PRIMARY KEY,

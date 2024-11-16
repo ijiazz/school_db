@@ -36,9 +36,7 @@ const user_avatar_define = {
   ref_count: dbTypeMap.genColumn("INTEGER", true),
   image_width: dbTypeMap.genColumn("SMALLINT"),
   image_height: dbTypeMap.genColumn("SMALLINT"),
-  size: dbTypeMap.genColumn("SMALLINT"),
-
-  level: dbTypeMap.genColumn("media_level"),
+  size: dbTypeMap.genColumn("SMALLINT", true),
 } satisfies TableDefined;
 
 export type DbUserAvatar = InferTableDefined<typeof user_avatar_define>;

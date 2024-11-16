@@ -18,6 +18,7 @@
     "@asla/yoursql": "^0.6.0"
   },
   "dependencies": {
+    "evlib": "^2.11.1",
     "pg": "^8.13.1",
     "pg-cursor": "^2.12.1"
   },

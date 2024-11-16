@@ -99,6 +99,22 @@ class FsOOS implements OOS {
     const { dir, base } = this.parsePath(bucket, objectName);
     return fileExist(path.resolve(dir, base));
   }
+  async deleteObject(bucket: string, objectName: string): Promise<void> {
+    const filename = this.rootDir + "/" + bucket + "/" + objectName;
+    await fs.rm(filename, { force: true });
+  }
+  async deleteObjectMany(bucket: string, list: Set<string>): Promise<Map<string, any>> {
+    this.checkBucket(bucket);
+    const dir = this.rootDir + "/" + bucket + "/";
+    const failed = new Map<string, any>();
+    const promises: Promise<any>[] = [];
+    for (const objectName of list) {
+      const promise = fs.rm(dir + "/" + objectName, { force: true }).catch((e) => failed.set(objectName, e));
+      promises.push(promise);
+    }
+    await Promise.all(promises);
+    return failed;
+  }
 }
 async function checkDir(rootDir: string, subDir?: Iterable<string>) {
   let checkList: Promise<any>[] = [];
@@ -132,4 +148,8 @@ export interface OOS {
     successObjectName: Set<string>;
   }>;
   objectExist(bucket: string, objectName: string): Promise<Stats | null>;
+  /** 删除多个对象，如果删除失败则抛出异常，如果对象不存在，则跳过 */
+  deleteObject(bucket: string, objectName: string): Promise<void>;
+  /** 删除多个对象，如果对象不存在，则跳过，返回删除失败的对象映射 */
+  deleteObjectMany(bucket: string, list: Set<string>): Promise<Map<string, any>>;
 }

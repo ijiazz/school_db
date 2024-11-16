@@ -1,14 +1,12 @@
 const OOS_BUCKETS = {
   /** 用户头像。 名称格式 sha256.suffix*/
   AVATAR: "avatar",
-  /** 作品预览图。名称格式 PlatformCode-pid-md5.suffix */
-  PUBLISHED_COVER: "video_cover",
   /** 作品视频。 名称格式 PlatformCode-pid-md5.suffix */
   PUBLISHED_VIDEO: "height_video",
   /** 作品图片。 名称格式 PlatformCode-pid-md5.suffix */
-  PUBLISHED_IMAGES: "height_images",
+  PUBLISHED_IMAGES: "height_image",
   /** 作品音频。 名称格式 PlatformCode-pid-md5.suffix */
-  PUBLISHED_AUDIO: "heigh_audio",
+  PUBLISHED_AUDIO: "height_audio",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
 } as const;
@@ -34,7 +32,10 @@ export interface FileObjectMeta {
   hashHex: string;
   hashAlgorithm: "md5" | "sha1" | "sha256";
 }
-/** @public */
+/**
+ * flag-hashAlgorithm_hashHex.ext
+ * @public
+ */
 export function getOosBlobName(meta: Omit<FileObjectMeta, "filename">) {
   let name = meta.hashAlgorithm + "_" + meta.hashHex + "." + meta.ext;
   if (meta.flag) name = meta.flag + "-" + name;

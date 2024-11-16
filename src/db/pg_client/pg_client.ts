@@ -9,34 +9,24 @@ const pgTypes = pg.types;
 pgTypes.setTypeParser(pgTypes.builtins.INT8, BigInt);
 
 class PgCursor<T extends {}> implements DbCursor<T> {
-  constructor(cursor: Cursor<T>, onClose?: () => void) {
+  /** @param connect 如果传入，则关闭游标时会调用 connect.release() */
+  constructor(cursor: Cursor<T>, connect?: PoolClient) {
     this.#cursor = cursor;
-    this.#onClose = onClose;
+    this.#connect = connect;
   }
-  #onClose?: () => void;
+  #connect?: PoolClient;
   #cursor: Cursor<T>;
   read(number: number): Promise<T[]> {
     return this.#cursor.read(number);
   }
   async close(): Promise<void> {
     await this.#cursor.close();
-    this.#onClose?.();
-    this.#onClose = undefined;
+    if (!this.#connect) return;
+    this.#connect.release();
+    this.#connect = undefined;
   }
   [Symbol.asyncDispose]() {
     return this.close();
-  }
-  async *[Symbol.asyncIterator](chunkSize: number = 20): AsyncGenerator<T, undefined, undefined> {
-    const cursor = await this.#cursor;
-    try {
-      let chunk = await cursor.read(chunkSize);
-      while (chunk.length) {
-        yield* chunk;
-        chunk = await cursor.read(chunkSize);
-      }
-    } finally {
-      await this.close();
-    }
   }
 }
 
@@ -74,9 +64,8 @@ class PgDbClient extends DbQuery implements DbClient {
   async createCursor<T extends object = any>(sql: { toString(): string }): Promise<DbCursor<T>> {
     const connect = await this.#pool.connect();
     const cursor = connect.query(new Cursor<T>(sql.toString()));
-    return new PgCursor<T>(cursor, connect.release.bind(connect));
+    return new PgCursor<T>(cursor, connect);
   }
-
   end(force?: boolean) {
     const error = new Error("Pool has been ended");
     if (force) {

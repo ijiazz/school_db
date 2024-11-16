@@ -6,7 +6,7 @@ const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 /**
  * 初始化数据库
  */
-async function initDb(client: DbClient): Promise<DbClient> {
+async function initDb(client: DbClient): Promise<void> {
   const sqlFiles: string[] = ["init/create_tables.sql", "init/create_functions.sql", "init/create_triggers.sql"];
   for (const sqlFile of sqlFiles) {
     try {
@@ -15,7 +15,6 @@ async function initDb(client: DbClient): Promise<DbClient> {
       throw new Error(`初始化数据库失败(${sqlFile})`, { cause: error });
     }
   }
-  return client;
 }
 
 /**
@@ -60,8 +59,8 @@ export async function createInitDb(
     hostname?: string;
     port?: number;
   },
-  option: { dropIfExists?: boolean }
-) {
+  option: { dropIfExists?: boolean } = {}
+): Promise<void> {
   const owner = createDb.user;
   if (!owner) throw new Error("必须指定 user, 这将成为新数据库的 owner");
   const dbname = createDb.database;
@@ -82,12 +81,6 @@ export async function createInitDb(
     await pgClient.end();
   }
 
-  const client = createPgDbClient(createDb);
-  try {
-    await initDb(client);
-  } catch (error) {
-    await client.end();
-    throw error;
-  }
-  return client;
+  await using client = createPgDbClient(createDb);
+  await initDb(client);
 }

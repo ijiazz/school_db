@@ -3,7 +3,7 @@ import { createTable, dbTypeMap } from "../_sql_value.ts";
 const watching_pla_userDefine = {
   published_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   published_last_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
-  level: dbTypeMap.genColumn("SMALLINT", true, "-32768"),
+  level: dbTypeMap.genColumn("SMALLINT"),
 
   pla_uid: dbTypeMap.genColumn("VARCHAR", true),
   platform: dbTypeMap.genColumn("platform_flag", true),

@@ -7,17 +7,64 @@ export type QueryResult<T> = {
 };
 /** @public */
 export abstract class DbQuery {
+  /**
+   * 迭代游标返回的每一行
+   * @param chunkSize 游标每次请求的行数
+   */
+  cursorEach<T extends {} = any>(sql: SqlQueryStatement<T>, chunkSize?: number): AsyncGenerator<T>;
+  /**
+   * 迭代游标返回的每一行
+   * @param chunkSize 游标每次请求的行数
+   */
+  cursorEach<T extends {} = any>(sql: { toString(): string }, chunkSize?: number): AsyncGenerator<T>;
+  async *cursorEach(sql: { toString(): string }, chunkSize: number = 10): AsyncGenerator<any> {
+    for await (const row of this.cursorEachChunk(sql, chunkSize)) {
+      yield* row;
+    }
+  }
+  /**
+   * 迭代游标
+   * @param chunkSize 游标每次请求的行数
+   */
+  cursorEachChunk<T extends {} = any>(sql: SqlQueryStatement<T>, chunkSize: number): AsyncGenerator<T[]>;
+  /**
+   * 迭代游标
+   * @param chunkSize 游标每次请求的行数
+   */
+  cursorEachChunk<T extends {} = any>(sql: { toString(): string }, chunkSize: number): AsyncGenerator<T[]>;
+  async *cursorEachChunk<T extends {} = any>(sql: { toString(): string }, chunkSize: number): AsyncGenerator<T[]> {
+    if (chunkSize <= 0) throw new Error("chunkSize 必须大于 0 ");
+    const cursor = await this.createCursor(sql);
+    try {
+      let chunk = await cursor.read(chunkSize);
+      while (chunk.length) {
+        yield chunk;
+        chunk = await cursor.read(chunkSize);
+      }
+    } finally {
+      await cursor.close();
+    }
+  }
+  /**
+   * 创建游标
+   */
   abstract createCursor<T extends object = any>(sql: SqlQueryStatement<T>): Promise<DbCursor<T>>;
+  /**
+   * 创建游标
+   */
   abstract createCursor<T extends object = any>(sql: { toString(): string }): Promise<DbCursor<T>>;
   abstract query<T extends object = any>(sql: SqlQueryStatement<T>): Promise<QueryResult<T>>;
   abstract query<T extends object = any>(sql: { toString(): string }): Promise<QueryResult<T>>;
+  /** 查询受影响的行 */
   queryCount(sql: string | { toString(): string }): Promise<number> {
     return this.query(sql.toString()).then((res) => {
       if (res.rowCount === null) return 0;
       return res.rowCount;
     });
   }
+  /** 查询行 */
   queryRows<T extends object = any>(sql: SqlQueryStatement<T>): Promise<T[]>;
+  /** 查询行 */
   queryRows<T extends object = any>(sql: { toString(): string }): Promise<T[]>;
   queryRows<T extends object = any>(sql: SqlQueryStatement<T> | string | { toString(): string }): Promise<T[]> {
     return this.query<T>(sql.toString()).then((res) => res.rows);
@@ -30,7 +77,6 @@ export interface DbCursor<T> {
   /** 读取指定数量的行
    * 如果与迭代器混用，可能会造成顺序不一致问题 */
   read(number: number): Promise<T[]>;
-  [Symbol.asyncIterator](): AsyncGenerator<T, undefined, undefined>;
   [Symbol.asyncDispose](): Promise<void>;
 }
 
