@@ -1,32 +1,110 @@
-import { getDbUrl, getClient, DbCursor, comment_image, DbTransactionQuery } from "../db.ts";
-import { YourTable } from "@asla/yoursql";
+import {
+  getClient,
+  comment_image,
+  DbTransactionQuery,
+  user_avatar,
+  sqlValue,
+  published_video,
+  published_image,
+  published_audio,
+} from "../db.ts";
+import { SqlQueryStatement, YourTable } from "@asla/yoursql";
 import { getOOS, getBucket, OOS } from "../oos.ts";
-import { ConcurrencyControl } from "../common/batch_async.ts";
+import { PromiseConcurrency } from "evlib/async";
 
-class DbResourceDelete {
+type OosObjId = {
+  bucket: string;
+  objectName: string;
+};
+export class DbResourceDelete {
   #oos: OOS;
   #db: DbTransactionQuery;
   constructor(option: { oos?: OOS; client?: DbTransactionQuery }) {
     this.#oos = option.oos ?? getOOS();
     this.#db = option.client ?? getClient();
   }
-  async deleteCommentImage(option: { zero?: boolean }) {
-    const sql = comment_image.deleteWithResult({ id: true }).where();
-    const client = this.#db;
+  async #deleteOosObj(iter: AsyncGenerator<OosObjId[]>, options: { signal?: AbortSignal } = {}) {
+    const { signal } = options;
+    let aborted = false;
+    let onAbort = () => {
+      aborted = true;
+    };
+    if (signal) {
+      signal.throwIfAborted();
+      signal.addEventListener("abort", onAbort);
+    }
+
+    const batch = new PromiseConcurrency({ concurrency: 10, maxFailed: 3 });
     const oos = this.#oos;
-    const bucket = getBucket().COMMENT_IMAGE;
-    const batch = new ConcurrencyControl({ concurrency: 10, maxFailed: 3 });
-    function handler(item: { id: string }) {
-      return oos.deleteObject(bucket, item.id).catch((e) => {
+    const errors: Record<string, any> = {};
+    function handler({ bucket, objectName }: OosObjId) {
+      return oos.deleteObject(bucket, objectName).catch((e) => {
+        errors[bucket + "/" + objectName] = e;
         throw e;
       });
     }
-    for await (const chunk of client.cursorEachChunk(sql, 20)) {
-      await batch.push(...chunk.map(handler));
+    try {
+      for await (const chunk of iter) {
+        await batch.push(...chunk.map(handler));
+        if (aborted) break;
+      }
+    } catch (e) {
+      console.error("DbResourceDelete.#deleteOosObj()", "OOS 对象删除失败", errors);
+      throw e;
+    } finally {
+      await batch.onClear();
+      if (signal) signal.removeEventListener("abort", onAbort);
     }
   }
-  async deleteUserAvatar() {}
-  async deletePublishedVideo() {}
-  async deletePublishedImage() {}
-  async deletePublishedAudio() {}
+  async *#iterQueryRows(
+    sql: SqlQueryStatement<{ id: string }>,
+    bucket: string
+  ): AsyncGenerator<OosObjId[], undefined, undefined> {
+    let rows = await this.#db.queryRows(sql);
+    while (rows.length) {
+      yield rows.map(({ id }) => ({ bucket, objectName: id }));
+      rows = await this.#db.queryRows(sql);
+    }
+  }
+  async deleteCommentImageZero(option: { signal?: AbortSignal }) {
+    const sql = comment_image.deleteWithResult(
+      { id: true },
+      { where: "id IN (" + comment_image.select({ id: true }).where("ref_count=0").limit(10) + ")" }
+    ) as SqlQueryStatement<{ id: string }>;
+    await this.#deleteOosObj(this.#iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
+  }
+  async deleteUserAvatarZero(option: { signal?: AbortSignal }) {
+    const sql = user_avatar.deleteWithResult(
+      { id: true },
+      { where: "id IN (" + user_avatar.select({ id: true }).where("ref_count=0").limit(10) + ")" }
+    ) as SqlQueryStatement<{ id: string }>;
+    await this.#deleteOosObj(this.#iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
+  }
+  async #deletePublishedResource(table: YourTable<any>, id: string | string[], bucket: string) {
+    const sql = table.deleteWithResult(
+      { id: true },
+      {
+        where: () => {
+          if (typeof id === "string") return "id=" + sqlValue(id);
+          return "id IN (" + sqlValue.toValues(id) + ")";
+        },
+      }
+    );
+    const rows = await this.#db.queryRows<{ id: string }>(sql);
+    let set = new Set<string>();
+    for (const item of rows) set.add(item.id);
+    const failed = await this.#oos.deleteObjectMany(bucket, set);
+    if (failed.size) {
+      console.error("DbResourceDelete.#deletePublishedResource()", "OOS 对象删除失败", Object.fromEntries(failed));
+    }
+  }
+  deletePublishedVideo(videoId: string | string[]) {
+    return this.#deletePublishedResource(published_video, videoId, getBucket().PUBLISHED_VIDEO);
+  }
+  deletePublishedImage(videoId: string | string[]) {
+    return this.#deletePublishedResource(published_image, videoId, getBucket().PUBLISHED_VIDEO);
+  }
+  deletePublishedAudio(videoId: string | string[]) {
+    return this.#deletePublishedResource(published_audio, videoId, getBucket().PUBLISHED_VIDEO);
+  }
 }
