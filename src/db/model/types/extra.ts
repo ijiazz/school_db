@@ -1,6 +1,6 @@
-export type UserExtra = DouYin.UserExtra;
-export type PublishedExtra = DouYin.PublishedExtra;
-export type CommentExtra = DouYin.CommentExtra;
+export type UserExtra = DouYin.UserExtra | {};
+export type PublishedExtra = DouYin.PublishedExtra | {};
+export type CommentExtra = DouYin.CommentExtra | {};
 
 export interface ImageAddr {
   height: number;
@@ -8,7 +8,6 @@ export interface ImageAddr {
   uri: string; // "aweme-avatar/tos-cn-avt-0015_7bb1aa99995665e1f73f90e46e706487"
   url_list: string[]; //["https://p3-pc.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_7bb1aa99995665e1f73f90e46e706487.jpeg?from=2956013662"]
 }
-
 export namespace DouYin {
   /** 抖音 pla_user extra 字段 的 json 类型 */
   export interface UserExtra extends UserExtraBase {
