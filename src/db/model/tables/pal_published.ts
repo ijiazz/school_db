@@ -14,7 +14,7 @@ const pla_publishedDefine = {
 
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   content_text: dbTypeMap.genColumn("VARCHAR"),
-  content_type: dbTypeMap.genColumn("SMALLINT", true, "0"),
+  content_type: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
   user_name_snapshot: dbTypeMap.genColumn("VARCHAR"),
   user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
   ip_location: dbTypeMap.genColumn("VARCHAR"),

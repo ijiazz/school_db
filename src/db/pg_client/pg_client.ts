@@ -1,4 +1,3 @@
-import { SqlQueryStatement } from "@asla/yoursql";
 import pg from "pg";
 import type { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
@@ -6,6 +5,7 @@ import type { DbClient, DbCursor, DbTransactions, QueryResult } from "./db_query
 import { getEnv } from "../../common/get_env.ts";
 import { DbQuery } from "./db_query.ts";
 const pgTypes = pg.types;
+
 pgTypes.setTypeParser(pgTypes.builtins.INT8, BigInt);
 
 class PgCursor<T extends {}> implements DbCursor<T> {
@@ -56,12 +56,10 @@ class PgDbClient extends DbQuery implements DbClient {
     }
   }
   #clientList = new Set<PoolClient>();
-  query<T extends object = any>(
-    sql: SqlQueryStatement<any> | string | { toString(): string }
-  ): Promise<QueryResult<T>> {
+  query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
     return this.#pool.query<T>(sql.toString());
   }
-  async createCursor<T extends object = any>(sql: { toString(): string }): Promise<DbCursor<T>> {
+  async createCursor<T extends object = any>(sql: ToString): Promise<DbCursor<T>> {
     const connect = await this.#pool.connect();
     const cursor = connect.query(new Cursor<T>(sql.toString()));
     return new PgCursor<T>(cursor, connect);
@@ -85,19 +83,19 @@ class PgDbClient extends DbQuery implements DbClient {
   #resolveClose!: () => void;
   readonly closed: Promise<void>;
 }
-
+export interface QueryOption {
+  transform?: { [key: number]: (value: string) => any };
+}
 class PgTransactions extends DbQuery implements DbTransactions {
   constructor(client: PoolClient) {
     super();
     this.#client = client;
   }
   #client: PoolClient;
-  query<T extends object = any>(
-    sql: SqlQueryStatement<any> | string | { toString(): string }
-  ): Promise<QueryResult<T>> {
+  query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
     return this.#client.query<T>(sql.toString());
   }
-  async createCursor<T extends object = any>(sql: { toString(): string }): Promise<DbCursor<T>> {
+  async createCursor<T extends object = any>(sql: ToString): Promise<DbCursor<T>> {
     const cursor = this.#client.query(new Cursor<T>(sql.toString()));
     return new PgCursor<T>(cursor);
   }
@@ -116,7 +114,7 @@ class PgTransactions extends DbQuery implements DbTransactions {
     return this.release();
   }
 }
-
+type ToString = { toString(): string };
 export interface DbConnectOption {
   database: string;
   user?: string;

@@ -17,7 +17,7 @@ const pla_commentDefine = {
 
   additional_image: dbTypeMap.genColumn("VARCHAR"),
   additional_image_thumb: dbTypeMap.genColumn("VARCHAR"),
-  comment_type: dbTypeMap.genColumn("SMALLINT", true, "0"),
+  comment_type: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
   pla_uid: dbTypeMap.genColumn("VARCHAR"),
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   ip_location: dbTypeMap.genColumn("VARCHAR"),

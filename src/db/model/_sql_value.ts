@@ -24,6 +24,7 @@ export const dbTypeMap = YourTypeMap.create({
   CHAR: CustomDbType.string,
   JSON: Object,
   JSONB: Object,
+  "BIT(8)": CustomDbType.string,
 
   media_level: new CustomDbType<MediaLevel>((v) => enumMediaLevel.has(v), "media_level"),
   platform_flag: new CustomDbType<Platform>((v) => enumPlatform.has(v), "platform_flag"),

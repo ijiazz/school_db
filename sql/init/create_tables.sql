@@ -67,7 +67,7 @@ CREATE TABLE pla_published (
     --
     publish_time TIMESTAMPTZ, -- 作品发布时间
     content_text VARCHAR, -- 内容文本
-    content_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
+    content_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
     user_name_snapshot VARCHAR,
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
     ip_location VARCHAR, -- IP归属地
@@ -178,7 +178,7 @@ CREATE TABLE pla_comment (
     content_text VARCHAR,
     user_name_snapshot VARCHAR,
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
-    comment_type SMALLINT NOT NULL DEFAULT 0, -- 0000_0000_0000_0000   低4位：有视频、有音频、有图片、有文本
+    comment_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
     additional_image VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片
     additional_image_thumb VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片缩略图
     publish_time TIMESTAMPTZ,
