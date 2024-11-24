@@ -28,6 +28,7 @@ export enum CrawlTaskStatus {
   failed = "failed",
   hide = "hide",
 }
+export type CrawlTaskResultStatus = CrawlTaskStatus.failed | CrawlTaskStatus.success | CrawlTaskStatus.waiting;
 
 export const USER_LEVEL = {
   god: 32700,
@@ -72,6 +73,11 @@ export function getResourceTypeNumber(meta: { text?: boolean; video?: boolean; a
   if (meta.image) number |= 0b0010;
   if (meta.text) number |= 0b0001;
   return number;
+}
+export function getResourceTypeBit(meta: Parameters<typeof getResourceTypeNumber>[0]): string {
+  const num = getResourceTypeNumber(meta);
+  let bitType = num.toString(2);
+  return "0".repeat(8 - bitType.length) + bitType;
 }
 
 export enum PublishedResType {
