@@ -23,6 +23,7 @@ export type SavePublishedTask<E = any> = {
 };
 
 export type SyncPublishedCommentTask<E = any> = {
+  uid: string;
   pid: string;
   ignoreReply?: boolean;
   afterDate?: Date | null;

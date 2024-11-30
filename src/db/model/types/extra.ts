@@ -70,8 +70,10 @@ export type TextStructureExternalLink = TextStructure & {
 };
 
 export enum TextStructureType {
-  /** 平台用户 */
-  user = 0,
   /** 外部链接 */
-  link = -1,
+  link = 0,
+  /** 平台用户 */
+  user = 1,
+  /** 话题 */
+  topic = 2,
 }
