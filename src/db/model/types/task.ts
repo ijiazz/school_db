@@ -23,12 +23,20 @@ export type SavePublishedTask<E = any> = {
 };
 
 export type SyncPublishedCommentTask<E = any> = {
+  /** 作品uid.   */
   uid: string;
   pid: string;
   ignoreReply?: boolean;
   afterDate?: Date | null;
   extra: E;
 };
-export type SyncCommentReplyTask<E = any> = { pid: string; cid: string; afterDate?: Date; extra: E };
+export type SyncCommentReplyTask<E = any> = {
+  /** 作品uid  */
+  uid: string;
+  pid: string;
+  cid: string;
+  afterDate?: Date;
+  extra: E;
+};
 
 export type CrawlTaskData = SyncUserProfileTask | SyncPublishedListTask | SyncPublishedCommentTask | SavePublishedTask;
