@@ -28,10 +28,11 @@ CREATE TABLE pla_user (
     avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE, -- 用户头像id
 
     pla_uid VARCHAR, -- 平台用户id
+    platform platform_flag NOT NULL, -- 来源平台
     follower_count INT, -- 粉丝数
     following_count INT, -- 关注数
     signature VARCHAR, -- 用户签名
-    platform platform_flag NOT NULL, -- 来源平台
+    signature_struct JSONB, -- 签名扩展信息
     PRIMARY KEY (platform, pla_uid),
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
@@ -67,6 +68,7 @@ CREATE TABLE pla_published (
     --
     publish_time TIMESTAMPTZ, -- 作品发布时间
     content_text VARCHAR, -- 内容文本
+    content_text_struct JSONB, -- 文本扩展信息
     content_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
     user_name_snapshot VARCHAR,
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
@@ -176,6 +178,7 @@ CREATE TABLE pla_comment (
     platform_delete BOOLEAN NOT NULL DEFAULT FALSE,
     --
     content_text VARCHAR,
+    content_text_struct JSONB, -- 文本扩展信息
     user_name_snapshot VARCHAR,
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
     comment_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本

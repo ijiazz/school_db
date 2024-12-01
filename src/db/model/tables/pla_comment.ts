@@ -12,6 +12,7 @@ const pla_commentDefine = {
   platform_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
 
   content_text: dbTypeMap.genColumn("VARCHAR"),
+  content_text_struct: dbTypeMap.genColumn("JSONB"),
   user_name_snapshot: dbTypeMap.genColumn("VARCHAR"),
   user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
 
@@ -55,6 +56,7 @@ export type DbPlaCommentCreate = PickColumn<
   | "author_like"
   | "comment_id"
   | "content_text"
+  | "content_text_struct"
   | "ip_location"
   | "like_count"
   | "parent_comment_id"

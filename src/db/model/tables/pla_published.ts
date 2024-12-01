@@ -14,6 +14,7 @@ const pla_publishedDefine = {
 
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   content_text: dbTypeMap.genColumn("VARCHAR"),
+  content_text_struct: dbTypeMap.genColumn("JSONB"),
   content_type: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
   user_name_snapshot: dbTypeMap.genColumn("VARCHAR"),
   user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
@@ -38,6 +39,7 @@ const createRequiredKeys = [
   "platform",
   "publish_time",
   "published_id",
+  "content_text_struct",
 ] as const;
 const createOptionalKeys = ["extra", "content_type"] as const;
 

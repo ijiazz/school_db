@@ -13,7 +13,10 @@ export const pla_userDefine = {
 
   pla_uid: dbTypeMap.genColumn("VARCHAR", true),
   platform: dbTypeMap.genColumn("platform_flag", true),
-  uid: dbTypeMap.genColumn("BIGINT"),
+  follower_count: dbTypeMap.genColumn("INT"),
+  following_count: dbTypeMap.genColumn("INT"),
+  signature: dbTypeMap.genColumn("VARCHAR"),
+  signature_struct: dbTypeMap.genColumn("JSONB"),
 } satisfies TableDefined;
 const createRequiredKeys = ["avatar", "pla_avatar_uri", "pla_uid", "platform", "user_name", "ip_location"] as const;
 const createOptionalKeys = ["extra"] as const;
@@ -23,8 +26,17 @@ const pla_userCreateKeys = [...createRequiredKeys, ...createOptionalKeys] as con
 export type DbPlaUser = InferTableDefined<typeof pla_userDefine>;
 export type DbPlaUserCreate = PickColumn<
   DbPlaUser,
-  "avatar" | "pla_avatar_uri" | "pla_uid" | "platform" | "user_name" | "ip_location",
-  "extra" | "uid"
+  | "avatar"
+  | "pla_avatar_uri"
+  | "pla_uid"
+  | "platform"
+  | "user_name"
+  | "ip_location"
+  | "follower_count"
+  | "following_count"
+  | "signature"
+  | "signature_struct",
+  "extra"
 >;
 
 export const pla_user = createTable<DbPlaUser, DbPlaUserCreate>("pla_user", pla_userDefine);
