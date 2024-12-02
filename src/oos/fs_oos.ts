@@ -75,15 +75,19 @@ class FsOOS implements OOS {
     await fs.mkdir(dir, { recursive: true });
 
     const success = new Set<string>();
+    const exists = new Set<string>();
     const failed = new Map<string, any>();
 
     const promises: Promise<void>[] = [];
     for (const [objectName, fromPath] of list) {
       this.checkObjectName(objectName);
       const finalPath = path.resolve(dir, objectName);
-      const promise = fileExist(finalPath).then(async (exist) => {
-        if (exist) return fs.rm(fromPath, { force: true }).catch(() => {});
-        await fs.rename(fromPath, finalPath).then(
+      const promise = fileExist(finalPath).then((exist): Promise<any> => {
+        if (exist) {
+          exists.add(objectName);
+          return fs.rm(fromPath, { force: true }).catch(() => {});
+        }
+        return fs.rename(fromPath, finalPath).then(
           () => success.add(objectName),
           (e) => failed.set(objectName, e)
         );
@@ -93,7 +97,8 @@ class FsOOS implements OOS {
     await Promise.all(promises);
     return {
       failed,
-      successObjectName: success,
+      exists,
+      success: success.union(exists),
     };
   }
   async objectExist(bucket: string, objectName: string) {
@@ -146,7 +151,7 @@ export interface OOS {
     list: Map<string, string>
   ): Promise<{
     failed: Map<string, any>;
-    successObjectName: Set<string>;
+    success: Set<string>;
   }>;
   objectExist(bucket: string, objectName: string): Promise<Stats | null>;
   /** 删除多个对象，如果删除失败则抛出异常，如果对象不存在，则跳过 */
