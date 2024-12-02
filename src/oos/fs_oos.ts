@@ -90,6 +90,7 @@ class FsOOS implements OOS {
       });
       promises.push(promise);
     }
+    await Promise.all(promises);
     return {
       failed,
       successObjectName: success,

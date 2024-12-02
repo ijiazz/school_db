@@ -2,6 +2,7 @@ SET client_encoding = 'UTF8';
 
 GRANT SELECT,INSERT,UPDATE ON user_avatar TO ijia_crawler;
 GRANT SELECT,INSERT,UPDATE ON pla_user TO ijia_crawler;
+GRANT SELECT,INSERT,UPDATE ON watching_pla_user TO ijia_crawler;
 
 GRANT SELECT,INSERT,UPDATE ON pla_published TO ijia_crawler;
 GRANT SELECT,INSERT,UPDATE ON published_image TO ijia_crawler;
