@@ -15,7 +15,7 @@ const published_videoDefined = {
   ...file_base,
   format: dbTypeMap.genColumn("VARCHAR"),
 
-  duration: dbTypeMap.genColumn("INTEGER"),
+  frame_num: dbTypeMap.genColumn("INTEGER"),
   width: dbTypeMap.genColumn("SMALLINT"),
   height: dbTypeMap.genColumn("SMALLINT"),
   fps: dbTypeMap.genColumn("SMALLINT"),

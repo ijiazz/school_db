@@ -140,7 +140,7 @@ CREATE TABLE published_video (
     level media_level,
     format VARCHAR(20), --格式 h264/h265
 
-    duration INTEGER, --时长
+    frame_num INTEGER, --帧数
     width SMALLINT,
     height SMALLINT,
     fps SMALLINT,   --帧速率
