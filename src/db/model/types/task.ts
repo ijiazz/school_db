@@ -1,7 +1,7 @@
 export type SyncUserProfileTask<E = any> = {
   uid: string;
   /** 平台的头像 uri , 用于判断头像是否变化 */
-  avatarUri: string | null;
+  avatarUri?: string | null;
   extra: E;
 };
 
@@ -39,4 +39,6 @@ export type SyncCommentReplyTask<E = any> = {
   extra: E;
 };
 
-export type CrawlTaskData = SyncUserProfileTask | SyncPublishedListTask | SyncPublishedCommentTask | SavePublishedTask;
+export type CrawlTaskData = {
+  [key: string]: unknown;
+};
