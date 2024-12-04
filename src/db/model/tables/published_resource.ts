@@ -19,7 +19,7 @@ const published_videoDefined = {
   width: dbTypeMap.genColumn("SMALLINT"),
   height: dbTypeMap.genColumn("SMALLINT"),
   fps: dbTypeMap.genColumn("SMALLINT"),
-  bit_rate: dbTypeMap.genColumn("SMALLINT"),
+  bit_rate: dbTypeMap.genColumn("INT"),
 } satisfies TableDefined;
 export type DbPublishedVideo = InferTableDefined<typeof published_videoDefined>;
 export type DbPublishedVideoCreate = PickColumn<DbPublishedVideo>;

@@ -144,7 +144,7 @@ CREATE TABLE published_video (
     width SMALLINT,
     height SMALLINT,
     fps SMALLINT,   --帧速率
-    bit_rate SMALLINT, --比特率
+    bit_rate INT, --比特率
 
     FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
