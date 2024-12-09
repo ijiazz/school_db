@@ -1,5 +1,5 @@
 export type UserExtra = { [key: string]: any };
-export type PublishedExtra = { [key: string]: any };
+export type AssetExtra = { [key: string]: any };
 export type CommentExtra = {
   /** 评论回复数量，用于判断是否需要同步回复 */
   reply_count?: number;
@@ -12,7 +12,7 @@ export namespace DouYin {
     sec_uid: string;
     cover_uri?: string;
   }
-  export interface PublishedExtra {}
+  export interface AssetExtra {}
   export interface CommentExtra {
     /** 评论回复数量，用于判断是否需要同步回复 */
     reply_count?: number;

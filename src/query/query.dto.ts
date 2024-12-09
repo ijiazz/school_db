@@ -21,7 +21,7 @@ export type UserItemDto = UserSampleInfo & {
   ip_location: string | null;
 };
 
-export type GetPublishedListParam = PageOption & {
+export type GetAssetListParam = PageOption & {
   platform?: Platform;
   userId?: string;
   s_content?: string;
@@ -29,7 +29,7 @@ export type GetPublishedListParam = PageOption & {
 
   sort?: Record<"publish_time" | "digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
-export interface PublishedItemDto {
+export interface AssetItemDto {
   published_id: string;
   /** 作者信息 */
   author: UserSampleInfo;
@@ -72,7 +72,7 @@ export interface MulFormat<T> {
 
 type CommentSortKeys = "author_like" | "publish_time" | "like_count";
 export type GetCommentListParam = PageOption & {
-  published_id?: string;
+  asset_id?: string;
   platform?: Platform;
 
   s_user?: string;

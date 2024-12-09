@@ -5,7 +5,7 @@ export type SyncUserProfileTask<E = any> = {
   extra: E;
 };
 
-export type SyncPublishedListTask<E = any> = {
+export type SyncAssetListTask<E = any> = {
   uid: string;
   /** 只读取统计信息 */
   statOnly?: boolean;
@@ -13,7 +13,7 @@ export type SyncPublishedListTask<E = any> = {
   extra: E;
 };
 
-export type SavePublishedTask<E = any> = {
+export type SaveAssetTask<E = any> = {
   pid: string;
   extra: E;
   ignoreVideo?: boolean;
@@ -22,7 +22,7 @@ export type SavePublishedTask<E = any> = {
   ignoreCover?: boolean;
 };
 
-export type SyncPublishedCommentTask<E = any> = {
+export type SyncAssetCommentTask<E = any> = {
   /** 作品uid.   */
   uid: string;
   pid: string;

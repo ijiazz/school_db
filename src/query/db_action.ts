@@ -4,9 +4,9 @@ import {
   DbTransactionQuery,
   user_avatar,
   sqlValue,
-  published_video,
-  published_image,
-  published_audio,
+  asset_video,
+  asset_image,
+  asset_audio,
 } from "../db.ts";
 import { SqlQueryStatement, YourTable } from "@asla/yoursql";
 import { getOOS, getBucket, OOS } from "../oos.ts";
@@ -80,7 +80,7 @@ export class DbResourceDelete {
     ) as SqlQueryStatement<{ id: string }>;
     await this.#deleteOosObj(this.#iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
   }
-  async #deletePublishedResource(table: YourTable<any>, id: string | string[], bucket: string) {
+  async #deleteAssetResource(table: YourTable<any>, id: string | string[], bucket: string) {
     const sql = table.deleteWithResult(
       { id: true },
       {
@@ -95,16 +95,16 @@ export class DbResourceDelete {
     for (const item of rows) set.add(item.id);
     const failed = await this.#oos.deleteObjectMany(bucket, set);
     if (failed.size) {
-      console.error("DbResourceDelete.#deletePublishedResource()", "OOS 对象删除失败", Object.fromEntries(failed));
+      console.error("DbResourceDelete.#deleteAssetResource()", "OOS 对象删除失败", Object.fromEntries(failed));
     }
   }
-  deletePublishedVideo(videoId: string | string[]) {
-    return this.#deletePublishedResource(published_video, videoId, getBucket().PUBLISHED_VIDEO);
+  deleteAssetVideo(videoId: string | string[]) {
+    return this.#deleteAssetResource(asset_video, videoId, getBucket().ASSET_VIDEO);
   }
-  deletePublishedImage(videoId: string | string[]) {
-    return this.#deletePublishedResource(published_image, videoId, getBucket().PUBLISHED_VIDEO);
+  deleteAssetImage(videoId: string | string[]) {
+    return this.#deleteAssetResource(asset_image, videoId, getBucket().ASSET_VIDEO);
   }
-  deletePublishedAudio(videoId: string | string[]) {
-    return this.#deletePublishedResource(published_audio, videoId, getBucket().PUBLISHED_VIDEO);
+  deleteAssetAudio(videoId: string | string[]) {
+    return this.#deleteAssetResource(asset_audio, videoId, getBucket().ASSET_VIDEO);
   }
 }

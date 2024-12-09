@@ -1,13 +1,13 @@
 import { operation } from "../common/sql.ts";
-import { DbQuery, pla_comment, pla_published, pla_user, sqlValue, user_avatar, DbUserAvatarCreate } from "../db.ts";
+import { DbQuery, pla_comment, pla_asset, pla_user, sqlValue, user_avatar, DbUserAvatarCreate } from "../db.ts";
 import type {
   CommentReplyItemDto,
   CommentRootItemDto,
   GetCommentListParam,
   GetCommentReplyListParam,
-  GetPublishedListParam,
+  GetAssetListParam,
   GetUserParam,
-  PublishedItemDto,
+  AssetItemDto,
   UserItemDto,
 } from "./query.dto.ts";
 
@@ -24,7 +24,7 @@ export function renameAvatarUriSql(oldId: string, newImage: DbUserAvatarCreate) 
   let sql = user_avatar.insert([newImage], { conflict: ["id"] });
   sql += ";\n" + pla_user.update({ avatar: newId }, { where: "avatar=" + sqlValue(oldId) });
   sql +=
-    ";\n" + pla_published.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
+    ";\n" + pla_asset.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
   sql +=
     ";\n" + pla_comment.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
   return sql;
@@ -51,10 +51,10 @@ export async function getUserList(queryable: DbQuery, option: GetUserParam & Deb
   return queryable.queryRows(sql);
 }
 
-function sqlPublishedList(option: GetPublishedListParam = {}) {
+function sqlAssetList(option: GetAssetListParam = {}) {
   const { page = 0, pageSize = 20, platform, userId, sort } = option;
   //TODO 处理资源信息
-  const selectable = pla_published
+  const selectable = pla_asset
     .fromAs("p")
     .innerJoin(pla_user, "u", "u.pla_uid=p.pla_uid")
     .select({
@@ -101,11 +101,11 @@ function sqlPublishedList(option: GetPublishedListParam = {}) {
 interface DebugOption {
   catchSql?(sql: string): void;
 }
-export async function getPublishedList(
+export async function getAssetList(
   queryable: DbQuery,
-  option: GetPublishedListParam & { published_id?: string } & DebugOption = {}
-): Promise<PublishedItemDto[]> {
-  const sql1 = sqlPublishedList(option);
+  option: GetAssetListParam & { published_id?: string } & DebugOption = {}
+): Promise<AssetItemDto[]> {
+  const sql1 = sqlAssetList(option);
 
   const sql = `WITH t AS ${sql1.toSelect()}
 SELECT t.*, jsonb_set(t.stat, ARRAY['comment_total'], (CASE WHEN c.count IS NULL THEN 0 ELSE c.count END)::TEXT::JSONB) AS stat FROM t 
@@ -118,7 +118,7 @@ LEFT JOIN (
   const rows = await queryable.queryRows(sql);
 
   const uriToUrl = (uri: string) => "/file/" + uri;
-  return rows.map((item): PublishedItemDto => {
+  return rows.map((item): AssetItemDto => {
     return {
       audioUrlList: item.audio_uri?.map(uriToUrl),
       imageUrlList: item.image_uri?.map(uriToUrl),
@@ -155,7 +155,7 @@ function sqlCommentList(option: (GetCommentListParam & GetCommentReplyListParam)
     })
     .where(() => {
       const where: string[] = operation.andEq({
-        published_id: option.published_id,
+        published_id: option.asset_id,
         root_comment_id: root_comment_id,
       });
       if (option.s_content) where.push(createSearch("c.content_text", option.s_content));

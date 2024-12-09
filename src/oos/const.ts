@@ -2,11 +2,11 @@ const OOS_BUCKETS = {
   /** 用户头像。 名称格式 sha256.suffix*/
   AVATAR: "avatar",
   /** 作品视频。 名称格式 PlatformCode-pid-md5.suffix */
-  PUBLISHED_VIDEO: "height_video",
+  ASSET_VIDEO: "height_video",
   /** 作品图片。 名称格式 PlatformCode-pid-md5.suffix */
-  PUBLISHED_IMAGES: "height_image",
+  ASSET_IMAGES: "height_image",
   /** 作品音频。 名称格式 PlatformCode-pid-md5.suffix */
-  PUBLISHED_AUDIO: "height_audio",
+  ASSET_AUDIO: "height_audio",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
 } as const;

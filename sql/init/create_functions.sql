@@ -113,7 +113,7 @@ BEGIN
     CASE TG_TABLE_NAME
     WHEN 'pla_user' THEN
         PERFORM res_update_operate(OLD.avatar, NEW.avatar, 'user_avatar');
-    WHEN 'pla_published' THEN
+    WHEN 'pla_asset' THEN
         PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot, 'user_avatar');
     WHEN 'pla_comment' THEN
         PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot,'user_avatar');

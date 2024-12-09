@@ -53,15 +53,15 @@ export const enumPlatform = new Set([
 
 export enum TaskType {
   syncUserProfile = "syncUserProfile",
-  syncPublishedList = "syncPublishedList",
-  syncPublishedComment = "syncPublishedComment",
+  syncAssetList = "syncAssetList",
+  syncAssetComment = "syncPAssetComment",
   syncCommentReply = "syncCommentReply",
-  savePublished = "savePublished",
+  saveAsset = "saveAsset",
 }
 export const enumTaskType = new Set([
-  TaskType.syncPublishedList,
-  TaskType.syncPublishedComment,
-  TaskType.savePublished,
+  TaskType.syncAssetList,
+  TaskType.syncAssetComment,
+  TaskType.saveAsset,
   TaskType.syncUserProfile,
   TaskType.syncCommentReply,
 ]);
@@ -80,18 +80,12 @@ export function getResourceTypeBit(meta: Parameters<typeof getResourceTypeNumber
   return "0".repeat(8 - bitType.length) + bitType;
 }
 
-export enum PublishedResType {
+export enum AssetMediaType {
   video = "video",
   audio = "audio",
   image = "image",
-  cover = "cover",
 }
-export const enumPublishedResType = new Set([
-  PublishedResType.video,
-  PublishedResType.audio,
-  PublishedResType.image,
-  PublishedResType.cover,
-]);
+export const enumAssetMediaType = new Set([AssetMediaType.video, AssetMediaType.audio, AssetMediaType.image]);
 
 export enum MediaLevel {
   other = "other",

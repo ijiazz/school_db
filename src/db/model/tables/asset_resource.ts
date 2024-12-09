@@ -11,7 +11,7 @@ const file_base = {
   level: dbTypeMap.genColumn("media_level"),
 } satisfies TableDefined;
 
-const published_videoDefined = {
+const asset_videoDefined = {
   ...file_base,
   format: dbTypeMap.genColumn("VARCHAR"),
 
@@ -21,37 +21,28 @@ const published_videoDefined = {
   fps: dbTypeMap.genColumn("SMALLINT"),
   bit_rate: dbTypeMap.genColumn("INT"),
 } satisfies TableDefined;
-export type DbPublishedVideo = InferTableDefined<typeof published_videoDefined>;
-export type DbPublishedVideoCreate = PickColumn<DbPublishedVideo>;
-export const published_video = createTable<DbPublishedVideo, DbPublishedVideoCreate>(
-  "published_video",
-  published_videoDefined
-);
+export type DbAssetVideo = InferTableDefined<typeof asset_videoDefined>;
+export type DbAssetVideoCreate = PickColumn<DbAssetVideo>;
+export const asset_video = createTable<DbAssetVideo, DbAssetVideoCreate>("asset_video", asset_videoDefined);
 
-const published_audioDefined = {
+const asset_audioDefined = {
   ...file_base,
   format: dbTypeMap.genColumn("VARCHAR"),
 
   duration: dbTypeMap.genColumn("INTEGER"),
 } satisfies TableDefined;
-export type DbPublishedAudio = InferTableDefined<typeof published_audioDefined>;
-export type DbPublishedAudioCreate = PickColumn<DbPublishedAudio>;
+export type DbAssetAudio = InferTableDefined<typeof asset_audioDefined>;
+export type DbAssetAudioCreate = PickColumn<DbAssetAudio>;
 
-export const published_audio = createTable<DbPublishedAudio, DbPublishedAudioCreate>(
-  "published_audio",
-  published_videoDefined
-);
+export const asset_audio = createTable<DbAssetAudio, DbAssetAudioCreate>("asset_audio", asset_videoDefined);
 
-const published_imageDefined = {
+const asset_imageDefined = {
   ...file_base,
 
   width: dbTypeMap.genColumn("SMALLINT"),
   height: dbTypeMap.genColumn("SMALLINT"),
 } satisfies TableDefined;
-export type DbPublishedImage = InferTableDefined<typeof published_imageDefined>;
-export type DbPublishedImageCreate = PickColumn<DbPublishedImage>;
+export type DbAssetImage = InferTableDefined<typeof asset_imageDefined>;
+export type DbAssetImageCreate = PickColumn<DbAssetImage>;
 
-export const published_image = createTable<DbPublishedImage, DbPublishedImageCreate>(
-  "published_image",
-  published_imageDefined
-);
+export const asset_image = createTable<DbAssetImage, DbAssetImageCreate>("asset_image", asset_imageDefined);

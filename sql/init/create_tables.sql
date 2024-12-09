@@ -56,7 +56,7 @@ CREATE INDEX idx_watching_pla_user_published_last_update_time ON watching_pla_us
 -- 作品相关
 ----------
 
-CREATE TABLE pla_published (
+CREATE TABLE pla_asset (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
     crawl_check_time TIMESTAMPTZ NOT NULL DEFAULT now(),
     comment_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步评论的时间
@@ -84,21 +84,21 @@ CREATE TABLE pla_published (
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-CREATE INDEX idxfk_pla_published_pla_uid ON pla_published(platform, pla_uid);
-CREATE INDEX idxfk_pla_published_user_avatar_snapshot ON pla_published USING hash(user_avatar_snapshot);
+CREATE INDEX idxfk_pla_asset_pla_uid ON pla_asset(platform, pla_uid);
+CREATE INDEX idxfk_pla_asset_user_avatar_snapshot ON pla_asset USING hash(user_avatar_snapshot);
 
-CREATE INDEX idx_pla_published_crawl_check_time ON pla_published(crawl_check_time);
-CREATE INDEX idx_pla_published_comment_last_full_update_time ON pla_published(comment_last_full_update_time);
-CREATE INDEX idx_pla_published_comment_last_update_time ON pla_published(comment_last_update_time);
+CREATE INDEX idx_pla_asset_crawl_check_time ON pla_asset(crawl_check_time);
+CREATE INDEX idx_pla_asset_comment_last_full_update_time ON pla_asset(comment_last_full_update_time);
+CREATE INDEX idx_pla_asset_comment_last_update_time ON pla_asset(comment_last_update_time);
 
-CREATE INDEX idx_pla_published_is_delete ON pla_published(is_delete);
-CREATE INDEX idx_pla_published_platform_delete ON pla_published(platform_delete);
-CREATE INDEX idx_pla_published_publish_time ON pla_published(publish_time);
-CREATE INDEX idx_pla_published_content_text ON pla_published(content_text);
-CREATE INDEX idx_pla_published_content_type ON pla_published(content_type);
-CREATE INDEX idx_pla_published_like_count ON pla_published(like_count);
+CREATE INDEX idx_pla_asset_is_delete ON pla_asset(is_delete);
+CREATE INDEX idx_pla_asset_platform_delete ON pla_asset(platform_delete);
+CREATE INDEX idx_pla_asset_publish_time ON pla_asset(publish_time);
+CREATE INDEX idx_pla_asset_content_text ON pla_asset(content_text);
+CREATE INDEX idx_pla_asset_content_type ON pla_asset(content_type);
+CREATE INDEX idx_pla_asset_like_count ON pla_asset(like_count);
 
-CREATE TABLE published_image (
+CREATE TABLE asset_image (
     platform platform_flag,
     published_id VARCHAR,
     uri VARCHAR PRIMARY KEY,
@@ -110,11 +110,11 @@ CREATE TABLE published_image (
     width SMALLINT,
     height SMALLINT,
 
-    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idxfk_published_image_pid ON published_image(platform, published_id);
+CREATE INDEX idxfk_asset_image_pid ON asset_image(platform, published_id);
 
-CREATE TABLE published_audio (
+CREATE TABLE asset_audio (
     platform platform_flag,
     published_id VARCHAR,
     uri VARCHAR PRIMARY KEY,
@@ -126,11 +126,11 @@ CREATE TABLE published_audio (
 
     duration INTEGER,
 
-    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idxfk_published_audio_pid ON published_audio(platform, published_id);
+CREATE INDEX idxfk_asset_audio_pid ON asset_audio(platform, published_id);
 
-CREATE TABLE published_video (
+CREATE TABLE asset_video (
     platform platform_flag,
     published_id VARCHAR,
     uri VARCHAR PRIMARY KEY,
@@ -146,9 +146,9 @@ CREATE TABLE published_video (
     fps SMALLINT,   --帧速率
     bit_rate INT, --比特率
 
-    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idxfk_published_video_pid ON published_video(platform, published_id);
+CREATE INDEX idxfk_asset_video_pid ON asset_video(platform, published_id);
 
 ----------
 ----------
@@ -198,7 +198,7 @@ CREATE TABLE pla_comment (
     PRIMARY KEY (platform, comment_id),
     FOREIGN KEY (platform, root_comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
     -- FOREIGN KEY (platform, parent_comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (platform, published_id) REFERENCES pla_published (platform, published_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
