@@ -20,6 +20,7 @@ const pla_assetDefine = {
   user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
   ip_location: dbTypeMap.genColumn("VARCHAR"),
   like_count: dbTypeMap.genColumn("INTEGER"),
+  comment_num: dbTypeMap.genColumn("INTEGER"),
   collection_num: dbTypeMap.genColumn("INTEGER"),
   forward_num: dbTypeMap.genColumn("INTEGER"),
 
@@ -40,6 +41,7 @@ const createRequiredKeys = [
   "publish_time",
   "asset_id",
   "content_text_struct",
+  "comment_num",
 ] as const;
 const createOptionalKeys = ["extra", "content_type"] as const;
 

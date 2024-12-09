@@ -74,6 +74,7 @@ CREATE TABLE pla_asset (
     user_avatar_snapshot VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
     ip_location VARCHAR, -- IP归属地
     like_count INTEGER, -- 点赞数量
+    comment_num INTEGER, -- 评论数量
     collection_num INTEGER, -- 收藏数量
     forward_num INTEGER, -- 转发数量
     --
