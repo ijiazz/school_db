@@ -3,7 +3,7 @@ import {
   comment_image,
   DbTransactionQuery,
   user_avatar,
-  sqlValue,
+  v,
   asset_video,
   asset_image,
   asset_audio,
@@ -85,8 +85,8 @@ export class DbResourceDelete {
       { id: true },
       {
         where: () => {
-          if (typeof id === "string") return "id=" + sqlValue(id);
-          return "id IN (" + sqlValue.toValues(id) + ")";
+          if (typeof id === "string") return "id=" + v(id);
+          return "id IN (" + v.toValues(id) + ")";
         },
       }
     );

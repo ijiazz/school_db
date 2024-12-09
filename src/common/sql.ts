@@ -1,15 +1,15 @@
-import { sqlValue } from "../db.ts";
+import { v } from "../db.ts";
 
 export const operation = {
   andEq(value: Record<string, any>): string[] {
     let values: string[] = [];
     const keys = Object.keys(value);
-    let v: any;
+    let val: any;
     for (let i = 0; i < keys.length; i++) {
-      v = value[keys[i]];
-      if (v === undefined) continue;
-      if (v === null) values.push(keys[i] + " IS NULL");
-      else values.push(keys[i] + "=" + sqlValue(v));
+      val = value[keys[i]];
+      if (val === undefined) continue;
+      if (val === null) values.push(keys[i] + " IS NULL");
+      else values.push(keys[i] + "=" + v(val));
     }
     return values;
   },

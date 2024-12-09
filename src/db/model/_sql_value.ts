@@ -9,7 +9,7 @@ import {
 } from "@asla/yoursql";
 import { enumPlatform, enumTaskType, Platform, CrawlTaskStatus, MediaLevel, enumMediaLevel } from "./tables.ts";
 
-export const sqlValue = SqlValuesCreator.create(pgSqlTransformer);
+export const v = SqlValuesCreator.create(pgSqlTransformer);
 
 export const dbTypeMap = YourTypeMap.create({
   TIMESTAMPTZ: Date,
@@ -35,5 +35,5 @@ export function createTable<T extends TableType = TableType, C extends TableType
   name: string,
   define: TableDefined
 ): YourTable<T, C> {
-  return new YourTable(name, define, sqlValue);
+  return new YourTable(name, define, v);
 }

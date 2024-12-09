@@ -1,5 +1,5 @@
 import { PickColumn, InferTableDefined, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap, sqlValue } from "../_sql_value.ts";
+import { createTable, dbTypeMap, v } from "../_sql_value.ts";
 import { AssetExtra } from "../type.ts";
 
 const pla_assetDefine = {
@@ -7,7 +7,7 @@ const pla_assetDefine = {
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),
   comment_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   comment_last_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
-  extra: dbTypeMap.genColumn<AssetExtra>("JSONB", true, sqlValue({})),
+  extra: dbTypeMap.genColumn<AssetExtra>("JSONB", true, v({})),
 
   platform_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
   is_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),

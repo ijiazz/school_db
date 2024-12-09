@@ -1,5 +1,5 @@
 import { operation } from "../common/sql.ts";
-import { DbQuery, pla_comment, pla_asset, pla_user, sqlValue, user_avatar, DbUserAvatarCreate } from "../db.ts";
+import { DbQuery, pla_comment, pla_asset, pla_user, v, user_avatar, DbUserAvatarCreate } from "../db.ts";
 import type {
   CommentReplyItemDto,
   CommentRootItemDto,
@@ -22,11 +22,11 @@ export function renameAvatarUriSql(oldId: string, newImage: DbUserAvatarCreate) 
   const newId = newImage.id;
   if (oldId === newId) throw new Error("oldUri 不能和 newId 一致");
   let sql = user_avatar.insert([newImage], { conflict: ["id"] });
-  sql += ";\n" + pla_user.update({ avatar: newId }, { where: "avatar=" + sqlValue(oldId) });
+  sql += ";\n" + pla_user.update({ avatar: newId }, { where: "avatar=" + v(oldId) });
   sql +=
-    ";\n" + pla_asset.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
+    ";\n" + pla_asset.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + v(oldId) });
   sql +=
-    ";\n" + pla_comment.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + sqlValue(oldId) });
+    ";\n" + pla_comment.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + v(oldId) });
   return sql;
 }
 
@@ -219,5 +219,5 @@ export async function getCommentReplyByCid(
   });
 }
 function createSearch(column: string, value: string) {
-  return `${column} LIKE ${sqlValue("%" + value + "%")}`;
+  return `${column} LIKE ${v("%" + value + "%")}`;
 }
