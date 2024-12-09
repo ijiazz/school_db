@@ -24,7 +24,7 @@ const pla_assetDefine = {
   forward_num: dbTypeMap.genColumn("INTEGER"),
 
   pla_uid: dbTypeMap.genColumn("VARCHAR", true),
-  published_id: dbTypeMap.genColumn("VARCHAR", true),
+  asset_id: dbTypeMap.genColumn("VARCHAR", true),
   platform: dbTypeMap.genColumn("platform_flag", true),
 } satisfies TableDefined;
 export type DbPlaAsset = InferTableDefined<typeof pla_assetDefine>;
@@ -38,7 +38,7 @@ const createRequiredKeys = [
   "pla_uid",
   "platform",
   "publish_time",
-  "published_id",
+  "asset_id",
   "content_text_struct",
 ] as const;
 const createOptionalKeys = ["extra", "content_type"] as const;

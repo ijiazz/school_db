@@ -29,7 +29,7 @@ const pla_commentDefine = {
   platform: dbTypeMap.genColumn("platform_flag", true),
   root_comment_id: dbTypeMap.genColumn("VARCHAR"),
   parent_comment_id: dbTypeMap.genColumn("VARCHAR"),
-  published_id: dbTypeMap.genColumn("VARCHAR", true),
+  asset_id: dbTypeMap.genColumn("VARCHAR", true),
 } satisfies TableDefined;
 export const pla_comment_create_key = [
   "author_like",
@@ -42,7 +42,7 @@ export const pla_comment_create_key = [
   "pla_uid",
   "platform",
   "publish_time",
-  "published_id",
+  "asset_id",
   "additional_image",
   "additional_image_thumb",
   "root_comment_id",
@@ -63,7 +63,7 @@ export type DbPlaCommentCreate = PickColumn<
   | "pla_uid"
   | "platform"
   | "publish_time"
-  | "published_id"
+  | "asset_id"
   | "additional_image"
   | "additional_image_thumb"
   | "root_comment_id",

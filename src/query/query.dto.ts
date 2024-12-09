@@ -30,7 +30,7 @@ export type GetAssetListParam = PageOption & {
   sort?: Record<"publish_time" | "digg_total" | "forward_total" | "collection_num", "ASC" | "DESC">;
 };
 export interface AssetItemDto {
-  published_id: string;
+  asset_id: string;
   /** 作者信息 */
   author: UserSampleInfo;
   /** 作品类型 */

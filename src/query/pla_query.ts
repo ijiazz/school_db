@@ -58,7 +58,7 @@ function sqlAssetList(option: GetAssetListParam = {}) {
     .fromAs("p")
     .innerJoin(pla_user, "u", "u.pla_uid=p.pla_uid")
     .select({
-      published_id: true,
+      asset_id: true,
       publish_time: true,
       type: "content_type",
       ip_location: true,
@@ -72,7 +72,7 @@ function sqlAssetList(option: GetAssetListParam = {}) {
       if (option.s_content) searchWhere.push(createSearch("p.content_text", option.s_content));
       operation
         .andEq({
-          ["p.published_id"]: userId,
+          ["p.asset_id"]: userId,
           ["p.platform"]: platform,
         })
         .concat(searchWhere);
@@ -103,16 +103,16 @@ interface DebugOption {
 }
 export async function getAssetList(
   queryable: DbQuery,
-  option: GetAssetListParam & { published_id?: string } & DebugOption = {}
+  option: GetAssetListParam & { asset_id?: string } & DebugOption = {}
 ): Promise<AssetItemDto[]> {
   const sql1 = sqlAssetList(option);
 
   const sql = `WITH t AS ${sql1.toSelect()}
 SELECT t.*, jsonb_set(t.stat, ARRAY['comment_total'], (CASE WHEN c.count IS NULL THEN 0 ELSE c.count END)::TEXT::JSONB) AS stat FROM t 
 LEFT JOIN (
-    SELECT c.published_id, count(*)::INT FROM t INNER JOIN pla_comment AS c ON c.published_id = t.published_id
-    GROUP BY c.published_id
-) AS c ON t.published_id =c.published_id`;
+    SELECT c.asset_id, count(*)::INT FROM t INNER JOIN pla_comment AS c ON c.asset_id = t.asset_id
+    GROUP BY c.asset_id
+) AS c ON t.asset_id =c.asset_id`;
 
   option.catchSql?.(sql.toString());
   const rows = await queryable.queryRows(sql);
@@ -129,7 +129,7 @@ LEFT JOIN (
       stat: item.stat,
       publish_time: item.publish_time,
       type: item.type,
-      published_id: item.published_id,
+      asset_id: item.asset_id,
       cover: {
         origin: { url: item.cover_uri ? uriToUrl(item.cover_uri) : DEFAULT_RESOURCE.cover },
       },
@@ -155,7 +155,7 @@ function sqlCommentList(option: (GetCommentListParam & GetCommentReplyListParam)
     })
     .where(() => {
       const where: string[] = operation.andEq({
-        published_id: option.asset_id,
+        asset_id: option.asset_id,
         root_comment_id: root_comment_id,
       });
       if (option.s_content) where.push(createSearch("c.content_text", option.s_content));

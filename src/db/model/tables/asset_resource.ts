@@ -3,7 +3,7 @@ import { createTable, dbTypeMap } from "../_sql_value.ts";
 
 const file_base = {
   platform: dbTypeMap.genColumn("platform_flag"),
-  published_id: dbTypeMap.genColumn("VARCHAR"),
+  asset_id: dbTypeMap.genColumn("VARCHAR"),
   uri: dbTypeMap.genColumn("VARCHAR", true),
   index: dbTypeMap.genColumn("SMALLINT"),
 

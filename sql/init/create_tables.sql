@@ -78,9 +78,9 @@ CREATE TABLE pla_asset (
     forward_num INTEGER, -- 转发数量
     --
     pla_uid VARCHAR NOT NULL,
-    published_id VARCHAR,
+    asset_id VARCHAR,
     platform platform_flag,
-    PRIMARY KEY (platform, published_id),
+    PRIMARY KEY (platform, asset_id),
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
@@ -100,7 +100,7 @@ CREATE INDEX idx_pla_asset_like_count ON pla_asset(like_count);
 
 CREATE TABLE asset_image (
     platform platform_flag,
-    published_id VARCHAR,
+    asset_id VARCHAR,
     uri VARCHAR PRIMARY KEY,
     index SMALLINT, -- 索引。如果为空，则不显示在作品资源下
 
@@ -110,13 +110,13 @@ CREATE TABLE asset_image (
     width SMALLINT,
     height SMALLINT,
 
-    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idxfk_asset_image_pid ON asset_image(platform, published_id);
+CREATE INDEX idxfk_asset_image_pid ON asset_image(platform, asset_id);
 
 CREATE TABLE asset_audio (
     platform platform_flag,
-    published_id VARCHAR,
+    asset_id VARCHAR,
     uri VARCHAR PRIMARY KEY,
     index SMALLINT, -- 索引。
 
@@ -126,13 +126,13 @@ CREATE TABLE asset_audio (
 
     duration INTEGER,
 
-    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idxfk_asset_audio_pid ON asset_audio(platform, published_id);
+CREATE INDEX idxfk_asset_audio_pid ON asset_audio(platform, asset_id);
 
 CREATE TABLE asset_video (
     platform platform_flag,
-    published_id VARCHAR,
+    asset_id VARCHAR,
     uri VARCHAR PRIMARY KEY,
     index SMALLINT, -- 索引。
 
@@ -146,9 +146,9 @@ CREATE TABLE asset_video (
     fps SMALLINT,   --帧速率
     bit_rate INT, --比特率
 
-    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
-CREATE INDEX idxfk_asset_video_pid ON asset_video(platform, published_id);
+CREATE INDEX idxfk_asset_video_pid ON asset_video(platform, asset_id);
 
 ----------
 ----------
@@ -193,18 +193,18 @@ CREATE TABLE pla_comment (
     comment_id VARCHAR,
     root_comment_id VARCHAR, -- 根评论 id
     parent_comment_id VARCHAR, -- 回复评论 id
-    published_id VARCHAR NOT NULL,
+    asset_id VARCHAR NOT NULL,
     platform platform_flag NOT NULL,
     PRIMARY KEY (platform, comment_id),
     FOREIGN KEY (platform, root_comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
     -- FOREIGN KEY (platform, parent_comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (platform, published_id) REFERENCES pla_asset (platform, published_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
 CREATE INDEX idxfk_pla_comment_root_comment_id ON pla_comment(platform, root_comment_id);
 CREATE INDEX idxfk_pla_comment_parent_comment_id ON pla_comment(platform, parent_comment_id);
-CREATE INDEX idxfk_pla_comment_published_id ON pla_comment(platform, published_id);
+CREATE INDEX idxfk_pla_comment_asset_id ON pla_comment(platform, asset_id);
 CREATE INDEX idxfk_pla_comment_pla_uid ON pla_comment(platform, pla_uid);
 CREATE INDEX idxfk_pla_comment_user_avatar_snapshot ON pla_comment USING hash(user_avatar_snapshot);
 CREATE INDEX idxfk_pla_comment_user_additional_image ON pla_comment USING hash(additional_image);
