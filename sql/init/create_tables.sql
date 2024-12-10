@@ -187,6 +187,7 @@ CREATE TABLE pla_comment (
     additional_image_thumb VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片缩略图
     publish_time TIMESTAMPTZ,
     ip_location VARCHAR,
+    reply_count INT, -- 回复数量
     like_count INTEGER,
     author_like BOOLEAN, -- 作者赞过
     --

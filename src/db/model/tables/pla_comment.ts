@@ -23,6 +23,7 @@ const pla_commentDefine = {
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   ip_location: dbTypeMap.genColumn("VARCHAR"),
   like_count: dbTypeMap.genColumn("INTEGER"),
+  reply_count: dbTypeMap.genColumn("INTEGER"),
   author_like: dbTypeMap.genColumn("BOOLEAN"),
 
   comment_id: dbTypeMap.genColumn("VARCHAR", true),
@@ -47,6 +48,7 @@ export const pla_comment_create_key = [
   "additional_image_thumb",
   "root_comment_id",
   "comment_type",
+  "reply_count",
 ] as const;
 
 export type DbPlaComment = InferTableDefined<typeof pla_commentDefine>;
@@ -59,6 +61,7 @@ export type DbPlaCommentCreate = PickColumn<
   | "content_text_struct"
   | "ip_location"
   | "like_count"
+  | "reply_count"
   | "parent_comment_id"
   | "pla_uid"
   | "platform"
