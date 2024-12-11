@@ -67,29 +67,28 @@ export class DbResourceDelete {
     }
   }
   async deleteCommentImageZero(option: { signal?: AbortSignal }) {
-    const sql = comment_image.deleteWithResult(
-      { id: true },
-      { where: "id IN (" + comment_image.select({ id: true }).where("ref_count=0").limit(10) + ")" }
-    ) as SqlQueryStatement<{ id: string }>;
+    const sql = comment_image
+      .delete({
+        where: "id IN (" + comment_image.select({ id: true }).where("ref_count=0").limit(10) + ")",
+      })
+      .returning<{ id: string }>({ id: true });
     await this.#deleteOosObj(this.#iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
   }
   async deleteUserAvatarZero(option: { signal?: AbortSignal }) {
-    const sql = user_avatar.deleteWithResult(
-      { id: true },
-      { where: "id IN (" + user_avatar.select({ id: true }).where("ref_count=0").limit(10) + ")" }
-    ) as SqlQueryStatement<{ id: string }>;
+    const sql = user_avatar
+      .delete({ where: "id IN (" + user_avatar.select({ id: true }).where("ref_count=0").limit(10) + ")" })
+      .returning<{ id: string }>({ id: true });
     await this.#deleteOosObj(this.#iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
   }
   async #deleteAssetResource(table: YourTable<any>, id: string | string[], bucket: string) {
-    const sql = table.deleteWithResult(
-      { id: true },
-      {
+    const sql = table
+      .delete({
         where: () => {
           if (typeof id === "string") return "id=" + v(id);
           return "id IN (" + v.toValues(id) + ")";
         },
-      }
-    );
+      })
+      .returning({ id: true });
     const rows = await this.#db.queryRows<{ id: string }>(sql);
     let set = new Set<string>();
     for (const item of rows) set.add(item.id);

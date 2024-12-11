@@ -69,6 +69,16 @@ export abstract class DbQuery {
   queryRows<T extends object = any>(sql: SqlQueryStatement<T> | string | { toString(): string }): Promise<T[]> {
     return this.query<T>(sql.toString()).then((res) => res.rows);
   }
+  queryMap<K, T extends object = any>(sql: SqlQueryStatement<T>, key: string): Promise<Map<K, T>>;
+  queryMap<K, T extends object = any>(sql: { toString(): string }, key: string): Promise<Map<K, T>>;
+  async queryMap(sql: SqlQueryStatement<any> | string | { toString(): string }, key: string): Promise<Map<any, any>> {
+    const { rows } = await this.query(sql.toString());
+    let map = new Map();
+    for (let i = 0; i < rows.length; i++) {
+      map.set(rows[i][key], rows[i]);
+    }
+    return map;
+  }
 }
 /** @public */
 export interface DbCursor<T> {

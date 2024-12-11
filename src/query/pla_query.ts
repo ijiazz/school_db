@@ -21,12 +21,10 @@ function uriToUrl(uri: string, origin: string) {
 export function renameAvatarUriSql(oldId: string, newImage: DbUserAvatarCreate) {
   const newId = newImage.id;
   if (oldId === newId) throw new Error("oldUri 不能和 newId 一致");
-  let sql = user_avatar.insert([newImage], { conflict: ["id"] });
-  sql += ";\n" + pla_user.update({ avatar: newId }, { where: "avatar=" + v(oldId) });
-  sql +=
-    ";\n" + pla_asset.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + v(oldId) });
-  sql +=
-    ";\n" + pla_comment.update({ user_avatar_snapshot: newId }, { where: "user_avatar_snapshot=" + v(oldId) });
+  let sql = user_avatar.insert([newImage]).onConflict(["id"]).doNotThing().toString();
+  sql += ";\n" + pla_user.updateFrom({ avatar: newId }).where("avatar=" + v(oldId));
+  sql += ";\n" + pla_asset.updateFrom({ user_avatar_snapshot: newId }).where("user_avatar_snapshot=" + v(oldId));
+  sql += ";\n" + pla_comment.updateFrom({ user_avatar_snapshot: newId }).where("user_avatar_snapshot=" + v(oldId));
   return sql;
 }
 
