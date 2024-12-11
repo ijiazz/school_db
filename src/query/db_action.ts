@@ -1,7 +1,7 @@
 import {
-  getClient,
+  getDbPool,
   comment_image,
-  DbTransactionQuery,
+  DbQueryPool,
   user_avatar,
   v,
   asset_video,
@@ -18,10 +18,10 @@ type OosObjId = {
 };
 export class DbResourceDelete {
   #oos: OOS;
-  #db: DbTransactionQuery;
-  constructor(option: { oos?: OOS; client?: DbTransactionQuery }) {
+  #db: DbQueryPool;
+  constructor(option: { oos?: OOS; client?: DbQueryPool }) {
     this.#oos = option.oos ?? getOOS();
-    this.#db = option.client ?? getClient();
+    this.#db = option.client ?? getDbPool();
   }
   async #deleteOosObj(iter: AsyncGenerator<OosObjId[]>, options: { signal?: AbortSignal } = {}) {
     const { signal } = options;

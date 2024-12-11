@@ -1,7 +1,7 @@
 import pg from "pg";
 import type { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
-import type { DbClient, DbCursor, DbTransactions, QueryResult } from "./db_query.ts";
+import type { DbPool, DbCursor, DbPoolConnection, QueryResult, TransactionMode } from "./db_query.ts";
 import { getEnv } from "../../common/get_env.ts";
 import { DbQuery } from "./db_query.ts";
 const pgTypes = pg.types;
@@ -30,7 +30,7 @@ class PgCursor<T extends {}> implements DbCursor<T> {
   }
 }
 
-class PgDbClient extends DbQuery implements DbClient {
+class PgDbPool extends DbQuery implements DbPool {
   constructor(pool: Pool) {
     super();
     this.#pool = pool;
@@ -39,32 +39,40 @@ class PgDbClient extends DbQuery implements DbClient {
       this.#pool.on("error", reject);
     });
   }
-  #pool: Pool;
-  async begin(mode?: string): Promise<DbTransactions> {
-    const client = await this.#pool.connect();
-    this.#clientList.add(client);
-    const onRelease = () => this.#clientList.delete(client);
+  // implement
+  async connect(): Promise<PgPoolConnection> {
+    const conn = await this.#pool.connect();
+    this.#clientList.add(conn);
+    const onRelease = () => this.#clientList.delete(conn);
     //@ts-ignore
-    client.on("release", onRelease);
-    client.on("end", onRelease);
+    conn.on("release", onRelease);
+    conn.on("end", onRelease);
+    return new PgPoolConnection(conn);
+  }
+  async connectBegin(mode?: TransactionMode): Promise<PgPoolConnection> {
+    const connect = await this.connect();
     try {
-      await client.query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""));
-      return new PgTransactions(client);
+      await connect.begin(mode);
+      return connect;
     } catch (error) {
-      client.release(error instanceof Error ? error : true);
+      connect.release();
       throw error;
     }
   }
+  #pool: Pool;
   #clientList = new Set<PoolClient>();
+  // implement
   query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
     return this.#pool.query<T>(sql.toString());
   }
+  // implement
   async createCursor<T extends object = any>(sql: ToString): Promise<DbCursor<T>> {
     const connect = await this.#pool.connect();
     const cursor = connect.query(new Cursor<T>(sql.toString()));
     return new PgCursor<T>(cursor, connect);
   }
-  end(force?: boolean) {
+  // implement
+  close(force?: boolean) {
     const error = new Error("Pool has been ended");
     if (force) {
       for (const item of this.#clientList) {
@@ -77,19 +85,44 @@ class PgDbClient extends DbQuery implements DbClient {
     f.then(this.#resolveClose);
     return f;
   }
-  [Symbol.asyncDispose]() {
-    return this.end();
+  // implement
+  [Symbol.asyncDispose](): PromiseLike<void> {
+    return this.close();
   }
   #resolveClose!: () => void;
+  // implement
   readonly closed: Promise<void>;
 }
-export interface QueryOption {
-  transform?: { [key: number]: (value: string) => any };
+class PgListen implements Disposable {
+  constructor(
+    private event: string,
+    private connect?: PoolClient
+  ) {
+    if (event.includes(";")) throw new Error("event 不能包含 ';' 字符");
+  }
+  dispose() {
+    if (!this.connect) return;
+    this.connect.query("UNLISTEN " + this.event);
+    this.connect = undefined;
+  }
+  [Symbol.dispose]() {
+    this.dispose();
+  }
+  async [Symbol.asyncIterator]() {
+    const connect = this.connect;
+    if (!connect) throw new Error("Listener 已释放");
+    const promise = connect.query("LISTEN " + this.event);
+    connect.on("notification", (msg) => {});
+  }
 }
-class PgTransactions extends DbQuery implements DbTransactions {
+
+class PgPoolConnection extends DbQuery implements DbPoolConnection {
   constructor(client: PoolClient) {
     super();
     this.#client = client;
+  }
+  async begin(mode?: TransactionMode): Promise<void> {
+    await this.query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""));
   }
   #client: PoolClient;
   query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
@@ -132,32 +165,6 @@ export function parserDbUrl(url: URL | string): DbConnectOption {
     user: url.username ? url.username : undefined,
   };
 }
-export function createPgDbClient(url: string | URL | DbConnectOption): DbClient {
-  let option: DbConnectOption;
-  if (typeof url === "string" || url instanceof URL) option = parserDbUrl(url);
-  else option = url;
-  const pool = new pg.Pool({
-    database: option.database,
-    user: option.user,
-    password: option.password,
-    host: option.hostname,
-    port: option.port,
-  });
-  return new PgDbClient(pool);
-}
-
-let pgClient: DbClient | undefined;
-
-export function setClient(client: DbClient) {
-  pgClient = client;
-}
-export function getClient(): DbClient {
-  if (pgClient) return pgClient;
-  const DB_URL = getDbUrl();
-  pgClient = createPgDbClient(DB_URL);
-  console.log(`Database: ${DB_URL.protocol + "//" + DB_URL.host + DB_URL.pathname}`);
-  return pgClient;
-}
 export function getDbUrl(): URL {
   const dbUrlStr = getEnv("DATABASE_URL", true);
   try {
@@ -165,4 +172,34 @@ export function getDbUrl(): URL {
   } catch (error) {
     throw new Error("环境变量 DATABASE_URL 不符合规范", { cause: error });
   }
+}
+
+export function createPgDbClient(url: string | URL | DbConnectOption): PgDbPool {
+  return new PgDbPool(createPgPool(url));
+}
+export function createPgPool(url: string | URL | DbConnectOption) {
+  let option: DbConnectOption;
+  if (typeof url === "string" || url instanceof URL) option = parserDbUrl(url);
+  else option = url;
+  return new pg.Pool({
+    database: option.database,
+    user: option.user,
+    password: option.password,
+    host: option.hostname,
+    port: option.port,
+  });
+}
+let dbClient: DbPool | undefined;
+
+export function setDbPool(pool: DbPool) {
+  dbClient = pool;
+}
+export function getDbPool(): DbPool {
+  if (dbClient) return dbClient;
+  const DB_URL = getDbUrl();
+  const pgClient = createPgDbClient(DB_URL);
+  pgClient.closed.catch((e) => console.error("数据库异常", e));
+  dbClient = pgClient;
+  console.log(`Database: ${DB_URL.protocol + "//" + DB_URL.host + DB_URL.pathname}`);
+  return dbClient;
 }

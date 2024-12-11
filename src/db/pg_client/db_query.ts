@@ -5,7 +5,10 @@ export type QueryResult<T> = {
   rows: T[];
   rowCount: number | null;
 };
-/** @public */
+/**
+ * SQL 查询相关操作
+ * @public
+ */
 export abstract class DbQuery {
   /**
    * 迭代游标返回的每一行
@@ -89,21 +92,55 @@ export interface DbCursor<T> {
   read(number: number): Promise<T[]>;
   [Symbol.asyncDispose](): Promise<void>;
 }
-
 /** @public */
+export type TransactionMode = "SERIALIZABLE" | "REPEATABLE READ" | "READ COMMITTED" | "READ UNCOMMITTED";
+/**
+ * SQL 事务查询操作
+ * @public
+ */
 export interface DbTransactions extends DbQuery {
+  /** 开启事务 */
+  begin(mode?: TransactionMode): Promise<void>;
   rollback(): Promise<void>;
   commit(): Promise<void>;
+
+  /**  调用 release() 时，如果事务未提交，则抛出异常 @deprecated*/
+  release(): void;
+  /** 等价于 release() @deprecated */
+  [Symbol.dispose](): void;
+}
+
+/**
+ * 数据库连接池连接
+ * @public
+ */
+export interface DbPoolConnection extends DbTransactions, Disposable {
+  /** 调用 release() 时，如果事务未提交，则抛出异常 */
   release(): void;
   /** 等价于 release() */
   [Symbol.dispose](): void;
 }
-/** @public */
-export interface DbTransactionQuery extends DbQuery {
-  /** 开启事务 */
-  begin(mode?: "SERIALIZABLE" | "REPEATABLE READ" | "READ COMMITTED" | "READ UNCOMMITTED"): Promise<DbTransactions>;
+/**
+ * 数据库连接
+ */
+interface DbConnection extends DbTransactions, AsyncDisposable {
+  disconnect(): Promise<void>;
+  readonly closed: Promise<void>;
 }
-export interface DbClient extends DbTransactionQuery {
-  [Symbol.asyncDispose](): Promise<void>;
-  end(): Promise<void>;
+
+/** @public */
+export interface DbPoolConnectable {
+  connect(): Promise<DbPoolConnection>;
+}
+
+/** @public */
+export interface DbQueryPool extends DbQuery, DbPoolConnectable {
+  /** 开启事务 */
+  connectBegin(mode?: TransactionMode): Promise<DbPoolConnection>;
+}
+
+/** @public */
+export interface DbPool extends DbQueryPool, AsyncDisposable {
+  close(): Promise<void>;
+  readonly closed: Promise<void>;
 }

@@ -1,4 +1,4 @@
-import { createPgDbClient, DbClient, DbConnectOption } from "../db.ts";
+import { createPgDbClient, DbPool, DbConnectOption } from "../db.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 const dirname = import.meta.dirname;
@@ -6,7 +6,7 @@ const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 /**
  * 初始化数据库
  */
-async function initDb(client: DbClient): Promise<void> {
+async function initDb(client: DbPool): Promise<void> {
   const sqlFiles: string[] = ["init/create_tables.sql", "init/create_functions.sql", "init/create_triggers.sql"];
   for (const sqlFile of sqlFiles) {
     try {
@@ -20,7 +20,7 @@ async function initDb(client: DbClient): Promise<void> {
 /**
  * 清空所有表的所有数据
  */
-export async function clearAllTablesData(client: DbClient) {
+export async function clearAllTablesData(client: DbPool) {
   await client.query(`DO $$
 DECLARE
     r RECORD;
@@ -43,7 +43,7 @@ export async function dropDb(dbAddr: DbConnectOption) {
   await using client = createPgDbClient({ ...dbAddr, database: "postgres" });
   await client.query(`DROP DATABASE IF EXISTS ${dbName}`);
 }
-async function execSqlFile(pathname: string, client: DbClient) {
+async function execSqlFile(pathname: string, client: DbPool) {
   const file = await fs.readFile(pathname, "utf-8");
   return client.query(file);
 }
@@ -78,7 +78,7 @@ export async function createInitDb(
     IS_TEMPLATE = False;
     `);
   } finally {
-    await pgClient.end();
+    await pgClient.close();
   }
 
   await using client = createPgDbClient(createDb);
