@@ -1,7 +1,8 @@
 import { DbTableQuery, InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap, v } from "../_sql_value.ts";
+import { createTable, dbTypeMap } from "../_sql_value.ts";
 import { TaskType } from "../tables.ts";
 import { CrawlTaskData } from "../types/task.ts";
+import { v } from "../../extend_sql_chain.ts";
 
 const crawl_task_queueDefine = {
   task_id: dbTypeMap.genColumn("SERIAL", true),

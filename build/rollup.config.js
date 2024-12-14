@@ -16,6 +16,7 @@ export default defineEvConfig({
       compilerOptions: {
         declaration: true,
         declarationDir: "dist",
+        rootDir:"src"
       },
     },
   },

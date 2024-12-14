@@ -1,4 +1,4 @@
-import { SqlQueryStatement } from "@asla/yoursql";
+import type { SqlStatementDataset } from "@asla/yoursql";
 
 /** @public */
 export type QueryResult<T> = {
@@ -10,8 +10,8 @@ export type QueryResult<T> = {
  * @public
  */
 export abstract class DbQuery {
-  abstract query<T extends object = any>(sql: SqlQueryStatement<T>): Promise<QueryResult<T>>;
-  abstract query<T extends object = any>(sql: { toString(): string }): Promise<QueryResult<T>>;
+  abstract query<T = any>(sql: SqlStatementDataset<T>): Promise<QueryResult<T>>;
+  abstract query<T = any>(sql: { toString(): string }): Promise<QueryResult<T>>;
   /** 查询受影响的行 */
   queryCount(sql: string | { toString(): string }): Promise<number> {
     return this.query(sql.toString()).then((res) => {
@@ -20,15 +20,15 @@ export abstract class DbQuery {
     });
   }
   /** 查询行 */
-  queryRows<T extends object = any>(sql: SqlQueryStatement<T>): Promise<T[]>;
+  queryRows<T = any>(sql: SqlStatementDataset<T>): Promise<T[]>;
   /** 查询行 */
-  queryRows<T extends object = any>(sql: { toString(): string }): Promise<T[]>;
-  queryRows<T extends object = any>(sql: SqlQueryStatement<T> | string | { toString(): string }): Promise<T[]> {
+  queryRows<T = any>(sql: { toString(): string }): Promise<T[]>;
+  queryRows<T = any>(sql: SqlStatementDataset<T> | string | { toString(): string }): Promise<T[]> {
     return this.query<T>(sql.toString()).then((res) => res.rows);
   }
-  queryMap<K, T extends object = any>(sql: SqlQueryStatement<T>, key: string): Promise<Map<K, T>>;
-  queryMap<K, T extends object = any>(sql: { toString(): string }, key: string): Promise<Map<K, T>>;
-  async queryMap(sql: SqlQueryStatement<any> | string | { toString(): string }, key: string): Promise<Map<any, any>> {
+  queryMap<K, T = any>(sql: SqlStatementDataset<T>, key: string): Promise<Map<K, T>>;
+  queryMap<K, T = any>(sql: { toString(): string }, key: string): Promise<Map<K, T>>;
+  async queryMap(sql: SqlStatementDataset<any> | string | { toString(): string }, key: string): Promise<Map<any, any>> {
     const { rows } = await this.query(sql.toString());
     let map = new Map();
     for (let i = 0; i < rows.length; i++) {
@@ -55,7 +55,6 @@ export abstract class DbCursor<T> {
     this.close();
   }
 }
-
 /** @public */
 export type TransactionMode = "SERIALIZABLE" | "REPEATABLE READ" | "READ COMMITTED" | "READ UNCOMMITTED";
 
@@ -94,37 +93,4 @@ export interface DbTransaction extends DbQuery {
   /** 提交，并释放连接 */
   commit(): Promise<void>;
   [Symbol.dispose](): void;
-}
-
-/**
- * 数据库连接池连接
- * @public
- */
-export interface DbPoolConnection extends DbQuery, Disposable {
-  /** 调用 release() 时，如果事务未提交，则抛出异常 */
-  release(): void;
-}
-/**
- * 数据库连接
- */
-interface DbConnection extends DbQuery, AsyncDisposable {
-  disconnect(): Promise<void>;
-  readonly closed: Promise<void>;
-}
-
-/** @public */
-export interface DbQueryPool extends DbQuery {
-  connect(): Promise<DbPoolConnection>;
-
-  begin(mode?: TransactionMode): DbTransaction;
-  cursor<T extends {}>(sql: SqlQueryStatement<T>): DbCursor<T>;
-  cursor<T>(sql: { toString(): string }, option?: DbCursorOption): DbCursor<T>;
-}
-export interface DbCursorOption {
-  defaultSize?: number;
-}
-/** @public */
-export interface DbPool extends DbQueryPool, AsyncDisposable {
-  /** 关闭所有链接。如果 force 为 true, 则直接断开所有连接，否则等待连接释放后再关闭 */
-  close(force?: boolean): Promise<void>;
 }

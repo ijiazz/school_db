@@ -1,7 +1,7 @@
 import pg from "pg";
-import type { DbPool } from "./type.ts";
 import { getEnv } from "../../common/get_env.ts";
-import { PgDbPool } from "./_pg.ts";
+import { PgDbPool } from "./_pg_pool.ts";
+import type { DbPool } from "../connect_abstract/pool.ts";
 const pgTypes = pg.types;
 
 pgTypes.setTypeParser(pgTypes.builtins.INT8, BigInt);
@@ -60,5 +60,3 @@ export function getDbPool(): DbPool {
   console.log(`Database: ${DB_URL.protocol + "//" + DB_URL.host + DB_URL.pathname}`);
   return dbClient;
 }
-import Cursor from "pg-cursor";
-export { Cursor };

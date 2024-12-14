@@ -1,5 +1,5 @@
 import { asset_audio, asset_image, asset_video, comment_image, DbQueryPool, getDbPool, user_avatar, v } from "../db.ts";
-import { SqlQueryStatement, YourTable } from "@asla/yoursql";
+import { SqlStatementDataset, YourTable } from "@asla/yoursql";
 import { getBucket, getOOS, OOS } from "../oos.ts";
 import { PromiseConcurrency } from "evlib/async";
 
@@ -48,7 +48,7 @@ export class DbResourceDelete {
     }
   }
   async *#iterQueryRows(
-    sql: SqlQueryStatement<{ id: string }>,
+    sql: SqlStatementDataset<{ id: string }>,
     bucket: string,
   ): AsyncGenerator<OosObjId[], undefined, undefined> {
     let rows = await this.#db.queryRows(sql);

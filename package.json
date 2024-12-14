@@ -15,7 +15,7 @@
   "author": "Eaviyi",
   "license": "Apache",
   "peerDependencies": {
-    "@asla/yoursql": "^0.7.1"
+    "@asla/yoursql": "^0.8.0"
   },
   "dependencies": {
     "evlib": "^2.11.1",

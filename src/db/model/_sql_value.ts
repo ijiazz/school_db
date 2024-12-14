@@ -1,15 +1,6 @@
-import {
-  CustomDbType,
-  pgSqlTransformer,
-  SqlValuesCreator,
-  TableDefined,
-  TableType,
-  YourTable,
-  YourTypeMap,
-} from "@asla/yoursql";
+import { CustomDbType, TableDefined, TableType, YourTable, YourTypeMap } from "@asla/yoursql";
 import { CrawlTaskStatus, enumMediaLevel, enumPlatform, enumTaskType, MediaLevel, Platform } from "./tables.ts";
-
-export const v = SqlValuesCreator.create(pgSqlTransformer);
+import { v } from "../extend_sql_chain.ts";
 
 export const dbTypeMap = YourTypeMap.create({
   TIMESTAMPTZ: Date,

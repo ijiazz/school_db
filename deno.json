@@ -11,8 +11,9 @@
   },
   "nodeModulesDir": "manual",
   "exports": {
-    "db": "./src/db.ts",
-    "oos": "./src/oos.ts",
-    "testlib": "./src/testlib.ts"
+    "./db": "./src/db.ts",
+    "./oos": "./src/oos.ts",
+    "./query": "./src/query.ts",
+    "./testlib": "./src/testlib.ts"
   }
 }
