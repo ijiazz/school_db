@@ -1,4 +1,4 @@
-import { PickColumn, InferTableDefined, TableDefined } from "@asla/yoursql";
+import { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap, v } from "../_sql_value.ts";
 import { UserExtra } from "../type.ts";
 export const pla_userDefine = {

@@ -1,4 +1,4 @@
-import { PickColumn, InferTableDefined, TableDefined } from "@asla/yoursql";
+import { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../_sql_value.ts";
 const watching_pla_userDefine = {
   published_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
@@ -16,7 +16,7 @@ export type DbWatchingPlaUserCreate = PickColumn<DbWatchingPlaUser, "pla_uid" | 
 
 export const watching_pla_user = createTable<DbWatchingPlaUser, DbWatchingPlaUserCreate>(
   "watching_pla_user",
-  watching_pla_userDefine
+  watching_pla_userDefine,
 );
 
 export const watching_pla_user_check = watching_pla_user.createTypeChecker<DbWatchingPlaUserCreate>(pla_userCreateKeys);

@@ -1,7 +1,7 @@
-import { createPgDbClient, DbPool, DbConnectOption } from "../db.ts";
+import { createPgDbClient, DbConnectOption, DbPool } from "../db.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
-const dirname = import.meta.dirname;
+const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 /**
  * 初始化数据库
@@ -47,9 +47,7 @@ async function execSqlFile(pathname: string, client: DbPool) {
   const file = await fs.readFile(pathname, "utf-8");
   return client.query(file);
 }
-/**
- *
- */
+/** */
 export async function createInitDb(
   createDb: {
     database: string;
@@ -59,7 +57,7 @@ export async function createInitDb(
     hostname?: string;
     port?: number;
   },
-  option: { dropIfExists?: boolean } = {}
+  option: { dropIfExists?: boolean } = {},
 ): Promise<void> {
   const owner = createDb.user;
   if (!owner) throw new Error("必须指定 user, 这将成为新数据库的 owner");

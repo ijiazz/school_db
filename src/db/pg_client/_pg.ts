@@ -1,7 +1,7 @@
 import type { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
 import type { DbCursorOption, DbPool, DbPoolConnection, DbTransaction, QueryResult, TransactionMode } from "./type.ts";
-import { DbQuery, DbCursor } from "./type.ts";
+import { DbCursor, DbQuery } from "./type.ts";
 import { SqlQueryStatement } from "@asla/yoursql";
 
 class PgCursor<T> extends DbCursor<T> {
@@ -27,30 +27,38 @@ class PgPoolCursor<T extends {}> extends DbCursor<T> {
   constructor(
     cursor: Cursor<T>,
     connect: () => Promise<PoolClient>,
-    readonly defaultChunkSize = 20
+    readonly defaultChunkSize = 20,
   ) {
     super();
     this.#cursor = cursor;
     this.#read = (maxSize: number) => {
-      return new Promise<T[]>(async (resolve, reject) => {
+      return new Promise<T[]>((resolve, reject) => {
         this.#waitConnect.push({ maxSize, reject, resolve });
         if (this.#waitConnect.length === 1) {
           this.#connect = connect(); //连接中
-          this.#connect = await this.#connect; // 已连接
-          this.#connect.query(this.#cursor);
 
-          let item = this.#waitConnect.shift();
-          while (item) {
-            try {
-              let res = await this.#cursor.read(item.maxSize);
-              item.resolve(res);
-            } catch (error) {
-              item.reject(error);
+          this.#connect.then(async (conn) => {
+            this.#connect = conn; // 已连接
+            conn.query(this.#cursor);
+
+            let item = this.#waitConnect.shift();
+            while (item) {
+              try {
+                let res = await this.#cursor.read(item.maxSize);
+                item.resolve(res);
+              } catch (error) {
+                item.reject(error);
+              }
+              item = this.#waitConnect.shift();
             }
-            item = this.#waitConnect.shift();
-          }
-          this.#waitConnect.length = 0;
-          this.#read = this.#readAfterConnected;
+            this.#waitConnect.length = 0;
+            this.#read = this.#readAfterConnected;
+          }, (e) => {
+            for (const element of this.#waitConnect) {
+              element.reject(e);
+            }
+            this.#waitConnect.length = 0;
+          });
         }
       });
     };
@@ -90,23 +98,30 @@ class PgPoolCursor<T extends {}> extends DbCursor<T> {
 class PgPoolTransaction extends DbQuery implements DbTransaction {
   constructor(
     connect: () => Promise<PoolClient>,
-    readonly mode?: TransactionMode
+    readonly mode?: TransactionMode,
   ) {
     super();
     this.#query = (sql: string) => {
-      return new Promise<QueryResult<any>>(async (resolve, reject) => {
-        this.#que.push({ resolve, reject, sql });
-        if (this.#que.length === 1) {
-          this.#conn = await connect();
-          this.#query = this.#queryAfter;
-          const mode = this.mode;
-          await this.#conn
-            .query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""))
-            .catch(this.#onQueryError);
-          for (const element of this.#que) {
-            this.#queryAfter(element.sql).then(element.resolve, element.reject);
-          }
-          this.#que.length = 0;
+      return new Promise<QueryResult<any>>((resolve, reject) => {
+        this.#queue.push({ resolve, reject, sql });
+        if (this.#queue.length === 1) {
+          connect().then(async (conn) => {
+            this.#conn = conn;
+            this.#query = this.#queryAfter;
+            const mode = this.mode;
+            await conn
+              .query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""))
+              .catch(this.#onQueryError);
+            for (const element of this.#queue) {
+              this.#queryAfter(element.sql).then(element.resolve, element.reject);
+            }
+            this.#queue.length = 0;
+          }, (e) => {
+            for (const element of this.#queue) {
+              element.reject(e);
+            }
+            this.#queue.length = 0;
+          });
         }
       });
     };
@@ -132,7 +147,7 @@ class PgPoolTransaction extends DbQuery implements DbTransaction {
   rollbackTo(savePoint: string): Promise<void> {
     return this.#conn!.query("ROLLBACK TO " + savePoint).then(() => {}, this.#onQueryError);
   }
-  #que: { sql: string; resolve(res: QueryResult<any>): void; reject(): void }[] = [];
+  #queue: { sql: string; resolve(res: QueryResult<any>): void; reject(e: any): void }[] = [];
 
   /** 只要sql执行出错（事务中断），就释放连接 */
   #onQueryError = (e: Error) => {
@@ -227,7 +242,7 @@ export class PgDbPool extends DbQuery implements DbPool {
 class PgListen implements Disposable {
   constructor(
     private event: string,
-    private connect?: PoolClient
+    private connect?: PoolClient,
   ) {
     if (event.includes(";")) throw new Error("event 不能包含 ';' 字符");
   }
@@ -282,7 +297,7 @@ export class PgPoolConnection extends DbQuery implements DbPoolConnection {
 }
 type ToString = { toString(): string };
 
-/* 
+/*
   pg 的一些行为
    PoolClient 重复 release() 会抛出异常
    Cursor 如果 close() 之后继续 read() ，会返回空数组

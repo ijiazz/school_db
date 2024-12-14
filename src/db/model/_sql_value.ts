@@ -1,13 +1,13 @@
 import {
-  TableType,
+  CustomDbType,
   pgSqlTransformer,
   SqlValuesCreator,
-  CustomDbType,
-  YourTypeMap,
   TableDefined,
+  TableType,
   YourTable,
+  YourTypeMap,
 } from "@asla/yoursql";
-import { enumPlatform, enumTaskType, Platform, CrawlTaskStatus, MediaLevel, enumMediaLevel } from "./tables.ts";
+import { CrawlTaskStatus, enumMediaLevel, enumPlatform, enumTaskType, MediaLevel, Platform } from "./tables.ts";
 
 export const v = SqlValuesCreator.create(pgSqlTransformer);
 
@@ -33,7 +33,7 @@ export const dbTypeMap = YourTypeMap.create({
 
 export function createTable<T extends TableType = TableType, C extends TableType = T>(
   name: string,
-  define: TableDefined
+  define: TableDefined,
 ): YourTable<T, C> {
   return new YourTable(name, define, v);
 }

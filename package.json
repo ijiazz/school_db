@@ -1,5 +1,5 @@
 {
-  "name": "data",
+  "name": "@ijia/data",
   "version": "0.0.1",
   "description": "",
   "type": "module",
@@ -23,6 +23,7 @@
     "pg-cursor": "^2.12.1"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "@types/pg": "^8.11.10",
     "@types/pg-cursor": "^2.7.2"
   }

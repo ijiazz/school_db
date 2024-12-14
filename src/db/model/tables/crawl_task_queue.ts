@@ -1,5 +1,5 @@
-import { DbTableQuery, PickColumn, InferTableDefined, TableDefined } from "@asla/yoursql";
-import { v, dbTypeMap, createTable } from "../_sql_value.ts";
+import { DbTableQuery, InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import { createTable, dbTypeMap, v } from "../_sql_value.ts";
 import { TaskType } from "../tables.ts";
 import { CrawlTaskData } from "../types/task.ts";
 
@@ -32,9 +32,9 @@ export type DbCrawlerTaskQueueCreate = PickColumn<
 
 export const crawl_task_queue = createTable<DbCrawlerTaskQueue, DbCrawlerTaskQueueCreate>(
   "crawl_task_queue",
-  crawl_task_queueDefine
+  crawl_task_queueDefine,
 );
 export const crawl_task_priority_queue = new DbTableQuery<DbCrawlerTaskPriorityQueue, {}>(
   "crawl_task_priority_queue",
-  v
+  v,
 );

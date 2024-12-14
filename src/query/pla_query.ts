@@ -1,13 +1,13 @@
 import { operation } from "../common/sql.ts";
-import { DbQuery, pla_comment, pla_asset, pla_user, v, user_avatar, DbUserAvatarCreate } from "../db.ts";
+import { DbQuery, DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar, v } from "../db.ts";
 import type {
+  AssetItemDto,
   CommentReplyItemDto,
   CommentRootItemDto,
+  GetAssetListParam,
   GetCommentListParam,
   GetCommentReplyListParam,
-  GetAssetListParam,
   GetUserParam,
-  AssetItemDto,
   UserItemDto,
 } from "./query.dto.ts";
 
@@ -61,7 +61,8 @@ function sqlAssetList(option: GetAssetListParam = {}) {
       type: "content_type",
       ip_location: true,
       content_text: true,
-      stat: `jsonb_build_object('collection_num', p.collection_num , 'forward_total', p.forward_num, 'digg_total', p.like_count)`,
+      stat:
+        `jsonb_build_object('collection_num', p.collection_num , 'forward_total', p.forward_num, 'digg_total', p.like_count)`,
       author: `jsonb_build_object('user_name', u.user_name, 'user_id', u.pla_uid)`,
     })
     .where(() => {
@@ -101,7 +102,7 @@ interface DebugOption {
 }
 export async function getAssetList(
   queryable: DbQuery,
-  option: GetAssetListParam & { asset_id?: string } & DebugOption = {}
+  option: GetAssetListParam & { asset_id?: string } & DebugOption = {},
 ): Promise<AssetItemDto[]> {
   const sql1 = sqlAssetList(option);
 
@@ -181,7 +182,7 @@ function sqlCommentList(option: (GetCommentListParam & GetCommentReplyListParam)
 }
 export async function getCommentList(
   queryable: DbQuery,
-  option: GetCommentListParam & DebugOption = {}
+  option: GetCommentListParam & DebugOption = {},
 ): Promise<CommentRootItemDto[]> {
   const sql0 = sqlCommentList(option);
 
@@ -203,7 +204,7 @@ ON t.comment_id=c_t.root_comment_id ;`;
 }
 export async function getCommentReplyByCid(
   queryable: DbQuery,
-  option: GetCommentReplyListParam & DebugOption = {}
+  option: GetCommentReplyListParam & DebugOption = {},
 ): Promise<CommentReplyItemDto[]> {
   const sql = sqlCommentList(option);
 
