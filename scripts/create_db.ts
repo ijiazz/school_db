@@ -1,4 +1,4 @@
-import { createInitDb } from "../src/testlib.ts";
+import { createInitDb } from "@ijia/data/testlib.ts";
 
 await createInitDb({
   database: "ijia_test",

@@ -1,5 +1,6 @@
-import { asset_audio, asset_image, asset_video, comment_image, DbQueryPool, getDbPool, user_avatar, v } from "../db.ts";
-import { SqlStatementDataset, YourTable } from "@asla/yoursql";
+import { asset_audio, asset_image, asset_video, comment_image, user_avatar } from "../db.ts";
+import { DbQueryPool, getDbPool, v } from "../yoursql.ts";
+import type { SqlStatementDataset, YourTable } from "@asla/yoursql";
 import { getBucket, getOOS, OOS } from "../oos.ts";
 import { PromiseConcurrency } from "evlib/async";
 

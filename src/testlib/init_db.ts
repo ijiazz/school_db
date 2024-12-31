@@ -1,4 +1,4 @@
-import { createPgDbClient, DbConnectOption, DbPool } from "../db.ts";
+import { createPgDbClient, DbConnectOption, DbPool } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 const dirname = import.meta.dirname!;

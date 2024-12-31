@@ -1,5 +1,6 @@
 import { operation } from "../common/sql.ts";
-import { DbQuery, DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar, v } from "../db.ts";
+import { DbUserAvatarCreate, pla_asset, pla_comment, pla_user, user_avatar } from "../db.ts";
+import { DbQuery, v } from "../yoursql.ts";
 import type {
   AssetItemDto,
   CommentReplyItemDto,

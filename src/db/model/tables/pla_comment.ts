@@ -1,7 +1,7 @@
 import { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../_sql_value.ts";
 import { CommentExtra } from "../type.ts";
-import { v } from "../../extend_sql_chain.ts";
+import v from "../../../yoursql.ts";
 
 const pla_commentDefine = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
