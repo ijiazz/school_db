@@ -18,7 +18,10 @@ export class PgDbPool extends DbQuery implements DbPool {
     if (onError) this.#pool.on("error", onError);
   }
   // implement
-  async connect(): Promise<PgPoolConnection> {
+  connect(): Promise<PgPoolConnection> {
+    return this.#connectRaw().then((conn) => new PgPoolConnection(conn));
+  }
+  async #connectRaw() {
     const conn = await this.#pool.connect();
     this.#clientList.add(conn);
     const onRelease = () => {
@@ -27,7 +30,7 @@ export class PgDbPool extends DbQuery implements DbPool {
     //@ts-ignore
     conn.on("release", onRelease);
     conn.on("end", onRelease);
-    return new PgPoolConnection(conn);
+    return conn;
   }
   #pool: Pool;
   #clientList = new Set<PoolClient>();
@@ -42,7 +45,11 @@ export class PgDbPool extends DbQuery implements DbPool {
   }
   //implement
   cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): DbCursor<T> {
-    return new PgPoolCursor(sql.toString(), () => this.connect(), option?.defaultSize);
+    return new PgPoolCursor(sql.toString(), (cursor) =>
+      this.#connectRaw().then((conn) => {
+        conn.query(cursor);
+        return new PgPoolConnection(conn);
+      }), option?.defaultSize);
   }
   // implement
   close(force?: boolean) {

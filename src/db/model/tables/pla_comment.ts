@@ -1,6 +1,6 @@
-import { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../_sql_value.ts";
-import { CommentExtra } from "../type.ts";
+import type { CommentExtra } from "../type.ts";
 import v from "../../../yoursql.ts";
 
 const pla_commentDefine = {
