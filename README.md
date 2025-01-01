@@ -13,24 +13,19 @@
 
 ### 角色与权限
 
-`\i sql/roles/roles.sql` 创建开发与生产环境中可能用到的角色\
-`\c ijia_test` 切换数据库\
-`\i sql/roles/grant.sql` 授权角色权限
-
-`psql postgres USERNAME -f sql/roles/roles.sql` 数据库可以不用改\
-`psql ijia_test USERNAME -f sql/roles/grant.sql` 数据库必须改成创建的数据库
+`sql/roles` 定义了一些开发与生产环境中可能用到的角色\
 
 ### 备份
 
 备份整个数据库
 
 ```shell
-pg_dump -f ./ijia_db.tar -F t -U eaviyi -d ijia # -f: 备份的文件路径。-F t为输出压缩包 -U 操作的用户。 -d 数据库名
-pg_restore -d ijia -U eaviyi ijia_db.tar # -d: 要恢复到的数据库名称。 -U 操作的用户。 最后是备份文件路径
+pg_dump -f ./ijia_db.tar -F t -U postgres -d ijia # -f: 备份的文件路径。-F t为输出压缩包 -U 操作的用户。 -d 数据库名
+pg_restore -d ijia -U postgres ijia_db.tar # -d: 要恢复到的数据库名称。 -U 操作的用户。 最后是备份文件路径
 ```
 
 备份数据库结构，用于比对生产环境和测试环境等是否一致
 
 ```shell
-pg_dump -s -f ./ijia_db_schema.sql -h 127.0.0.1 -p 5432 -U eaviyi -d ijia # -f: 备份的文件路径。 -U 操作的用户。 最后的 ijia 为数据库名
+pg_dump -s -f ./ijia_db_schema.sql -h 127.0.0.1 -p 5432 -U postgres -d ijia # -f: 备份的文件路径。 -U 操作的用户。 最后的 ijia 为数据库名
 ```
