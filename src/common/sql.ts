@@ -1,4 +1,4 @@
-import { v } from "../db.ts";
+import v from "../yoursql.ts";
 
 export const operation = {
   andEq(value: Record<string, any>): string[] {

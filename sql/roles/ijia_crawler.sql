@@ -1,5 +1,7 @@
 SET client_encoding = 'UTF8';
 
+CREATE ROLE ijia_crawler LOGIN INHERIT;
+
 GRANT SELECT,INSERT,UPDATE ON user_avatar TO ijia_crawler;
 GRANT SELECT,INSERT,UPDATE ON pla_user TO ijia_crawler;
 GRANT SELECT,INSERT,UPDATE ON watching_pla_user TO ijia_crawler;

@@ -25,7 +25,7 @@ class PgCursor<T> extends DbCursor<T> {
 export class PgPoolCursor<T extends {}> extends DbCursor<T> {
   constructor(
     sql: string,
-    connect: () => Promise<DbPoolConnection>,
+    connect: (cursor: Cursor) => Promise<DbPoolConnection>,
     readonly defaultChunkSize = 20,
   ) {
     super();
@@ -34,12 +34,10 @@ export class PgPoolCursor<T extends {}> extends DbCursor<T> {
       return new Promise<T[]>((resolve, reject) => {
         this.#waitConnect.push({ maxSize, reject, resolve });
         if (this.#waitConnect.length === 1) {
-          this.#connect = connect(); //连接中
+          this.#connect = connect(this.#cursor); //连接中
 
           this.#connect.then(async (conn) => {
             this.#connect = conn; // 已连接
-            conn.query(this.#cursor);
-
             let item = this.#waitConnect.shift();
             while (item) {
               try {

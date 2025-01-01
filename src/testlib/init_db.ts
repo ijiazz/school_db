@@ -1,4 +1,4 @@
-import { createPgDbClient, DbConnectOption, DbPool } from "../db.ts";
+import { createPgClient, DbConnection, DbConnectOption, DbQuery } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 const dirname = import.meta.dirname!;
@@ -6,7 +6,7 @@ const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 /**
  * 初始化数据库
  */
-async function initDb(client: DbPool): Promise<void> {
+async function initIjiaDb(client: DbQuery): Promise<void> {
   const sqlFiles: string[] = ["init/create_tables.sql", "init/create_functions.sql", "init/create_triggers.sql"];
   for (const sqlFile of sqlFiles) {
     try {
@@ -16,11 +16,30 @@ async function initDb(client: DbPool): Promise<void> {
     }
   }
 }
+/**
+ * 创建并初始化 ijia_db
+ * @param connect 必须提供一个数据库连接，用于执行SQL语句创建数据库
+ */
+export async function createInitIjiaDb(connect: DbConnectOption | URL, dbname: string, option: {
+  /** user 用于连接数据库，也将成为新建数据库的 owner */
+  owner?: string;
+  dropIfExists?: boolean;
+} = {}): Promise<void> {
+  const pgClient = await createPgClient(connect);
+  try {
+    if (option.dropIfExists) await pgClient.query(`DROP DATABASE IF EXISTS ${dbname}`);
+    await createDb(pgClient, dbname, { owner: option.owner });
+  } finally {
+    await pgClient.close();
+  }
+  await using client = await createPgClient({ ...connect, database: dbname });
+  await initIjiaDb(client);
+}
 
 /**
- * 清空所有表的所有数据
+ * 清空传入连接的数据库的所有表的所有数据
  */
-export async function clearAllTablesData(client: DbPool) {
+export async function clearAllTablesData(client: DbQuery) {
   await client.query(`DO $$
 DECLARE
     r RECORD;
@@ -32,53 +51,45 @@ BEGIN
 END $$;
  `);
 }
-export async function copyDb(templateConnect: DbConnectOption, newName: string) {
-  await using client = createPgDbClient({ ...templateConnect, database: "postgres" });
-  await client.query(`DROP DATABASE IF EXISTS ${newName}`);
-  await client.query(`CREATE DATABASE ${newName} WITH TEMPLATE ${templateConnect.database}`);
-  return createPgDbClient({ ...templateConnect, database: newName });
+export class DbManage {
+  constructor(readonly dbClient: DbConnection) {
+  }
+  /** 删除 dbAddr 对应数据库 */
+  createDb(dbName: string, option: CreateDataBaseOption = {}) {
+    return createDb(this.dbClient, dbName, option);
+  }
+  /** 删除 dbAddr 对应数据库 */
+  async dropDb(dbName: string) {
+    await this.dbClient.query(`DROP DATABASE IF EXISTS ${dbName}`);
+  }
+  async copy(templateDbName: string, newDbName: string) {
+    const client = this.dbClient;
+    await client.query(`DROP DATABASE IF EXISTS ${newDbName}`);
+    await client.query(`CREATE DATABASE ${newDbName} WITH TEMPLATE ${templateDbName}`);
+  }
+  close() {
+    return this.dbClient.close();
+  }
+  [Symbol.asyncDispose]() {
+    return this.close();
+  }
 }
-export async function dropDb(dbAddr: DbConnectOption) {
-  const dbName = dbAddr.database;
-  await using client = createPgDbClient({ ...dbAddr, database: "postgres" });
-  await client.query(`DROP DATABASE IF EXISTS ${dbName}`);
+export interface CreateDataBaseOption {
+  owner?: string;
 }
-async function execSqlFile(pathname: string, client: DbPool) {
+async function createDb(dbQuery: DbQuery, dbName: string, option: CreateDataBaseOption = {}) {
+  await dbQuery.query(`
+CREATE DATABASE ${dbName}
+WITH
+${option.owner ? "OWNER=" + option.owner : ""}
+ENCODING = 'UTF8'
+LOCALE_PROVIDER = 'libc'
+CONNECTION LIMIT = -1
+IS_TEMPLATE = False;
+  `);
+}
+
+async function execSqlFile(pathname: string, client: DbQuery) {
   const file = await fs.readFile(pathname, "utf-8");
   return client.query(file);
-}
-/** */
-export async function createInitDb(
-  createDb: {
-    database: string;
-    /** user 用于连接数据库，也将成为新建数据库的 owner */
-    user: string;
-    password?: string;
-    hostname?: string;
-    port?: number;
-  },
-  option: { dropIfExists?: boolean } = {},
-): Promise<void> {
-  const owner = createDb.user;
-  if (!owner) throw new Error("必须指定 user, 这将成为新数据库的 owner");
-  const dbname = createDb.database;
-  const pgClient = createPgDbClient({ ...createDb, database: "postgres" });
-
-  try {
-    if (option.dropIfExists) await pgClient.query(`DROP DATABASE IF EXISTS ${dbname}`);
-    await pgClient.query(`
-    CREATE DATABASE ${dbname}
-    WITH
-    OWNER = ${owner}
-    ENCODING = 'UTF8'
-    LOCALE_PROVIDER = 'libc'
-    CONNECTION LIMIT = -1
-    IS_TEMPLATE = False;
-    `);
-  } finally {
-    await pgClient.close();
-  }
-
-  await using client = createPgDbClient(createDb);
-  await initDb(client);
 }

@@ -2,6 +2,10 @@ import type { SqlStatementDataset } from "@asla/yoursql";
 import { DbQuery } from "./query.ts";
 import type { DbCursor, DbTransaction, QueryResult, TransactionMode } from "./query.ts";
 
+/**
+ * @public
+ * 池连接事务
+ */
 export class PoolTransaction extends DbQuery implements DbTransaction {
   constructor(
     connect: () => Promise<DbPoolConnection>,
@@ -78,13 +82,14 @@ export class PoolTransaction extends DbQuery implements DbTransaction {
   #isRelease: boolean = false;
   [Symbol.dispose]() {
     if (this.#conn && !this.#isRelease) {
+      this.rollback().catch(() => {});
       throw new Error("事务未提交");
     }
   }
 }
 
 /**
- * 数据库连接池连接
+ * 池连接
  * @public
  */
 export interface DbPoolConnection extends DbQuery, Disposable {
@@ -94,12 +99,14 @@ export interface DbPoolConnection extends DbQuery, Disposable {
 /**
  * 数据库连接
  */
-interface DbConnection extends DbQuery, AsyncDisposable {
-  disconnect(): Promise<void>;
-  readonly closed: Promise<void>;
+export interface DbConnection extends DbQuery, AsyncDisposable {
+  close(): Promise<void>;
 }
 
-/** @public */
+/**
+ * @public
+ * 池链接查询
+ */
 export interface DbQueryPool extends DbQuery {
   connect(): Promise<DbPoolConnection>;
 
@@ -107,10 +114,14 @@ export interface DbQueryPool extends DbQuery {
   cursor<T extends {}>(sql: SqlStatementDataset<T>): DbCursor<T>;
   cursor<T>(sql: { toString(): string }, option?: DbCursorOption): DbCursor<T>;
 }
+/** @public */
 export interface DbCursorOption {
   defaultSize?: number;
 }
-/** @public */
+/**
+ * 数据库连接池
+ * @public
+ */
 export interface DbPool extends DbQueryPool, AsyncDisposable {
   /** 关闭所有链接。如果 force 为 true, 则直接断开所有连接，否则等待连接释放后再关闭 */
   close(force?: boolean): Promise<void>;
