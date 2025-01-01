@@ -1,7 +1,7 @@
 {
   "tasks": {
     "test": "deno run -A npm:vitest run",
-    "test:node": "./node_modules/.bin/vitest run",
+    "test:node": "node ./node_modules/vitest/vitest.mjs run",
     "check-type": "deno check ."
   },
   "fmt": {
