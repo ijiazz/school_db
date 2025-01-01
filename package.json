@@ -10,7 +10,8 @@
   "exports": {
     "db": "./dist/db.js",
     "oos": "./dist/oos.js",
-    "testlib": "./dist/testlib.js"
+    "testlib": "./dist/testlib.js",
+    "yoursql": "./dist/yoursql.js"
   },
   "author": "Eaviyi",
   "license": "Apache",

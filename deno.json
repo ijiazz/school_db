@@ -18,6 +18,7 @@
     "./db": "./src/db.ts",
     "./oos": "./src/oos.ts",
     "./query": "./src/query.ts",
-    "./testlib": "./src/testlib.ts"
+    "./testlib": "./src/testlib.ts",
+    "./yoursql": "./src/yoursql.ts"
   }
 }
