@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { PgPoolCursor } from "./_pg_cursor.ts";
-import { DbQuery, DbPoolTransaction } from "../connect_abstract/mod.ts";
+import { DbPoolTransaction, DbQuery } from "../connect_abstract/mod.ts";
 import type {
   DbCursor,
   DbCursorOption,
@@ -38,7 +38,9 @@ export class PgDbPool extends DbQuery implements DbPool {
   query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
     return this.#pool.query<T>(sql.toString());
   }
-
+  get idleCount(): number {
+    return this.#pool.idleCount;
+  }
   //implement
   begin(mode?: TransactionMode): DbTransaction {
     return new DbPoolTransaction(() => this.connect(), mode);

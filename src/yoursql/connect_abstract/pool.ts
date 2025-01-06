@@ -39,16 +39,18 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
   }
   #conn?: DbPoolConnection;
   async commit(): Promise<void> {
+    if (this.#isRelease) return;
     if (this.#conn) {
       const promise = this.#conn.query("COMMIT");
-      this.#release();
+      this.#release(this.#conn);
       await promise;
     }
   }
   async rollback(): Promise<void> {
+    if (this.#isRelease) return;
     if (this.#conn) {
       const promise = this.#conn.query("ROLLBACK");
-      this.#release();
+      this.#release(this.#conn);
       await promise;
     }
   }
@@ -75,16 +77,13 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
   query(sql: { toString(): string }): Promise<QueryResult<any>> {
     return this.#query(sql.toString());
   }
-  #release() {
-    this.#conn?.release();
+  #release(conn: DbPoolConnection) {
+    conn.release();
     this.#isRelease = true;
   }
   #isRelease: boolean = false;
-  [Symbol.dispose]() {
-    if (this.#conn && !this.#isRelease) {
-      this.rollback().catch(() => {});
-      throw new Error("事务未提交");
-    }
+  [Symbol.asyncDispose]() {
+    return this.rollback();
   }
 }
 
@@ -109,7 +108,7 @@ export interface DbConnection extends DbQuery, AsyncDisposable {
  */
 export interface DbQueryPool extends DbQuery {
   connect(): Promise<DbPoolConnection>;
-
+  idleCount: number;
   begin(mode?: TransactionMode): DbTransaction;
   cursor<T extends {}>(sql: SqlStatementDataset<T>): DbCursor<T>;
   cursor<T>(sql: { toString(): string }, option?: DbCursorOption): DbCursor<T>;

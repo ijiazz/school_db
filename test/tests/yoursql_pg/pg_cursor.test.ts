@@ -21,7 +21,9 @@ test("通过异步迭代器读取所有数据", async function ({ emptyDbPool })
   const result = await Array.fromAsync(
     emptyDbPool.cursor("SELECT * FROM test LIMIT 20", { defaultSize: 5 }),
   );
+  const base = emptyDbPool.idleCount;
   expect(result, "异步迭代器").toEqual(values.slice(0, 20));
+  expect(emptyDbPool.idleCount, "游标所在连接已被释放").toBe(base);
 });
 test(
   "使用 await using 读取，在离开作用域时关闭游标",
@@ -32,11 +34,13 @@ test(
       });
       return cursor.read();
     }
-
+    const base = emptyDbPool.idleCount;
     await expect(usingRed()).resolves.toEqual(values.slice(0, 5));
+    expect(emptyDbPool.idleCount, "游标所在连接已被释放").toBe(base);
   },
 );
 test("可并行读取", async function ({ emptyDbPool }) {
+  const base = emptyDbPool.idleCount;
   const cursor = emptyDbPool.cursor("SELECT * FROM test LIMIT 20", {
     defaultSize: 5,
   });
@@ -49,23 +53,5 @@ test("可并行读取", async function ({ emptyDbPool }) {
   let p3 = cursor.read(5);
   await expect(c0, "连接中关闭").resolves.toBeUndefined();
   await expect(p3, "关闭后读取").resolves.toEqual([]);
-});
-test(
-  "使用 using 在离开作用域时未提交或回滚事务，应回滚并抛出异常",
-  async function ({ emptyDbPool }) {
-    async function forgotCommit() {
-      using conn = emptyDbPool.begin();
-      await conn.query("UPDATE test set num=8 WHERE id=0");
-    }
-    await expect(forgotCommit()).rejects.toThrowError();
-    //TODO 断言回滚
-  },
-);
-test("开始事务，并提交事务", async function ({ emptyDbPool }) {
-  async function commit() {
-    using conn = emptyDbPool.begin();
-    await conn.query("UPDATE test set num=8 WHERE id=1");
-    await conn.commit();
-  }
-  await expect(commit()).resolves.not.toThrowError();
+  expect(emptyDbPool.idleCount, "游标所在连接已被释放").toBe(base);
 });
