@@ -6,7 +6,7 @@ import type { DbCursor, DbTransaction, QueryResult, TransactionMode } from "./qu
  * @public
  * 池连接事务
  */
-export class PoolTransaction extends DbQuery implements DbTransaction {
+export class DbPoolTransaction extends DbQuery implements DbTransaction {
   constructor(
     connect: () => Promise<DbPoolConnection>,
     readonly mode?: TransactionMode,

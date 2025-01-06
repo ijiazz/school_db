@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { PgPoolCursor } from "./_pg_cursor.ts";
-import { DbQuery, PoolTransaction } from "../connect_abstract/mod.ts";
+import { DbQuery, DbPoolTransaction } from "../connect_abstract/mod.ts";
 import type {
   DbCursor,
   DbCursorOption,
@@ -41,7 +41,7 @@ export class PgDbPool extends DbQuery implements DbPool {
 
   //implement
   begin(mode?: TransactionMode): DbTransaction {
-    return new PoolTransaction(() => this.connect(), mode);
+    return new DbPoolTransaction(() => this.connect(), mode);
   }
   //implement
   cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): DbCursor<T> {

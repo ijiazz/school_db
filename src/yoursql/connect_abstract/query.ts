@@ -26,9 +26,11 @@ export abstract class DbQuery {
   queryRows<T = any>(sql: SqlStatementDataset<T> | string | { toString(): string }): Promise<T[]> {
     return this.query<T>(sql.toString()).then((res) => res.rows);
   }
+  /** 指定某一列为key，返回 key -> row 的映射 */
   queryMap<K, T = any>(sql: SqlStatementDataset<T>, key: string): Promise<Map<K, T>>;
+  /** 指定某一列为key，返回 key -> row 的映射 */
   queryMap<K, T = any>(sql: { toString(): string }, key: string): Promise<Map<K, T>>;
-  async queryMap(sql: SqlStatementDataset<any> | string | { toString(): string }, key: string): Promise<Map<any, any>> {
+  async queryMap(sql: { toString(): string }, key: string): Promise<Map<any, any>> {
     const { rows } = await this.query(sql.toString());
     let map = new Map();
     for (let i = 0; i < rows.length; i++) {
@@ -40,7 +42,9 @@ export abstract class DbQuery {
 
 /** @public */
 export abstract class DbCursor<T> {
+  /** 读取游标，如果读取结束，返回空数组 */
   abstract read(maxSize?: number): Promise<T[]>;
+  /** 提前关闭游标，如果多次调用，会被忽略 */
   abstract close(): Promise<void>;
   // implement
   [Symbol.asyncDispose]() {
@@ -48,11 +52,14 @@ export abstract class DbCursor<T> {
   }
   async *[Symbol.asyncIterator]() {
     let data = await this.read();
-    while (data.length) {
-      yield* data;
-      data = await this.read();
+    try {
+      while (data.length) {
+        yield* data;
+        data = await this.read();
+      }
+    } finally {
+      this.close();
     }
-    this.close();
   }
 }
 /** @public */
@@ -65,7 +72,7 @@ export type TransactionMode = "SERIALIZABLE" | "REPEATABLE READ" | "READ COMMITT
  *
  * ```ts
  * async function doSomeTransaction(){
- *    using transaction = pool.begin() // 离开作用域时，如果没有 commit() 或 rollback() 则抛出异常
+ *    using transaction = pool.begin() // 离开作用域时，如果没有 commit() 或 rollback() 则，调用 rollback() 并抛出异常
  *    await transaction.query("SELECT * FROM user")
  * }
  * try{
@@ -73,12 +80,14 @@ export type TransactionMode = "SERIALIZABLE" | "REPEATABLE READ" | "READ COMMITT
  * }catch(e){
  *    console.error("事务没有提交！")
  * }
- *
- * async function doSomeTransaction2(){
+ * ```
+ * 下面的写法会造成连接池泄露
+ * ```ts
+ * async function doSomeTransaction(){
  *    const transaction = pool.begin()
  *    await transaction.query("SELECT * FROM user")
  * }
- * await doSomeTransaction2() // 离开作用域后连接不会被回收
+ * await doSomeTransaction() // 离开作用域后连接不会被回收
  * console.warn("连接未被回收！")
  *
  * ```
