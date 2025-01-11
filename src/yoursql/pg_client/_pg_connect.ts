@@ -1,6 +1,6 @@
 import type { Client } from "pg";
 import { DbQuery } from "../connect_abstract/mod.ts";
-import type { DbConnection, QueryResult } from "../connect_abstract/mod.ts";
+import type { DbConnection, QueryRowsResult } from "../connect_abstract/mod.ts";
 
 export class PgConnection extends DbQuery implements DbConnection {
   constructor(pool: Client) {
@@ -13,7 +13,7 @@ export class PgConnection extends DbQuery implements DbConnection {
 
   #pool: Client;
   //implement
-  query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
+  query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
     return this.#pool.query<T>(sql.toString());
   }
   //implement

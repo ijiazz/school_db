@@ -7,7 +7,7 @@ import type {
   DbPool,
   DbPoolConnection,
   DbTransaction,
-  QueryResult,
+  QueryRowsResult,
   TransactionMode,
 } from "../connect_abstract/mod.ts";
 
@@ -35,7 +35,7 @@ export class PgDbPool extends DbQuery implements DbPool {
   #pool: Pool;
   #clientList = new Set<PoolClient>();
   // implement
-  query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
+  query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
     return this.#pool.query<T>(sql.toString());
   }
   get idleCount(): number {
@@ -110,7 +110,7 @@ export class PgPoolConnection extends DbQuery implements DbPoolConnection {
   }
   #pool: PoolClient;
   //implement
-  query<T extends object = any>(sql: ToString): Promise<QueryResult<T>> {
+  query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
     return this.#pool.query<T>(sql.toString());
   }
   //implement

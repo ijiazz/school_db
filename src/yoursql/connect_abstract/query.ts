@@ -1,17 +1,21 @@
 import type { SqlStatementDataset } from "@asla/yoursql";
 
 /** @public */
-export type QueryResult<T> = {
-  rows: T[];
+export interface QueryResult {
   rowCount: number | null;
-};
+  rows?: any;
+}
+/** @public */
+export interface QueryRowsResult<T> extends QueryResult {
+  rows: T[];
+}
 /**
  * SQL 查询相关操作
  * @public
  */
 export abstract class DbQuery {
-  abstract query<T = any>(sql: SqlStatementDataset<T>): Promise<QueryResult<T>>;
-  abstract query<T = any>(sql: { toString(): string }): Promise<QueryResult<T>>;
+  abstract query<T = any>(sql: SqlStatementDataset<T>): Promise<QueryRowsResult<T>>;
+  abstract query<T = any>(sql: { toString(): string }): Promise<QueryRowsResult<T>>;
   /** 查询受影响的行 */
   queryCount(sql: string | { toString(): string }): Promise<number> {
     return this.query(sql.toString()).then((res) => {

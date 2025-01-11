@@ -1,6 +1,6 @@
 import type { SqlStatementDataset } from "@asla/yoursql";
 import { DbQuery } from "./query.ts";
-import type { DbCursor, DbTransaction, QueryResult, TransactionMode } from "./query.ts";
+import type { DbCursor, DbTransaction, QueryRowsResult, TransactionMode } from "./query.ts";
 
 /**
  * @public
@@ -13,7 +13,7 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
   ) {
     super();
     this.#query = (sql: string) => {
-      return new Promise<QueryResult<any>>((resolve, reject) => {
+      return new Promise<QueryRowsResult<any>>((resolve, reject) => {
         this.#queue.push({ resolve, reject, sql });
         if (this.#queue.length === 1) {
           connect().then(async (conn) => {
@@ -60,7 +60,7 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
   rollbackTo(savePoint: string): Promise<void> {
     return this.#conn!.query("ROLLBACK TO " + savePoint).then(() => {}, this.#onQueryError);
   }
-  #queue: { sql: string; resolve(res: QueryResult<any>): void; reject(e: any): void }[] = [];
+  #queue: { sql: string; resolve(res: QueryRowsResult<any>): void; reject(e: any): void }[] = [];
 
   /** 只要sql执行出错（事务中断），就释放连接 */
   #onQueryError = (e: Error) => {
@@ -71,10 +71,10 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
   #queryAfter(sql: string) {
     return this.#conn!.query(sql).catch(this.#onQueryError);
   }
-  #query: (sql: string) => Promise<QueryResult<any>>;
-  query<T extends object = any>(sql: SqlStatementDataset<T>): Promise<QueryResult<T>>;
-  query<T extends object = any>(sql: { toString(): string }): Promise<QueryResult<T>>;
-  query(sql: { toString(): string }): Promise<QueryResult<any>> {
+  #query: (sql: string) => Promise<QueryRowsResult<any>>;
+  query<T extends object = any>(sql: SqlStatementDataset<T>): Promise<QueryRowsResult<T>>;
+  query<T extends object = any>(sql: { toString(): string }): Promise<QueryRowsResult<T>>;
+  query(sql: { toString(): string }): Promise<QueryRowsResult<any>> {
     return this.#query(sql.toString());
   }
   #release(conn: DbPoolConnection) {
