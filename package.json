@@ -8,10 +8,10 @@
     "check-type": "tsc -p tsconfig.json"
   },
   "exports": {
-    "db": "./dist/db.js",
-    "oos": "./dist/oos.js",
-    "testlib": "./dist/testlib.js",
-    "yoursql": "./dist/yoursql.js"
+    "./db": "./dist/db.js",
+    "./oos": "./dist/oos.js",
+    "./testlib": "./dist/testlib.js",
+    "./yoursql": "./dist/yoursql.js"
   },
   "author": "Eaviyi",
   "license": "Apache",

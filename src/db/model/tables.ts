@@ -54,7 +54,7 @@ export const enumPlatform = new Set([
 export enum TaskType {
   syncUserProfile = "syncUserProfile",
   syncAssetList = "syncAssetList",
-  syncAssetComment = "syncPAssetComment",
+  syncAssetComment = "syncAssetComment",
   syncCommentReply = "syncCommentReply",
   saveAsset = "saveAsset",
 }
