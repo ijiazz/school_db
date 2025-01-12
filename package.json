@@ -4,14 +4,14 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "build": "rollup -c build/rollup.config.js",
-    "check-type": "tsc -p tsconfig.json"
+    "build": "rollup -c build/rollup.config.js"
   },
   "exports": {
     "./db": "./dist/db.js",
     "./oos": "./dist/oos.js",
     "./testlib": "./dist/testlib.js",
-    "./yoursql": "./dist/yoursql.js"
+    "./yoursql": "./dist/yoursql.js",
+    "./query": "./dist/query.js"
   },
   "author": "Eaviyi",
   "license": "Apache",

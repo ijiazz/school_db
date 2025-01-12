@@ -6,7 +6,8 @@
   },
   "tasks": {
     "check-type": "deno check src",
-    "doc:gen": "deno doc --name @ijia/data--html --output=docs/api src/db.ts src/oos.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts"
+    "doc:gen": "deno doc --name @ijia/data--html --output=docs/api src/db.ts src/oos.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
+    "build": "deno run -A build/build.ts"
   },
   "lint": {
   },

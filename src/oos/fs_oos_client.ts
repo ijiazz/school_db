@@ -1,4 +1,4 @@
-import { getAllBuckets } from "../oos.ts";
+import { getAllBuckets } from "../oos/const.ts";
 import { createFsOOS, type OOS } from "../oos/fs_oos.ts";
 import process from "node:process";
 import path from "node:path";
