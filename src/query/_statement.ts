@@ -1,6 +1,6 @@
 import type { AssertJsType, ColumnMeta, DbTableQuery, SqlStatementDataset, TableType } from "@asla/yoursql";
 import { Selection, SqlTextStatementDataset } from "@asla/yoursql";
-import v from "@ijia/data/yoursql.ts";
+import v from "../yoursql.ts";
 interface InsertForm {
   table: DbTableQuery<any>;
   /** insertColumn -> formTableColumn  */

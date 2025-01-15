@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "",
   "type": "module",
-  "scripts": {
-    "build": "rollup -c build/rollup.config.js"
-  },
   "exports": {
     "./db": "./dist/db.js",
     "./oos": "./dist/oos.js",

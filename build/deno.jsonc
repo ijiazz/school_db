@@ -1,0 +1,9 @@
+// empty config
+{
+  "nodeModulesDir": "none",
+  "lock": false,
+  "imports": {
+    "@rollup/plugin-typescript": "npm:@rollup/plugin-typescript@^12.1.2",
+    "rollup": "npm:rollup@^4.30.1"
+  }
+}

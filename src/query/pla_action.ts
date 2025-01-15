@@ -12,7 +12,7 @@ import {
   pla_user,
   pla_user_check,
   Platform,
-} from "@ijia/data/db.ts";
+} from "../db.ts";
 import { ColumnMeta, SqlTextStatementDataset, YourTable } from "@asla/yoursql";
 import { createConflictUpdate, insetFrom, UpdateBehaver } from "./_statement.ts";
 

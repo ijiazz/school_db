@@ -29,3 +29,16 @@ pg_restore -d ijia -U postgres ijia_db.tar # -d: 要恢复到的数据库名称�
 ```shell
 pg_dump -s -f ./ijia_db_schema.sql -h 127.0.0.1 -p 5432 -U postgres -d ijia # -f: 备份的文件路径。 -U 操作的用户。 最后的 ijia 为数据库名
 ```
+
+## 在项目中使用库
+
+可以使用 git submodules 引入项目。
+
+如果是 deno， 配置 workspace 后可以直接导入。
+
+如果是 node， 需要编译 ts。\
+在你项目安装 npm 依赖`tslib` 和 `@rollup/plugin-typescript`。 然后运行
+`pnpm dlx rollup -c school_db/build/rollup.config.mjs` 或 `npx rollup -c school_db/build/rollup.config.mjs`\
+`-c` 选项指向 `school_db` 的 `rollup.config.mjs` 即可
+
+或者，可以直接用 deno 进行编译, 直接在项目根目录下执行 `deno task build`
