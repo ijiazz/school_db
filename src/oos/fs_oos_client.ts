@@ -7,10 +7,10 @@ import { getEnv } from "../common/get_env.ts";
 let oos: OOS;
 export function getOOS(): OOS {
   if (!oos) {
-    let buckets: string[] = getAllBuckets();
+    const buckets: string[] = getAllBuckets();
     try {
       const rooDir = path.resolve(getEnv("OOS_ROOT_DIR", true));
-      console.log(`OOS: ${path.resolve(getEnv("OOS_ROOT_DIR", true))}`);
+      console.log(`OOS: ${rooDir}`);
       oos = createFsOOS(rooDir, Object.values(buckets));
     } catch (error) {
       console.error(error);
@@ -18,4 +18,8 @@ export function getOOS(): OOS {
     }
   }
   return oos;
+}
+export function setOos(newOos: OOS) {
+  if (oos) throw new Error("OOS 已创建");
+  oos = newOos;
 }
