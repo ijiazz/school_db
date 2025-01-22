@@ -20,6 +20,8 @@ export function getOOS(): OOS {
   return oos;
 }
 export function setOos(newOos: OOS) {
-  if (oos) throw new Error("OOS 已创建");
+  if (oos) {
+    console.warn("Update oos instance");
+  }
   oos = newOos;
 }

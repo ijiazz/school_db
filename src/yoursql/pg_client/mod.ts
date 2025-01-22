@@ -12,11 +12,15 @@ export function getDbUrl(): URL | undefined {
   return dbClient?.url;
 }
 
-let dbClient: { pool: DbPool; url: URL };
+let dbClient: { pool: DbPool; url?: URL } | undefined;
 
-export function setDbPool(pool: DbPool, url: URL) {
-  if (dbClient) throw new Error("DbPool 已经创建");
+export function setDbPool(pool: DbPool, url?: URL) {
+  if (dbClient) {
+    dbClient.pool.close(true);
+    console.warn("Update Database instance", url?.toString() ?? "no url");
+  }
   dbClient = { pool, url };
+  return pool;
 }
 export function getDbPool(): DbPool {
   if (dbClient) return dbClient.pool;
@@ -28,8 +32,11 @@ export function getDbPool(): DbPool {
     throw new Error("环境变量 DATABASE_URL 不符合规范", { cause: error });
   }
 
+  if (url) {
+    console.log(`Set Database: ${url.protocol + "//" + url.host + url.pathname}`);
+  } else console.log(`Set Database, no url`);
+
   const pgClient = createPgPool(url);
   setDbPool(pgClient, url);
-  console.log(`Database: ${url.protocol + "//" + url.host + url.pathname}`);
-  return dbClient;
+  return dbClient!.pool;
 }
