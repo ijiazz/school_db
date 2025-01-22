@@ -55,16 +55,17 @@ export class PgDbPool extends DbQuery implements DbPool {
   }
   // implement
   close(force?: boolean) {
-    const error = new Error("Pool has been ended");
+    if (this.#pool.ended) return Promise.resolve();
+    const f = this.#pool.end();
+    f.then(this.#resolveClose);
     if (force) {
+      const error = new Error("Pool has been ended");
       for (const item of this.#clientList) {
         item.release(error);
       }
       this.#clientList.clear();
     }
 
-    const f = this.#pool.end();
-    f.then(this.#resolveClose);
     return f;
   }
   // implement
