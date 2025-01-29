@@ -13,7 +13,7 @@ class FsOOS implements OOS {
   constructor(
     readonly rootDir: string,
     buckets: Iterable<string>,
-    option: FsOosOption = {}
+    option: FsOosOption = {},
   ) {
     const bucketSet = new Set<string>();
     for (const bucket of buckets) {
@@ -30,7 +30,7 @@ class FsOOS implements OOS {
         if (e instanceof Error) e = new Error("error", { cause: e });
         this.ready = e;
         throw e;
-      }
+      },
     );
     if (option.onInitError) this.ready.catch(option.onInitError);
   }
@@ -89,7 +89,7 @@ class FsOOS implements OOS {
         }
         return fs.rename(fromPath, finalPath).then(
           () => success.add(objectName),
-          (e) => failed.set(objectName, e)
+          (e) => failed.set(objectName, e),
         );
       });
       promises.push(promise);
@@ -148,7 +148,7 @@ export interface OOS {
    */
   fPutObjectMany(
     bucket: string,
-    list: Map<string, string>
+    list: Map<string, string>,
   ): Promise<{
     failed: Map<string, any>;
     success: Set<string>;

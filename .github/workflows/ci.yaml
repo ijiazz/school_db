@@ -7,6 +7,9 @@ on:
       - src/**
       - test/**
       - sql/**
+      - .github/workflows/ci.yaml
+      - deno.json
+      - deno.lock
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -28,10 +31,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
         with:
           deno-version: v2
       - run: deno install && cd test && deno install
@@ -40,3 +41,13 @@ jobs:
         env:
           PG_URL: pg://${{env.POSTGRES_USER}}:${{env.POSTGRES_PASSWORD}}@127.0.0.1:5432/${{env.POSTGRES_DB}}
         working-directory: ./test
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2
+      - run: deno task check-fmt
+      - run: deno install
+      - run: deno task check-type
