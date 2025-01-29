@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - "*"
+    paths:
+      - src/**
+      - test/**
+      - sql/**
 jobs:
   test:
     runs-on: ubuntu-latest
