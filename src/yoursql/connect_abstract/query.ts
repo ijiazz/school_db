@@ -31,9 +31,15 @@ export abstract class DbQuery {
     return this.query<T>(sql.toString()).then((res) => res.rows);
   }
   /** 指定某一列为key，返回 key -> row 的映射 */
-  queryMap<K, T = any>(sql: SqlStatementDataset<T>, key: string): Promise<Map<K, T>>;
+  queryMap<T extends Record<string, any> = Record<string, any>, K extends keyof T = string>(
+    sql: SqlStatementDataset<T>,
+    key: K,
+  ): Promise<Map<T[K], T>>;
   /** 指定某一列为key，返回 key -> row 的映射 */
-  queryMap<K, T = any>(sql: { toString(): string }, key: string): Promise<Map<K, T>>;
+  queryMap<T extends Record<string, any> = Record<string, any>, K extends keyof T = string>(
+    sql: { toString(): string },
+    key: K,
+  ): Promise<Map<T[K], T>>;
   async queryMap(sql: { toString(): string }, key: string): Promise<Map<any, any>> {
     const { rows } = await this.query(sql.toString());
     let map = new Map();
