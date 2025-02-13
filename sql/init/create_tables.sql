@@ -43,6 +43,7 @@ CREATE TABLE watching_pla_user (
     published_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步作品的时间
     published_last_update_time TIMESTAMPTZ, -- 最后一次同步作品的时间
     level SMALLINT, -- 权重
+    disabled BOOLEAN,
     pla_uid VARCHAR NOT NULL, -- 平台用户id
     platform platform_flag NOT NULL, -- 来源平台
     PRIMARY KEY (platform, pla_uid),
@@ -59,8 +60,6 @@ CREATE INDEX idx_watching_pla_user_published_last_update_time ON watching_pla_us
 CREATE TABLE pla_asset (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
     crawl_check_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    comment_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步评论的时间
-    comment_last_update_time TIMESTAMPTZ, -- 最后一次同步评论的时间
     extra JSONB NOT NULL DEFAULT '{}', -- 扩展信息, 不同平台结构不一样
     -- 
     is_delete BOOLEAN NOT NULL DEFAULT FALSE,
@@ -89,8 +88,6 @@ CREATE INDEX idxfk_pla_asset_pla_uid ON pla_asset(platform, pla_uid);
 CREATE INDEX idxfk_pla_asset_user_avatar_snapshot ON pla_asset USING hash(user_avatar_snapshot);
 
 CREATE INDEX idx_pla_asset_crawl_check_time ON pla_asset(crawl_check_time);
-CREATE INDEX idx_pla_asset_comment_last_full_update_time ON pla_asset(comment_last_full_update_time);
-CREATE INDEX idx_pla_asset_comment_last_update_time ON pla_asset(comment_last_update_time);
 
 CREATE INDEX idx_pla_asset_is_delete ON pla_asset(is_delete);
 CREATE INDEX idx_pla_asset_platform_delete ON pla_asset(platform_delete);
@@ -98,6 +95,19 @@ CREATE INDEX idx_pla_asset_publish_time ON pla_asset(publish_time);
 CREATE INDEX idx_pla_asset_content_text ON pla_asset(content_text);
 CREATE INDEX idx_pla_asset_content_type ON pla_asset(content_type);
 CREATE INDEX idx_pla_asset_like_count ON pla_asset(like_count);
+
+CREATE TABLE watching_pla_asset (
+    comment_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步评论的时间
+    comment_last_update_time TIMESTAMPTZ, -- 最后一次同步评论的时间
+    asset_id VARCHAR,
+    platform platform_flag,
+    disabled BOOLEAN,
+    PRIMARY KEY (platform, asset_id),
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+CREATE INDEX idx_watching_pla_asset_comment_last_full_update_time ON watching_pla_asset(comment_last_full_update_time);
+CREATE INDEX idx_watching_pla_asset_comment_last_update_time ON watching_pla_asset(comment_last_update_time);
+
 
 CREATE TABLE asset_image (
     platform platform_flag,
