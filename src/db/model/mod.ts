@@ -1,6 +1,7 @@
 export * from "./tables/crawl_task_queue.ts";
 
 export * from "./tables/pla_asset.ts";
+export * from "./tables/watching_pla_asset.ts";
 export * from "./tables/asset_resource.ts";
 
 export * from "./tables/pla_comment.ts";
