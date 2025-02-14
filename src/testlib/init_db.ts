@@ -6,11 +6,27 @@ const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 /**
  * 初始化数据库
  */
-async function initIjiaDb(client: DbQuery): Promise<void> {
-  const sqlFiles: string[] = ["init/create_tables.sql", "init/create_functions.sql", "init/create_triggers.sql"];
-  for (const sqlFile of sqlFiles) {
+async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
+  const sqlInitDir = SQL_DIR + "/init";
+  const sqlFiles: string[] = ["create_tables.sql", "create_functions.sql", "create_triggers.sql"];
+
+  if (option.extra) {
+    const extraDirName = "extra";
+    const extraFiles = await fs.readdir(path.join(sqlInitDir, extraDirName)).then((dir) => dir, (e) => {
+      if (e?.code === "ENOENT") {
+        return [];
+      }
+      throw e;
+    });
+    for (const item of extraFiles) {
+      sqlFiles.push(extraDirName + "/" + item);
+    }
+  }
+
+  for (const relSqlFile of sqlFiles) {
+    const sqlFile = path.resolve(sqlInitDir, relSqlFile);
     try {
-      await execSqlFile(path.resolve(SQL_DIR, sqlFile), client);
+      await execSqlFile(sqlFile, client);
     } catch (error) {
       throw new Error(`初始化数据库失败(${sqlFile})`, { cause: error });
     }
@@ -24,6 +40,8 @@ export async function createInitIjiaDb(connect: DbConnectOption | URL, dbname: s
   /** user 用于连接数据库，也将成为新建数据库的 owner */
   owner?: string;
   dropIfExists?: boolean;
+  /** 是否启用扩展功能 */
+  extra?: boolean;
 } = {}): Promise<void> {
   const pgClient = await createPgClient(connect);
   try {
@@ -33,7 +51,7 @@ export async function createInitIjiaDb(connect: DbConnectOption | URL, dbname: s
     await pgClient.close();
   }
   await using client = await createPgClient({ ...connect, database: dbname });
-  await initIjiaDb(client);
+  await initIjiaDb(client, { extra: true });
 }
 
 /**
