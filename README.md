@@ -17,12 +17,13 @@
 
 ### 备份
 
-备份整个数据库
+备份与恢复整个数据库
 
 ```shell
-pg_dump -f ./ijia_db.tar -F t -U postgres -d ijia # -f: 备份的文件路径。-F t为输出压缩包 -U 操作的用户。 -d 数据库名
-pg_restore -d ijia -U postgres ijia_db.tar # -d: 要恢复到的数据库名称。 -U 操作的用户。 最后是备份文件路径
+pg_dump -f ./ijia_db.tar -F t -U postgres-d ijia # -f: 备份的文件路径。-F t为输出压缩包 -U 操作的用户。 -d 数据库名
+pg_restore -d postgres -U postgres --create ./ijia_db.tar #-d: 要连接到的数据库名称。 -U 连接数据库的用户。 --create 创建新的数据库, 如果不存在，则恢复到连接的数据库  最后是备份文件路径
 ```
+恢复时确保授权的角色已创建
 
 备份数据库结构，用于比对生产环境和测试环境等是否一致
 
