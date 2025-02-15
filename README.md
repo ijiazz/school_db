@@ -9,7 +9,7 @@
 其中 create_tables.sql 是必须的。其余是可选的
 
 或者直接用 Deno 运行创建数据库的脚本文件 [scripts/create_db.ts](./scripts/create_db.ts)\
-`deno run -A`
+`deno run -A scripts/create_db.ts`
 
 ### 角色与权限
 
@@ -20,7 +20,7 @@
 备份与恢复整个数据库
 
 ```shell
-pg_dump -f ./ijia_db.tar -F t -U postgres-d ijia # -f: 备份的文件路径。-F t为输出压缩包 -U 操作的用户。 -d 数据库名
+pg_dump -f ./ijia_db.tar -F t -U postgres -d ijia # -f: 备份的文件路径。-F t为输出压缩包 -U 操作的用户。 -d 数据库名
 pg_restore -d postgres -U postgres --create ./ijia_db.tar #-d: 要连接到的数据库名称。 -U 连接数据库的用户。 --create 创建新的数据库, 如果不存在，则恢复到连接的数据库  最后是备份文件路径
 ```
 恢复时确保授权的角色已创建

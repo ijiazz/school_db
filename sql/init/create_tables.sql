@@ -86,7 +86,7 @@ CREATE TABLE pla_asset (
     asset_id VARCHAR,
     platform platform_flag,
     PRIMARY KEY (platform, asset_id),
-    FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
 CREATE INDEX idxfk_pla_asset_pla_uid ON pla_asset(platform, pla_uid);
@@ -113,7 +113,7 @@ CREATE TABLE watching_pla_asset (
     platform platform_flag,
     disabled BOOLEAN,
     PRIMARY KEY (platform, asset_id),
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
 );
 CREATE INDEX idx_watching_pla_asset_comment_last_full_update_time ON watching_pla_asset(comment_last_full_update_time);
 CREATE INDEX idx_watching_pla_asset_comment_last_update_time ON watching_pla_asset(comment_last_update_time);
@@ -131,7 +131,7 @@ CREATE TABLE asset_image (
     width SMALLINT,
     height SMALLINT,
 
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
 );
 CREATE INDEX idxfk_asset_image_pid ON asset_image(platform, asset_id);
 
@@ -147,7 +147,7 @@ CREATE TABLE asset_audio (
 
     duration INTEGER,
 
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
 );
 CREATE INDEX idxfk_asset_audio_pid ON asset_audio(platform, asset_id);
 
@@ -167,7 +167,7 @@ CREATE TABLE asset_video (
     fps SMALLINT,   --帧速率
     bit_rate INT, --比特率
 
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
 );
 CREATE INDEX idxfk_asset_video_pid ON asset_video(platform, asset_id);
 
