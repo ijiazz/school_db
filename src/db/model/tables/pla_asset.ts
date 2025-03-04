@@ -6,10 +6,12 @@ import v from "../../../yoursql.ts";
 const pla_assetDefine = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),
+  comment_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
+  comment_last_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   extra: dbTypeMap.genColumn<AssetExtra>("JSONB", true, v({})),
 
   platform_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
-  is_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
+  is_deleted: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
 
   publish_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   content_text: dbTypeMap.genColumn("VARCHAR"),

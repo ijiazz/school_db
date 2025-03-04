@@ -26,7 +26,7 @@ export function getConfig(option = {}) {
   /** @type {import("rollup").RollupOptions} */
   return {
     input,
-    external: [...Object.keys(packageJson.dependencies), /^node:/],
+    external: [...Object.keys(packageJson.dependencies), "tslib", /^node:/],
     plugins: [esmTsPlugin({
       tslib: option.tslib,
       tsconfig: path.join(rootDir, "tsconfig.json"),

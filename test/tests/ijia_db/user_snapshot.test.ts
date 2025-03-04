@@ -8,8 +8,8 @@ import {
   pla_comment,
   Platform,
   user_avatar,
-} from "@ijia/data/db.ts";
-import { savePlaAssetList, savePlaCommentList, savePlaUserList } from "@ijia/data/query.ts";
+} from "@ijia/data/db";
+import { savePlaAssetList, savePlaCommentList, savePlaUserList } from "@ijia/data/query";
 
 const mockAvatars: DbUserAvatarCreate[] = ["a.jpg", "b.jpg", "c.jpg"].map((uri) => ({ id: uri, size: 1 }));
 const mockUser: DbPlaUserCreate[] = [

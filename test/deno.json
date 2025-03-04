@@ -1,15 +1,9 @@
 {
   "tasks": {
     "test": "deno run -A npm:vitest run",
-    "test:node": "node ./node_modules/vitest/vitest.mjs run",
-    "check-type": "deno check ."
+    "test:node": "node ./node_modules/vitest/vitest.mjs run"
   },
-  "fmt": {
-    "lineWidth": 120
-  },
-  "nodeModulesDir": "manual",
   "imports": {
-    "@ijia/data/": "../src/",
     "vitest": "npm:vitest@^2.1.8"
   }
 }

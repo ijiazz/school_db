@@ -1,6 +1,8 @@
 import type { Client } from "pg";
 import { DbQuery } from "../connect_abstract/mod.ts";
 import type { DbConnection, QueryRowsResult } from "../connect_abstract/mod.ts";
+import { addPgErrorInfo } from "./_error_handler.ts";
+import type { MultipleQueryResult } from "../connect_abstract/query.ts";
 
 export class PgConnection extends DbQuery implements DbConnection {
   constructor(pool: Client) {
@@ -13,8 +15,12 @@ export class PgConnection extends DbQuery implements DbConnection {
 
   #pool: Client;
   //implement
-  query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
-    return this.#pool.query<T>(sql.toString());
+  override query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
+    const text = sql.toString();
+    return this.#pool.query<T>(text).catch((e) => addPgErrorInfo(e, text)) as any;
+  }
+  override multipleQuery<T extends MultipleQueryResult>(sql: ToString): Promise<T> {
+    return this.query(sql) as any;
   }
   //implement
   [Symbol.asyncDispose]() {

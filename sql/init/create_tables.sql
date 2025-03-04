@@ -39,10 +39,6 @@ CREATE TABLE pla_user (
 CREATE INDEX idx_pla_user_avatar ON pla_user USING hash(avatar);
 CREATE INDEX idx_pla_user_user_name ON pla_user (user_name);
 
-CREATE TRIGGER sync_pla_user_resource_ref_count -- 用户头像引用
-AFTER INSERT OR DELETE OR UPDATE
-ON pla_user FOR EACH ROW EXECUTE FUNCTION resource_ref_sync ();
-
 
 CREATE TABLE watching_pla_user (
     published_last_full_update_time TIMESTAMPTZ, -- 最后一次全量同步作品的时间
@@ -100,10 +96,6 @@ CREATE INDEX idx_pla_asset_publish_time ON pla_asset(publish_time);
 CREATE INDEX idx_pla_asset_content_text ON pla_asset(content_text);
 CREATE INDEX idx_pla_asset_content_type ON pla_asset(content_type);
 CREATE INDEX idx_pla_asset_like_count ON pla_asset(like_count);
-
-CREATE TRIGGER sync_pla_asset_resource_ref_count -- 作品头像快照
-AFTER INSERT OR DELETE OR UPDATE 
-ON pla_asset FOR EACH ROW EXECUTE FUNCTION resource_ref_sync ();
 
 
 CREATE TABLE watching_pla_asset (
@@ -209,3 +201,16 @@ SElECT
 FROM crawl_task_queue
 WHERE
     status = 'waiting';
+ 
+
+----------
+-- 触发器
+----------
+
+CREATE TRIGGER sync_pla_user_resource_ref_count -- 用户头像引用
+AFTER INSERT OR DELETE OR UPDATE
+ON pla_user FOR EACH ROW EXECUTE FUNCTION resource_ref_sync ();
+
+CREATE TRIGGER sync_pla_asset_resource_ref_count -- 作品头像快照
+AFTER INSERT OR DELETE OR UPDATE 
+ON pla_asset FOR EACH ROW EXECUTE FUNCTION resource_ref_sync ();

@@ -1,15 +1,17 @@
 import type { Pool, PoolClient } from "pg";
-import { PgPoolCursor } from "./_pg_cursor.ts";
-import { DbPoolTransaction, DbQuery } from "../connect_abstract/mod.ts";
+import { PgCursor } from "./_pg_cursor.ts";
+import { ConnectionNotAvailableError, DbPoolTransaction, DbQuery } from "../connect_abstract/mod.ts";
 import type {
   DbCursor,
   DbCursorOption,
   DbPool,
   DbPoolConnection,
   DbTransaction,
-  QueryRowsResult,
+  MultipleQueryResult,
   TransactionMode,
 } from "../connect_abstract/mod.ts";
+import { addPgErrorInfo } from "./_error_handler.ts";
+import Cursor from "pg-cursor";
 
 export class PgDbPool extends DbQuery implements DbPool {
   constructor(pool: Pool, onError?: (err: any) => void) {
@@ -30,13 +32,17 @@ export class PgDbPool extends DbQuery implements DbPool {
     //@ts-ignore
     conn.on("release", onRelease);
     conn.on("end", onRelease);
+    conn.on("error", onRelease);
     return conn;
   }
   #pool: Pool;
   #clientList = new Set<PoolClient>();
-  // implement
-  query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
-    return this.#pool.query<T>(sql.toString());
+  override query<T>(sql: ToString): Promise<T> {
+    const text = sql.toString();
+    return this.#pool.query(text).catch((e) => addPgErrorInfo(e, text)) as Promise<T>;
+  }
+  override multipleQuery(sql: ToString): Promise<MultipleQueryResult> {
+    return this.query(sql);
   }
   get idleCount(): number {
     return this.#pool.idleCount;
@@ -46,18 +52,14 @@ export class PgDbPool extends DbQuery implements DbPool {
     return new DbPoolTransaction(() => this.connect(), mode);
   }
   //implement
-  cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): DbCursor<T> {
-    return new PgPoolCursor(sql.toString(), (cursor) =>
-      this.#connectRaw().then((conn) => {
-        conn.query(cursor);
-        return new PgPoolConnection(conn);
-      }), option?.defaultSize);
+  async cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): Promise<DbCursor<T>> {
+    const conn = await this.#connectRaw();
+    const cursor = conn.query(new Cursor(sql.toString()));
+    return new PgCursor(cursor, new PgPoolConnection(conn), option?.defaultSize);
   }
   // implement
   close(force?: boolean) {
     if (this.#pool.ended) return Promise.resolve();
-    const f = this.#pool.end();
-    f.then(this.#resolveClose);
     if (force) {
       const error = new Error("Pool has been ended");
       for (const item of this.#clientList) {
@@ -65,17 +67,16 @@ export class PgDbPool extends DbQuery implements DbPool {
       }
       this.#clientList.clear();
     }
-
-    return f;
+    return this.#pool.end().then(this.#resolveClose);
   }
   // implement
   [Symbol.asyncDispose](): PromiseLike<void> {
     return this.close();
   }
-  #resolveClose!: () => void;
-  get getConnectedNumber() {
-    return this.#pool.idleCount;
+  get totalCount() {
+    return this.#pool.totalCount;
   }
+  #resolveClose!: () => void;
 }
 class PgListen implements Disposable {
   constructor(
@@ -109,10 +110,15 @@ export class PgPoolConnection extends DbQuery implements DbPoolConnection {
   async begin(mode?: TransactionMode): Promise<void> {
     await this.query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""));
   }
-  #pool: PoolClient;
+  #pool?: PoolClient;
   //implement
-  query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
-    return this.#pool.query<T>(sql.toString());
+  async query<T = any>(sql: ToString): Promise<T> {
+    if (!this.#pool) throw new ConnectionNotAvailableError("Connection already release");
+    const text = sql.toString();
+    return this.#pool.query<any>(text).catch((e: any) => addPgErrorInfo(e, text));
+  }
+  override multipleQuery(sql: ToString): Promise<MultipleQueryResult> {
+    return this.query(sql);
   }
   //implement
   async rollback() {
@@ -122,11 +128,18 @@ export class PgPoolConnection extends DbQuery implements DbPoolConnection {
   async commit() {
     await this.query("COMMIT");
   }
+  get released() {
+    return !this.#pool;
+  }
   //implement
   release() {
     //todo 调用如果存在光标，应中断光标
-    this.#pool.release();
-    this.#pool.emit("release");
+    if (this.#pool) {
+      const pool = this.#pool;
+      this.#pool = undefined;
+      pool.release();
+      pool.emit("release");
+    }
   }
   //implement
   [Symbol.dispose]() {

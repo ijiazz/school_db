@@ -1,5 +1,5 @@
-import { comment_image, DbUserAvatar, pla_asset, pla_comment, pla_user, Platform, user_avatar } from "@ijia/data/db.ts";
-import { getDbPool, v } from "@ijia/data/yoursql.ts";
+import { comment_image, DbUserAvatar, pla_asset, pla_comment, pla_user, Platform, user_avatar } from "@ijia/data/db";
+import { getDbPool, v } from "@ijia/data/yoursql";
 import { expect } from "vitest";
 import { test } from "../../fixtures/db_connect.ts";
 
@@ -51,9 +51,8 @@ test("创建或修改评论表，会触发数据库触发器并自动更新用�
 });
 
 async function getAvatar(): Promise<Record<string, number>> {
-  const res = await getDbPool().queryRows(
-    user_avatar.select<Pick<DbUserAvatar, "id" | "ref_count">>({ id: true, ref_count: true }),
-  );
+  const res = await user_avatar.select<Pick<DbUserAvatar, "id" | "ref_count">>({ id: true, ref_count: true })
+    .queryRows();
 
   return res.reduce(
     (i, c) => {
@@ -64,10 +63,8 @@ async function getAvatar(): Promise<Record<string, number>> {
   );
 }
 async function getCommentImage(): Promise<Record<string, number>> {
-  const res = await getDbPool().queryRows(
-    comment_image.select<Pick<DbUserAvatar, "id" | "ref_count">>({ id: true, ref_count: true }),
-  );
-
+  const res = await comment_image.select<Pick<DbUserAvatar, "id" | "ref_count">>({ id: true, ref_count: true })
+    .queryRows();
   return res.reduce(
     (i, c) => {
       i[c.id] = c.ref_count;
@@ -77,19 +74,17 @@ async function getCommentImage(): Promise<Record<string, number>> {
   );
 }
 async function addUser(uid: string, avatar: string) {
-  let q = pla_user.insert({ pla_uid: uid, platform: Platform.douYin, avatar });
-  await getDbPool().query(q);
+  await pla_user.insert({ pla_uid: uid, platform: Platform.douYin, avatar }).query();
 }
 async function addUserAvatar(uri: string[]) {
-  await getDbPool().query(user_avatar.insert(uri.map((uri) => ({ id: uri, size: 1 }))));
+  await user_avatar.insert(uri.map((uri) => ({ id: uri, size: 1 }))).query();
 }
 async function addCommentImage(uri: string[]) {
-  await getDbPool().query(comment_image.insert(uri.map((uri) => ({ id: uri, size: 1 }))));
+  await comment_image.insert(uri.map((uri) => ({ id: uri, size: 1 }))).query();
 }
 async function addAsset(uid: string, pid: string, user_avatar_snapshot: string) {
-  let q = pla_asset.insert({ pla_uid: uid, platform: Platform.douYin, asset_id: pid });
-  await getDbPool().query(q);
-  await getDbPool().query(pla_asset.updateFrom({ user_avatar_snapshot }).where("asset_id=" + v(pid)));
+  await pla_asset.insert({ pla_uid: uid, platform: Platform.douYin, asset_id: pid }).query();
+  await pla_asset.updateFrom({ user_avatar_snapshot }).where("asset_id=" + v(pid)).query();
 }
 
 async function addComment(

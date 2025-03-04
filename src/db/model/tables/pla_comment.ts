@@ -9,7 +9,7 @@ const pla_commentDefine = {
   reply_last_sync_date: dbTypeMap.genColumn("TIMESTAMPTZ"),
   extra: dbTypeMap.genColumn<CommentExtra>("JSONB", true, v({})),
 
-  is_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
+  is_deleted: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
   platform_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
 
   content_text: dbTypeMap.genColumn("VARCHAR"),

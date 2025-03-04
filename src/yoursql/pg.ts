@@ -12,7 +12,7 @@ export interface QueryableDataSql<T> extends QueryableSql {
   // query(): Promise<QueryRowsResult<T>>;
   queryRows(): Promise<T[]>;
   queryMap<K>(key: string): Promise<Map<K, T>>;
-  cursor(): DbCursor<T>;
+  cursor(): Promise<DbCursor<T>>;
 }
 declare module "@asla/yoursql" {
   interface SqlStatement extends QueryableSql {
@@ -30,7 +30,7 @@ const base: QueryableSql = {
 };
 const obj: QueryableDataSql<any> = {
   ...base,
-  cursor(): DbCursor<any> {
+  cursor(): Promise<DbCursor<any>> {
     return getDbPool().cursor(this.toString());
   },
   queryMap<K>(key: string): Promise<Map<K, any>> {

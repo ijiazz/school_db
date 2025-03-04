@@ -1,6 +1,7 @@
 import type { SqlStatementDataset } from "@asla/yoursql";
 import { DbQuery } from "./query.ts";
-import type { DbCursor, DbTransaction, QueryRowsResult, TransactionMode } from "./query.ts";
+import type { DbCursor, DbTransaction, MultipleQueryResult, QueryRowsResult, TransactionMode } from "./query.ts";
+import { ConnectionNotAvailableError, QueryNotCompletedError } from "../connect_abstract/errors.ts";
 
 /**
  * @public
@@ -14,32 +15,29 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
     super();
     this.#query = (sql: string) => {
       return new Promise<QueryRowsResult<any>>((resolve, reject) => {
-        this.#queue.push({ resolve, reject, sql });
-        if (this.#queue.length === 1) {
-          connect().then(async (conn) => {
-            this.#conn = conn;
-            this.#query = this.#queryAfter;
-            const mode = this.mode;
-            await conn
-              .query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""))
-              .catch(this.#onQueryError);
-            for (const element of this.#queue) {
-              this.#queryAfter(element.sql).then(element.resolve, element.reject);
-            }
-            this.#queue.length = 0;
-          }, (e) => {
-            for (const element of this.#queue) {
-              element.reject(e);
-            }
-            this.#queue.length = 0;
-          });
-        }
+        this.#pending = connect().then((conn) => {
+          this.#conn = conn;
+          const promise = conn.multipleQuery<[QueryRowsResult, QueryRowsResult]>(
+            "BEGIN" + (this.mode ? " TRANSACTION ISOLATION LEVEL " + this.mode : "") + ";\n" + sql,
+          );
+          this.#pending = promise;
+          this.#query = this.#queryAfter;
+          return promise;
+        }).then((res) => {
+          this.#pending = undefined;
+          resolve(res[1]);
+        }, (e) => {
+          this.#pending = undefined;
+          reject(e);
+          if (this.#conn) this.#release(this.#conn, e);
+        });
       });
     };
   }
+  #pending?: Promise<unknown>;
   #conn?: DbPoolConnection;
   async commit(): Promise<void> {
-    if (this.#isRelease) return;
+    if (this.#pending) throw new QueryNotCompletedError();
     if (this.#conn) {
       const promise = this.#conn.query("COMMIT");
       this.#release(this.#conn);
@@ -47,7 +45,7 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
     }
   }
   async rollback(): Promise<void> {
-    if (this.#isRelease) return;
+    if (this.#pending) throw new QueryNotCompletedError();
     if (this.#conn) {
       const promise = this.#conn.query("ROLLBACK");
       this.#release(this.#conn);
@@ -55,33 +53,46 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
     }
   }
   savePoint(savePoint: string): Promise<void> {
-    return this.#conn!.query("SAVEPOINT" + savePoint).then(() => {}, this.#onQueryError);
+    return this.query("SAVEPOINT" + savePoint).then(() => {});
   }
   rollbackTo(savePoint: string): Promise<void> {
-    return this.#conn!.query("ROLLBACK TO " + savePoint).then(() => {}, this.#onQueryError);
+    return this.query("ROLLBACK TO " + savePoint).then(() => {});
   }
-  #queue: { sql: string; resolve(res: QueryRowsResult<any>): void; reject(e: any): void }[] = [];
 
-  /** 只要sql执行出错（事务中断），就释放连接 */
-  #onQueryError = (e: Error) => {
-    this.#conn?.release();
-    throw e;
-  };
   /** 拿到连接后执行这个 */
   #queryAfter(sql: string) {
-    return this.#conn!.query(sql).catch(this.#onQueryError);
+    return this.#conn!.query(sql).then((res) => {
+      this.#pending = undefined;
+      return res;
+    }, (e) => {
+      this.#pending = undefined;
+      this.#release(this.#conn!, e);
+      throw e;
+    });
   }
   #query: (sql: string) => Promise<QueryRowsResult<any>>;
-  query<T extends object = any>(sql: SqlStatementDataset<T>): Promise<QueryRowsResult<T>>;
-  query<T extends object = any>(sql: { toString(): string }): Promise<QueryRowsResult<T>>;
-  query(sql: { toString(): string }): Promise<QueryRowsResult<any>> {
+  override query<T extends object = any>(sql: SqlStatementDataset<T>): Promise<QueryRowsResult<T>>;
+  override query<T extends object = any>(sql: { toString(): string }): Promise<QueryRowsResult<T>>;
+  override query(sql: { toString(): string }): Promise<QueryRowsResult<any>> {
+    if (this.#pending) return Promise.reject(new QueryNotCompletedError());
     return this.#query(sql.toString());
   }
-  #release(conn: DbPoolConnection) {
-    conn.release();
-    this.#isRelease = true;
+  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: SqlStatementDataset<T>): Promise<T>;
+  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: { toString(): string }): Promise<T>;
+  override multipleQuery(sql: { toString(): string }): Promise<MultipleQueryResult> {
+    if (this.#pending) return Promise.reject(new QueryNotCompletedError());
+    return this.#query(sql.toString()) as any;
   }
-  #isRelease: boolean = false;
+  #error: any;
+  #release(conn: DbPoolConnection, error: any = new ConnectionNotAvailableError("Connection already release")) {
+    this.#error = error;
+    this.#query = () => Promise.reject(this.#error);
+    this.#conn = undefined;
+    conn.release();
+  }
+  get released() {
+    return !!this.#error;
+  }
   [Symbol.asyncDispose]() {
     return this.rollback();
   }
@@ -94,6 +105,7 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
 export interface DbPoolConnection extends DbQuery, Disposable {
   /** 调用 release() 时，如果事务未提交，则抛出异常 */
   release(): void;
+  released: boolean;
 }
 /**
  * 数据库连接
@@ -109,9 +121,10 @@ export interface DbConnection extends DbQuery, AsyncDisposable {
 export interface DbQueryPool extends DbQuery {
   connect(): Promise<DbPoolConnection>;
   idleCount: number;
+  totalCount: number;
   begin(mode?: TransactionMode): DbTransaction;
-  cursor<T extends {}>(sql: SqlStatementDataset<T>): DbCursor<T>;
-  cursor<T>(sql: { toString(): string }, option?: DbCursorOption): DbCursor<T>;
+  cursor<T extends {}>(sql: SqlStatementDataset<T>): Promise<DbCursor<T>>;
+  cursor<T>(sql: { toString(): string }, option?: DbCursorOption): Promise<DbCursor<T>>;
 }
 /** @public */
 export interface DbCursorOption {

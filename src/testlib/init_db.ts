@@ -1,23 +1,28 @@
 import { createPgClient, DbConnection, DbConnectOption, DbQuery } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
+import { DatabaseError } from "../common/pg.ts";
+import { genPgSqlErrorMsg } from "../common/sql.ts";
 const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 /**
  * 初始化数据库
  */
-async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
+export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
   const sqlInitDir = SQL_DIR + "/init";
   const sqlFiles: string[] = ["create_functions.sql", "create_tables.sql"];
 
   if (option.extra) {
     const extraDirName = "extra";
-    const extraFiles = await fs.readdir(path.join(sqlInitDir, extraDirName)).then((dir) => dir, (e) => {
-      if (e?.code === "ENOENT") {
-        return [];
-      }
-      throw e;
-    });
+    const extraFiles = await fs.readdir(path.join(sqlInitDir, extraDirName)).then(
+      (dir) => dir,
+      (e) => {
+        if (e?.code === "ENOENT") {
+          return [];
+        }
+        throw e;
+      },
+    );
     for (const item of extraFiles) {
       sqlFiles.push(extraDirName + "/" + item);
     }
@@ -36,19 +41,23 @@ async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Pr
  * 创建并初始化 ijia_db
  * @param connect 必须提供一个数据库连接，用于执行SQL语句创建数据库
  */
-export async function createInitIjiaDb(connect: DbConnectOption | URL, dbname: string, option: {
-  /** user 用于连接数据库，也将成为新建数据库的 owner */
-  owner?: string;
-  dropIfExists?: boolean;
-  /** 是否启用扩展功能 */
-  extra?: boolean;
-} = {}): Promise<void> {
-  const pgClient = await createPgClient(connect);
+export async function createInitIjiaDb(
+  connect: DbConnectOption | URL,
+  dbname: string,
+  option: {
+    /** user 用于连接数据库，也将成为新建数据库的 owner */
+    owner?: string;
+    dropIfExists?: boolean;
+    /** 是否启用扩展功能 */
+    extra?: boolean;
+  } = {},
+): Promise<void> {
+  const manage = await DbManage.connect(connect);
   try {
-    if (option.dropIfExists) await pgClient.query(`DROP DATABASE IF EXISTS ${dbname}`);
-    await createDb(pgClient, dbname, { owner: option.owner });
+    if (option.dropIfExists) await manage.dropDb(dbname);
+    await manage.createDb(dbname, { owner: option.owner });
   } finally {
-    await pgClient.close();
+    await manage.close();
   }
   await using client = await createPgClient({ ...connect, database: dbname });
   await initIjiaDb(client, { extra: true });
@@ -70,8 +79,12 @@ END $$;
  `);
 }
 export class DbManage {
-  constructor(readonly dbClient: DbConnection) {
+  static async connect(url: string | URL | DbConnectOption) {
+    const client = await createPgClient(url);
+    return new DbManage(client);
   }
+
+  constructor(readonly dbClient: DbConnection) {}
   /** 删除 dbAddr 对应数据库 */
   createDb(dbName: string, option: CreateDataBaseOption = {}) {
     return createDb(this.dbClient, dbName, option);
@@ -87,6 +100,10 @@ export class DbManage {
   }
   close() {
     return this.dbClient.close();
+  }
+  async emptyDatabase(dbName: string) {
+    await this.dropDb(dbName);
+    await this.createDb(dbName);
   }
   [Symbol.asyncDispose]() {
     return this.close();
@@ -107,7 +124,17 @@ IS_TEMPLATE = False;
   `);
 }
 
-async function execSqlFile(pathname: string, client: DbQuery) {
+async function execSqlFile(pathname: string, client: DbQuery): Promise<void> {
   const file = await fs.readFile(pathname, "utf-8");
-  return client.query(file);
+  try {
+    await client.query(file);
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      const detail = genPgSqlErrorMsg(error, { sqlFileName: pathname, sqlText: file });
+      error.message = `执行SQL文件失败:${error.message}\n${detail}`;
+      throw error;
+    } else {
+      throw new Error(`执行SQL文件失败\n${pathname}`, { cause: error });
+    }
+  }
 }

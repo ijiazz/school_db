@@ -13,10 +13,8 @@ export default {
     ],
     env: {
       TEST_LOGIN_DB: PG_URL,
-      IJIA_TEMPLATE_DBNAME: "test_ijia_template",
     },
     include: ["tests/**/*.test.ts"],
     setupFiles: ["./setup/extend_yoursql.ts"],
-    globalSetup: "./setup/setup_pgsql.ts",
   },
 } satisfies ViteUserConfig;
