@@ -9,12 +9,11 @@ export default {
   esbuild: { target: "es2022" },
   test: {
     alias: [
-      { find: /^@ijia\/data\//, replacement: path.join(dirname, "../src") + "/" },
+      { find: /^@ijia\/data\//, replacement: path.join(dirname, "./src") + "/" },
     ],
     env: {
       TEST_LOGIN_DB: PG_URL,
     },
-    include: ["tests/**/*.test.ts"],
-    setupFiles: ["./setup/extend_yoursql.ts"],
+    setupFiles: ["./test/setup/extend_yoursql.ts"],
   },
 } satisfies ViteUserConfig;

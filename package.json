@@ -14,14 +14,15 @@
   "license": "Apache",
   "dependencies": {
     "@asla/yoursql": "^0.8.1",
-    "evlib": "^3.0.2",
+    "evlib": "^3.0.3",
     "pg": "^8.13.1",
     "pg-cursor": "^2.12.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/pg": "^8.11.10",
-    "@types/pg-cursor": "^2.7.2"
+    "@types/pg-cursor": "^2.7.2",
+    "vitest": "^3.0.7"
   },
   "files": [
     "dist/**"

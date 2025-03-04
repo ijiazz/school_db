@@ -1,4 +1,21 @@
 {
+  "name": "@ijia/data",
+  "version": "0.0.1",
+  "imports": {
+    "@ijia/data/db": "./src/db.ts",
+    "@ijia/data/oos": "./src/oos.ts",
+    "@ijia/data/query": "./src/query.ts",
+    "@ijia/data/testlib": "./src/testlib.ts",
+    "@ijia/data/yoursql": "./src/yoursql.ts"
+  },
+  "exports": {
+    "./db": "./src/db.ts",
+    "./oos": "./src/oos.ts",
+    "./query": "./src/query.ts",
+    "./testlib": "./src/testlib.ts",
+    "./yoursql": "./src/yoursql.ts"
+  },
+
   "fmt": {
     "lineWidth": 120
   },
@@ -7,8 +24,9 @@
     "check-fmt": "deno fmt --check ./src ./test ./scripts deno.json package.json",
     "check-type": "deno check src test",
     "doc:gen": "deno doc --name @ijia/data --html --output=docs/api src/db.ts src/oos.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
-    "build": "deno run -c build/deno.jsonc -A build/build.ts"
+    "build": "deno run -c build/deno.jsonc -A build/build.ts",
+    "test": "deno run -A npm:vitest run",
+    "test:node": "node ./node_modules/vitest/vitest.mjs run"
   },
-  "workspace": ["./src", "./test"],
   "nodeModulesDir": "manual"
 }

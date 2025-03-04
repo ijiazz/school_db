@@ -1,9 +1,0 @@
-{
-  "tasks": {
-    "test": "deno run -A npm:vitest run",
-    "test:node": "node ./node_modules/vitest/vitest.mjs run"
-  },
-  "imports": {
-    "vitest": "npm:vitest@^2.1.8"
-  }
-}
