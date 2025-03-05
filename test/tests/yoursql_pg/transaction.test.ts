@@ -22,7 +22,7 @@ test("rollback() 后直接释放连接", async function () {
 
   await transaction.query("SELECT count(*) FROM test");
   await transaction.rollback();
-  expect(conn.release).toBeCalledTimes(1);
+  expect(conn.onRelease).toBeCalledTimes(1);
 });
 test("commit() 直接释放连接", async function () {
   const conn = new MockDbPoolConnection();
@@ -31,7 +31,7 @@ test("commit() 直接释放连接", async function () {
 
   await transaction.query("SELECT count(*) FROM test");
   await transaction.commit();
-  expect(conn.release).toBeCalledTimes(1);
+  expect(conn.onRelease).toBeCalledTimes(1);
 });
 test("第一条语句与 begin 合并发生", async function () {
   const conn = new MockDbPoolConnection();
@@ -39,8 +39,8 @@ test("第一条语句与 begin 合并发生", async function () {
   const transaction = new DbPoolTransaction(connect);
 
   await transaction.query("SELECT count(*) FROM test");
-  expect(conn.multipleQuery, "BEGIN 和 query 合并发生").toBeCalledTimes(1);
-  expect(conn.query, "BEGIN 和 query 合并发生").toBeCalledTimes(0);
+  expect(conn.mockConn.multipleQuery, "BEGIN 和 query 合并发生").toBeCalledTimes(1);
+  expect(conn.mockConn.query, "BEGIN 和 query 合并发生").toBeCalledTimes(0);
 });
 test("多次 commit() 或 rollback() 会被忽略", async function () {
   const conn = new MockDbPoolConnection();
@@ -49,14 +49,14 @@ test("多次 commit() 或 rollback() 会被忽略", async function () {
 
   await transaction.query("SELECT count(*) FROM test");
   await transaction.commit();
-  expect(conn.multipleQuery).toBeCalledTimes(1);
-  expect(conn.query).toBeCalledTimes(1);
+  expect(conn.mockConn.multipleQuery).toBeCalledTimes(1);
+  expect(conn.mockConn.query).toBeCalledTimes(1);
   await transaction.commit();
   await transaction.rollback();
   await transaction.rollback();
-  expect(conn.query).toBeCalledTimes(1);
-  expect(conn.multipleQuery).toBeCalledTimes(1);
-  expect(conn.release).toBeCalledTimes(1);
+  expect(conn.mockConn.query).toBeCalledTimes(1);
+  expect(conn.mockConn.multipleQuery).toBeCalledTimes(1);
+  expect(conn.onRelease).toBeCalledTimes(1);
 });
 test("不允许并行查询", async function () {
   const conn = new MockDbPoolConnection();
@@ -65,13 +65,13 @@ test("不允许并行查询", async function () {
 
   const p1 = transaction.query("SELECT count(*) FROM test");
   await expect(transaction.query("SELECT count(*) FROM test")).rejects.toThrowError(QueryNotCompletedError);
-  expect(conn.multipleQuery).toBeCalledTimes(1);
-  expect(conn.query).toBeCalledTimes(0);
+  expect(conn.mockConn.multipleQuery).toBeCalledTimes(1);
+  expect(conn.mockConn.query).toBeCalledTimes(0);
 
   await p1;
   await expect(transaction.query("SELECT count(*) FROM test")).resolves.not.toBeUndefined();
-  expect(conn.multipleQuery).toBeCalledTimes(1);
-  expect(conn.query).toBeCalledTimes(1);
+  expect(conn.mockConn.multipleQuery).toBeCalledTimes(1);
+  expect(conn.mockConn.query).toBeCalledTimes(1);
 });
 
 describe("事务执行出错", function () {
@@ -79,21 +79,21 @@ describe("事务执行出错", function () {
   let transaction: DbPoolTransaction;
   beforeEach(function () {
     conn = new MockDbPoolConnection();
-    conn.query.mockImplementation(() => Promise.reject("err"));
-    conn.multipleQuery.mockImplementation(() => Promise.reject("err"));
+    conn.mockConn.query.mockImplementation(() => Promise.reject("err"));
+    conn.mockConn.multipleQuery.mockImplementation(() => Promise.reject("err"));
     const connect = vi.fn(async () => conn);
     transaction = new DbPoolTransaction(connect);
   });
   test("事务中通出错，应释放连接", async function () {
     await expect(transaction.query("aaa")).rejects.toThrowError();
-    expect(conn.release).toBeCalledTimes(1);
+    expect(conn.onRelease).toBeCalledTimes(1);
     expect(conn.released).toBe(true);
   });
 
   test("执行出错，试图再次 rollback", async function () {
     await expect(transaction.query("aaa")).rejects.toThrowError();
-    const callCount = conn.query.mock.calls.length;
+    const callCount = conn.mockConn.query.mock.calls.length;
     await transaction.rollback(); // rollback()
-    expect(conn.query.mock.calls.length, "rollback() 被忽略").toBe(callCount);
+    expect(conn.mockConn.query.mock.calls.length, "rollback() 被忽略").toBe(callCount);
   });
 });

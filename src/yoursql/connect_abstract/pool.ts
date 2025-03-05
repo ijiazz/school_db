@@ -99,15 +99,6 @@ export class DbPoolTransaction extends DbQuery implements DbTransaction {
 }
 
 /**
- * 池连接
- * @public
- */
-export interface DbPoolConnection extends DbQuery, Disposable {
-  /** 调用 release() 时，如果事务未提交，则抛出异常 */
-  release(): void;
-  released: boolean;
-}
-/**
  * 数据库连接
  */
 export interface DbConnection extends DbQuery, AsyncDisposable {
@@ -137,4 +128,55 @@ export interface DbCursorOption {
 export interface DbPool extends DbQueryPool, AsyncDisposable {
   /** 关闭所有链接。如果 force 为 true, 则直接断开所有连接，否则等待连接释放后再关闭 */
   close(force?: boolean): Promise<void>;
+}
+
+/**
+ * 池连接
+ * @public
+ */
+export class DbPoolConnection extends DbQuery {
+  constructor(conn: DbConnection, onRelease: () => void) {
+    super();
+    this.#conn = conn;
+    this.#onRelease = onRelease;
+  }
+  #onRelease: () => void;
+  //implement
+  async begin(mode?: TransactionMode): Promise<void> {
+    await this.query("BEGIN" + (mode ? " TRANSACTION ISOLATION LEVEL " + mode : ""));
+  }
+  #conn?: DbConnection;
+
+  override query<T = any>(sql: SqlStatementDataset<T>): Promise<QueryRowsResult<T>>;
+  override query<T = any>(sql: { toString(): string }): Promise<QueryRowsResult<T>>;
+  override query(sql: { toString(): string }): Promise<QueryRowsResult> {
+    if (!this.#conn) return Promise.reject(new ConnectionNotAvailableError("Connection already release"));
+    return this.#conn.query(sql);
+  }
+  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: { toString(): string }): Promise<T> {
+    if (!this.#conn) return Promise.reject(new ConnectionNotAvailableError("Connection already release"));
+    return this.#conn.multipleQuery(sql);
+  }
+  //implement
+  async rollback() {
+    await this.query("ROLLBACK");
+  }
+  //implement
+  async commit() {
+    await this.query("COMMIT");
+  }
+  get released() {
+    return !this.#conn;
+  }
+  /** 调用 release() 时，如果事务未提交，则抛出异常 */
+  release() {
+    if (this.#conn) {
+      this.#conn = undefined;
+      this.#onRelease();
+    }
+  }
+  //implement
+  [Symbol.dispose]() {
+    return this.release();
+  }
 }
