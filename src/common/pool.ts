@@ -1,36 +1,34 @@
 export interface ResourceManage<T> {
-  init(ctrl: { connErrored(conn: T, err?: any): void }): void;
   connect(): Promise<T>;
   disconnect(conn: T): void;
-  markIdle(conn: T): void;
-  markUsed(conn: T): void;
 }
-export enum ConnectionStatus {
-  closed,
-  connected,
-  connecting,
-}
+
 export class ResourcePool<T> {
+  static defaultMaxCount = 3;
   #pool = new Map<T | Promise<T>, { isFree: boolean }>();
   #free: { conn: T; date: number }[] = [];
   constructor(
     private handler: ResourceManage<T>,
     option: PoolOption = {},
   ) {
-    handler.init({
-      connErrored: (conn, err) => {
-        this.#pool.delete(conn);
-      },
-    });
-    this.maxCount = option.maxCount ?? 3;
+    this.maxCount = option.maxCount ?? ResourcePool.defaultMaxCount;
   }
-
+  disposeConn(conn: T) {
+    const info = this.#pool.get(conn);
+    if (!info) return;
+    this.#pool.delete(conn);
+    if (info.isFree) {
+      const index = this.#free.findIndex((item) => item.conn == conn);
+      this.#free.splice(index, 1);
+    }
+  }
   #queue: { resolve(conn: T): void; reject(e: any): void }[] = [];
   connect(): Promise<T> {
     if (this.#closedError) return Promise.reject(this.#closedError);
     if (this.#free.length) {
       const conn = this.#free.pop()!.conn;
-      this.handler.markUsed(conn);
+      // this.handler.markUsed?.(conn);
+      this.#pool.get(conn)!.isFree = false;
       return Promise.resolve(conn);
     }
     if (this.totalCount >= this.maxCount) {
@@ -44,7 +42,11 @@ export class ResourcePool<T> {
     this.#pool.set(promise, info);
     return promise
       .then((conn) => {
-        if (this.#closedError) throw this.#closedError;
+        if (this.#closedError) {
+          this.handler.disconnect(conn);
+          this.#closeResolver?.();
+          throw this.#closedError;
+        }
         this.#pool.set(conn, info);
         return conn;
       })
@@ -69,7 +71,7 @@ export class ResourcePool<T> {
     } else {
       info.isFree = true;
       this.#free.push({ conn, date: Date.now() });
-      this.handler.markIdle(conn);
+      // this.handler.markIdle?.(conn);
     }
   }
   #closeResolver?: () => void;
@@ -80,6 +82,7 @@ export class ResourcePool<T> {
     for (const item of this.#queue) {
       item.reject(err);
     }
+    this.#queue.length = 0;
     for (const item of this.#free) {
       this.handler.disconnect(item.conn);
       this.#pool.delete(item.conn);
@@ -94,15 +97,16 @@ export class ResourcePool<T> {
       }
       this.#pool.clear();
       return Promise.resolve();
-    } else {
+    } else if (this.#pool.size !== 0) {
       return new Promise<void>((resolve, reject) => {
         this.#closeResolver = resolve;
       });
     }
+    return Promise.resolve();
   }
   /** 池是否已关闭 */
   get closed() {
-    return this.#closedError;
+    return !!this.#closedError;
   }
   /** 保留的总数 */
   get totalCount() {
@@ -119,10 +123,16 @@ export class ResourcePool<T> {
   /** 最大数量 */
   maxCount: number;
 
-  checkTimeout(idleTimeout: number) {
+  /** 检测已经过期的空闲连接，并释放它们 */
+  checkTimeout(idleTimeout: number, minCount: number = 0) {
     const now = Date.now();
+    const reserve = minCount - (this.totalCount - this.idleCount);
+
+    const limit = reserve > 0 ? this.#free.length - reserve : this.#free.length;
+
     let i = 0;
-    for (; i < this.#free.length; i++) {
+
+    for (; i < limit; i++) {
       const info = this.#free[i];
       if (now - info.date > idleTimeout) {
         this.handler.disconnect(info.conn);

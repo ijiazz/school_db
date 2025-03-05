@@ -1,14 +1,10 @@
 import { ResourceManage, ResourcePool } from "@/common/pool.ts";
-import { test as viTest, vi } from "vitest";
+import { expect, test as viTest, vi } from "vitest";
 export class MockConn {
-  idle = true;
+  idle = false;
   connected = true;
 }
 export class MockResourceManage implements ResourceManage<MockConn> {
-  connErrored!: (conn: MockConn) => void;
-  init({ connErrored }: { connErrored(conn: MockConn, err?: any): void }) {
-    this.connErrored = connErrored;
-  }
   connect = vi.fn<() => Promise<MockConn>>(async function () {
     return new MockConn();
   });
@@ -17,13 +13,17 @@ export class MockResourceManage implements ResourceManage<MockConn> {
     conn.connected = false;
   });
   markIdle = vi.fn<(conn: MockConn) => void>(function (conn) {
-    if (conn.idle === false) throw new Error("idle 已经是 true");
+    if (conn.idle === true) throw new Error("idle 已经是 true");
     conn.idle = true;
   });
   markUsed = vi.fn<(conn: MockConn) => void>(function (conn) {
     if (conn.idle === false) throw new Error("idle 已经是 false");
     conn.idle = false;
   });
+
+  getAllCreatedConn(): Promise<MockConn[]> {
+    return Promise.all(this.connect.mock.results.map((item) => item.value));
+  }
 }
 export interface Context {
   resourceManage: MockResourceManage;
@@ -31,7 +31,10 @@ export interface Context {
 }
 export const test = viTest.extend<Context>({
   async resourceManage({}, use) {
-    return use(new MockResourceManage());
+    const manage = new MockResourceManage();
+    await use(new MockResourceManage());
+    const connList = await manage.getAllCreatedConn();
+    await expect(connList.map((item) => item.connected), "所有连接已断开").toEqual(connList.map(() => false));
   },
   async pool({ resourceManage }, use) {
     use(new ResourcePool(resourceManage));
