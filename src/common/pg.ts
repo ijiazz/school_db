@@ -1,1 +1,3 @@
-export { Client, DatabaseError, Pool } from "pg";
+import pg from "pg";
+const { Client, DatabaseError, Pool } = pg;
+export { Client, DatabaseError, Pool };
