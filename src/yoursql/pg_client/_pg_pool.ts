@@ -12,24 +12,24 @@ import {
 } from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
 import Cursor from "pg-cursor";
-import { ResourcePool } from "../../common/pool.ts";
 import pg from "pg";
 import { PgConnection } from "./_pg_connect.ts";
 import type { DbPool } from "../type.ts";
+import { ResourcePool } from "evlib/async";
 
 export class PgDbPool extends DbQuery implements DbPool {
   #pool: ResourcePool<Client>;
   constructor(connectOption: string | ClientConfig) {
     super();
     this.#pool = new ResourcePool<Client>({
-      connect: async () => {
+      create: async () => {
         const pgClient = new pg.Client(connectOption);
-        pgClient.on("end", () => this.#pool.disposeConn(pgClient));
-        pgClient.on("error", () => this.#pool.disposeConn(pgClient));
+        pgClient.on("end", () => this.#pool.remove(pgClient));
+        pgClient.on("error", () => this.#pool.remove(pgClient));
         await pgClient.connect();
         return pgClient;
       },
-      disconnect: (conn) => {
+      dispose: (conn) => {
         conn.end().catch((e) => {
           console.error(e);
         });
@@ -38,7 +38,7 @@ export class PgDbPool extends DbQuery implements DbPool {
   }
   // implement
   async connect(): Promise<DbPoolConnection> {
-    const conn = await this.#pool.connect();
+    const conn = await this.#pool.get();
     return new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
   }
   override async query<T>(sql: ToString): Promise<T> {
@@ -56,7 +56,7 @@ export class PgDbPool extends DbQuery implements DbPool {
   }
   //implement
   async cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): Promise<DbCursor<T>> {
-    const conn = await this.#pool.connect();
+    const conn = await this.#pool.get();
     const cursor = conn.query(new Cursor(sql.toString()));
     const poolConn = new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
     return new PgCursor(cursor, poolConn, option?.defaultSize);
