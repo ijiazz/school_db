@@ -1,5 +1,5 @@
 import { pgSqlTransformer, SqlStatement, SqlStatementDataset, SqlValuesCreator } from "@asla/yoursql";
-import type { DbCursor, QueryResult, QueryRowsResult } from "./connect_abstract/mod.ts";
+import type { DbCursor, QueryResult, QueryRowsResult } from "@asla/yoursql/client";
 import { getDbPool } from "./pg_client/mod.ts";
 
 export const v = SqlValuesCreator.create(pgSqlTransformer);

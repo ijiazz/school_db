@@ -1,7 +1,6 @@
 {
   "version": "4",
   "specifiers": {
-    "npm:@asla/yoursql@~0.8.1": "0.8.1",
     "npm:@types/node@^22.10.2": "22.10.5",
     "npm:@types/pg-cursor@^2.7.2": "2.7.2",
     "npm:@types/pg@^8.11.10": "8.11.10",
@@ -11,9 +10,6 @@
     "npm:vitest@^3.0.7": "3.0.7_@types+node@22.10.5_vite@6.2.0__@types+node@22.10.5"
   },
   "npm": {
-    "@asla/yoursql@0.8.1": {
-      "integrity": "sha512-QD2q7ElVhHIA8/jfkaTr8xRD9r0Al0hhYSB050tmV/XyLYK6TIcRAmsY3+wNKrF+lnnVFqFmPNZmUj2EjIqf1Q=="
-    },
     "@esbuild/aix-ppc64@0.25.0": {
       "integrity": "sha512-O7vun9Sf8DFjH2UtqK8Ku3LkquL9SZL8OLY1T5NZkA34+wG3OQF7cl4Ql8vdNzM6fzBbYfLaiRLIOZ+2FOCgBQ=="
     },
@@ -564,7 +560,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@asla/yoursql@~0.8.1",
+        "npm:@asla/yoursql@~0.8.3",
         "npm:@types/node@^22.10.2",
         "npm:@types/pg-cursor@^2.7.2",
         "npm:@types/pg@^8.11.10",

@@ -13,7 +13,7 @@
   "author": "Eaviyi",
   "license": "Apache",
   "dependencies": {
-    "@asla/yoursql": "^0.8.1",
+    "@asla/yoursql": "^0.8.3",
     "evlib": "^3.0.3",
     "pg": "^8.13.1",
     "pg-cursor": "^2.12.1"

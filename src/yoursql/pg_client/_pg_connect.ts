@@ -1,8 +1,6 @@
 import type { Client } from "pg";
-import { DbQuery } from "../connect_abstract/mod.ts";
-import type { DbConnection, QueryRowsResult } from "../connect_abstract/mod.ts";
+import { DbConnection, DbQuery, MultipleQueryResult, QueryRowsResult } from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
-import type { MultipleQueryResult } from "../connect_abstract/query.ts";
 
 export class PgConnection extends DbQuery implements DbConnection {
   constructor(pool: Client) {

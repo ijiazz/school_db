@@ -1,6 +1,6 @@
 import pg from "pg";
 import { getEnv } from "../../common/get_env.ts";
-import type { DbPool } from "../connect_abstract/pool.ts";
+import type { DbPool } from "../type.ts";
 
 export * from "./connect.ts";
 import { createPgPool } from "./connect.ts";

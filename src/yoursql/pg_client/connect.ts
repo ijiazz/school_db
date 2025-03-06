@@ -1,7 +1,8 @@
 import pg from "pg";
 import { PgDbPool } from "./_pg_pool.ts";
 import { PgConnection } from "./_pg_connect.ts";
-import type { DbConnection, DbPool } from "../connect_abstract/mod.ts";
+import type { DbPool } from "../type.ts";
+import type { DbConnection } from "@asla/yoursql/client";
 
 export interface DbConnectOption {
   database: string;

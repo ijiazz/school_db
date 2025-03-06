@@ -1,4 +1,4 @@
-import { DbQuery, QueryNotCompletedError } from "@ijia/data/yoursql";
+import { DbQuery, ParallelQueryError } from "@asla/yoursql/client";
 import { beforeEach, expect } from "vitest";
 
 import { BaseContext, test } from "../../fixtures/db_connect.ts";
@@ -41,7 +41,7 @@ test("不允许并行读取", async function ({ emptyDbPool }) {
     defaultSize: 5,
   });
   let p1 = cursor.read(5);
-  await expect(cursor.read(5)).rejects.toThrowError(QueryNotCompletedError);
+  await expect(cursor.read(5)).rejects.toThrowError(ParallelQueryError);
   await expect(p1).resolves.toEqual(values.slice(0, 5));
   await expect(cursor.read(5)).resolves.toEqual(values.slice(5, 10));
 

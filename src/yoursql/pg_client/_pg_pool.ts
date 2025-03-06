@@ -1,20 +1,21 @@
 import type { Client, ClientConfig, PoolClient } from "pg";
 import { PgCursor } from "./_pg_cursor.ts";
-import { DbPoolTransaction, DbQuery } from "../connect_abstract/mod.ts";
 import {
   DbCursor,
   DbCursorOption,
-  DbPool,
   DbPoolConnection,
+  DbPoolTransaction,
+  DbQuery,
   DbTransaction,
   MultipleQueryResult,
   TransactionMode,
-} from "../connect_abstract/mod.ts";
+} from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
 import Cursor from "pg-cursor";
 import { ResourcePool } from "../../common/pool.ts";
 import pg from "pg";
 import { PgConnection } from "./_pg_connect.ts";
+import type { DbPool } from "../type.ts";
 
 export class PgDbPool extends DbQuery implements DbPool {
   #pool: ResourcePool<Client>;
