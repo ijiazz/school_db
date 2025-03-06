@@ -10,6 +10,8 @@ export default {
   test: {
     alias: [
       { find: /^@ijia\/data\//, replacement: path.join(dirname, "./src") + "/" },
+      { find: /^@\//, replacement: path.join(dirname, "./src") + "/" },
+      { find: /^@test\//, replacement: path.join(dirname, "./test") + "/" },
     ],
     env: {
       TEST_LOGIN_DB: PG_URL,

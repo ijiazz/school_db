@@ -1,7 +1,8 @@
 import pg from "pg";
 import { PgDbPool } from "./_pg_pool.ts";
 import { PgConnection } from "./_pg_connect.ts";
-import type { DbConnection, DbPool } from "../connect_abstract/mod.ts";
+import type { DbPool } from "../type.ts";
+import type { DbConnection } from "@asla/yoursql/client";
 
 export interface DbConnectOption {
   database: string;
@@ -14,14 +15,14 @@ export function createPgPool(url: string | URL | DbConnectOption): DbPool {
   let option: DbConnectOption;
   if (typeof url === "string" || url instanceof URL) option = parserDbUrl(url);
   else option = url;
-  const pool = new pg.Pool({
+
+  return new PgDbPool({
     database: option.database,
     user: option.user,
     password: option.password,
     host: option.hostname,
     port: option.port,
   });
-  return new PgDbPool(pool, (e) => console.error("数据库异常", e));
 }
 
 export async function createPgClient(url: string | URL | DbConnectOption): Promise<DbConnection> {

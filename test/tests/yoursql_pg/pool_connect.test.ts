@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import { test } from "../../fixtures/db_connect.ts";
-import { ConnectionNotAvailableError, DbQuery, QueryRowsResult } from "@ijia/data/yoursql";
+import { ConnectionNotAvailableError, DbQuery, QueryRowsResult } from "@asla/yoursql/client";
 async function createTable(query: DbQuery, rowNum: number) {
   await query.query(
     `CREATE TABLE test(id INT PRIMARY KEY, num INT); INSERT INTO test(id) SELECT generate_series(0,${rowNum})`,
