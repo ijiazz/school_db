@@ -1,5 +1,5 @@
 import { comment_image, DbUserAvatar, pla_asset, pla_comment, pla_user, Platform, user_avatar } from "@ijia/data/db";
-import { getDbPool, v } from "@ijia/data/yoursql";
+import { dbPool, v } from "@ijia/data/yoursql";
 import { expect } from "vitest";
 import { test } from "../../fixtures/db_connect.ts";
 
@@ -99,6 +99,6 @@ async function addComment(
     comment_id: id.cid,
     additional_image: commentImg,
   });
-  await getDbPool().query(q);
-  await getDbPool().query(pla_comment.updateFrom({ user_avatar_snapshot }).where("comment_id=" + v(id.cid)));
+  await dbPool.query(q);
+  await dbPool.query(pla_comment.updateFrom({ user_avatar_snapshot }).where("comment_id=" + v(id.cid)));
 }

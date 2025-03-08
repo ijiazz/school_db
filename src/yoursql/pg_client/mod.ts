@@ -1,42 +1,14 @@
 import pg from "pg";
-import { getEnv } from "../../common/get_env.ts";
-import type { DbPool } from "../type.ts";
 
-export * from "./connect.ts";
-import { createPgPool } from "./connect.ts";
+import { ENV } from "../../common/env.ts";
+import { PgDbPool } from "./_pg_pool.ts";
 const pgTypes = pg.types;
 
 pgTypes.setTypeParser(pgTypes.builtins.INT8, BigInt);
 
-export function getDbUrl(): URL | undefined {
-  return dbClient?.url;
-}
+export * from "./type.ts";
+export * from "./pg_connect.ts";
 
-let dbClient: { pool: DbPool; url?: URL } | undefined;
-
-export function setDbPool(pool: DbPool, url?: URL) {
-  if (dbClient) {
-    dbClient.pool.close(true);
-    console.warn("Update Database instance", url?.toString() ?? "no url");
-  }
-  dbClient = { pool, url };
-  return pool;
-}
-export function getDbPool(): DbPool {
-  if (dbClient) return dbClient.pool;
-  const dbUrlStr = getEnv("DATABASE_URL", true);
-  let url: URL;
-  try {
-    url = new URL(dbUrlStr);
-  } catch (error) {
-    throw new Error("环境变量 DATABASE_URL 不符合规范", { cause: error });
-  }
-
-  if (url) {
-    console.log(`Set Database: ${url.protocol + "//" + url.host + url.pathname}`);
-  } else console.log(`Set Database, no url`);
-
-  const pgClient = createPgPool(url);
-  setDbPool(pgClient, url);
-  return dbClient!.pool;
-}
+const DB_URL = ENV.DATABASE_URL ?? "postgresql://postgres@localhost:5432/ijia_test";
+export const dbPool = new PgDbPool(DB_URL);
+if (!ENV.DATABASE_URL) dbPool.connectWarning = `缺少 OOS_ROOT_DIR 环境变量，将使用默认值 ${DB_URL}`;

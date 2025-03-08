@@ -1,5 +1,5 @@
 import { test as viTest } from "vitest";
-import { createPgPool, DbPool, parserDbUrl, setDbPool } from "@ijia/data/yoursql";
+import { DbPool, dbPool, parserDbUrl } from "@ijia/data/yoursql";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
 export interface BaseContext {
@@ -15,8 +15,8 @@ export const test = viTest.extend<BaseContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
     await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true, extra: true });
-    const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
-    setDbPool(dbPool);
+    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
+    dbPool.open();
     await use(dbPool);
     const useCount = dbPool.totalCount - dbPool.idleCount;
     await dbPool.close(true);
@@ -31,7 +31,8 @@ export const test = viTest.extend<BaseContext>({
     await manage.emptyDatabase(dbName);
     await manage.close();
 
-    const dbPool = await createPgPool({ ...DB_CONNECT_INFO, database: dbName });
+    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
+    dbPool.open();
     await use(dbPool);
     const useCount = dbPool.totalCount - dbPool.idleCount;
     await dbPool.close(true);

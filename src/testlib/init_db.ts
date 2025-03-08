@@ -1,4 +1,4 @@
-import { createPgClient, DbConnection, DbConnectOption, DbQuery } from "../yoursql.ts";
+import { createDbConnection, DbConnection, DbConnectOption, DbQuery } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
@@ -59,7 +59,7 @@ export async function createInitIjiaDb(
   } finally {
     await manage.close();
   }
-  await using client = await createPgClient({ ...connect, database: dbname });
+  await using client = await createDbConnection({ ...connect, database: dbname });
   await initIjiaDb(client, { extra: true });
 }
 
@@ -80,7 +80,7 @@ END $$;
 }
 export class DbManage {
   static async connect(url: string | URL | DbConnectOption) {
-    const client = await createPgClient(url);
+    const client = await createDbConnection(url);
     return new DbManage(client);
   }
 

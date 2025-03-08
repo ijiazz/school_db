@@ -1,5 +1,5 @@
 import { asset_audio, asset_image, asset_video, comment_image, user_avatar } from "../db.ts";
-import { DbQueryPool, getDbPool, v } from "../yoursql.ts";
+import { dbPool, DbQueryPool, v } from "../yoursql.ts";
 import type { SqlStatementDataset, YourTable } from "@asla/yoursql";
 import { getBucket, getOOS, OOS } from "../oos.ts";
 import { PromiseConcurrency } from "evlib/async";
@@ -13,7 +13,7 @@ export class DbResourceDelete {
   #db: DbQueryPool;
   constructor(option: { oos?: OOS; client?: DbQueryPool }) {
     this.#oos = option.oos ?? getOOS();
-    this.#db = option.client ?? getDbPool();
+    this.#db = option.client ?? dbPool;
   }
   async #deleteOosObj(iter: AsyncGenerator<OosObjId[]>, options: { signal?: AbortSignal } = {}) {
     const { signal } = options;

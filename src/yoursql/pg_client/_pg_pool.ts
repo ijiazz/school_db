@@ -1,4 +1,4 @@
-import type { Client, ClientConfig, PoolClient } from "pg";
+import type { Client, PoolClient } from "pg";
 import { PgCursor } from "./_pg_cursor.ts";
 import {
   DbCursor,
@@ -12,20 +12,30 @@ import {
 } from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
 import Cursor from "pg-cursor";
-import pg from "pg";
-import { PgConnection } from "./_pg_connect.ts";
+import { parserDbUrl, PgConnection } from "./pg_connect.ts";
 import type { DbPool } from "../type.ts";
 import { ResourcePool } from "evlib/async";
+import { createPgClient } from "./_pg_client.ts";
+import type { DbConnectOption } from "./type.ts";
 
 export class PgDbPool extends DbQuery implements DbPool {
   #pool: ResourcePool<Client>;
-  constructor(connectOption: string | ClientConfig) {
+  constructor(url: URL | string) {
     super();
-    this.#pool = new ResourcePool<Client>({
+    this.#connectOption = parserDbUrl(url);
+    this.#pool = this.#createPool();
+  }
+  #createPool() {
+    return new ResourcePool<Client>({
       create: async () => {
-        const pgClient = new pg.Client(connectOption);
-        pgClient.on("end", () => this.#pool.remove(pgClient));
-        pgClient.on("error", () => this.#pool.remove(pgClient));
+        const pool = this.#pool;
+        if (this.connectWarning) {
+          console.warn(this.connectWarning);
+          this.connectWarning = undefined;
+        }
+        const pgClient = createPgClient(this.#connectOption);
+        pgClient.on("end", () => pool.remove(pgClient));
+        pgClient.on("error", () => pool.remove(pgClient));
         await pgClient.connect();
         return pgClient;
       },
@@ -36,6 +46,14 @@ export class PgDbPool extends DbQuery implements DbPool {
       },
     }, { maxCount: 50 });
   }
+  #connectOption: DbConnectOption;
+  set connectOption(url: URL | string | DbConnectOption) {
+    if (typeof url === "object" && !(url instanceof URL)) this.#connectOption = url;
+    else {
+      this.#connectOption = parserDbUrl(url);
+    }
+  }
+  connectWarning?: string;
   // implement
   async connect(): Promise<DbPoolConnection> {
     const conn = await this.#pool.get();
@@ -65,9 +83,19 @@ export class PgDbPool extends DbQuery implements DbPool {
   close(force?: boolean) {
     return this.#pool.close(force);
   }
+  /** 打开连接 */
+  open() {
+    if (this.#pool.closed) {
+      this.#pool = this.#createPool();
+    }
+  }
   // implement
   [Symbol.asyncDispose](): PromiseLike<void> {
     return this.close();
+  }
+  /** 如果为 true, 则不会在创建新连接 */
+  get closed() {
+    return this.#pool.closed;
   }
   get totalCount() {
     return this.#pool.totalCount;

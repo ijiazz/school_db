@@ -1,6 +1,6 @@
 import { pgSqlTransformer, SqlStatement, SqlStatementDataset, SqlValuesCreator } from "@asla/yoursql";
 import type { DbCursor, QueryResult, QueryRowsResult } from "@asla/yoursql/client";
-import { getDbPool } from "./pg_client/mod.ts";
+import { dbPool } from "./pg_client/mod.ts";
 
 export const v = SqlValuesCreator.create(pgSqlTransformer);
 
@@ -22,22 +22,22 @@ declare module "@asla/yoursql" {
 }
 const base: QueryableSql = {
   queryCount(): Promise<number> {
-    return getDbPool().queryCount(this.toString());
+    return dbPool.queryCount(this.toString());
   },
   query(): Promise<QueryRowsResult<any>> {
-    return getDbPool().query<any>(this);
+    return dbPool.query<any>(this);
   },
 };
 const obj: QueryableDataSql<any> = {
   ...base,
   cursor(): Promise<DbCursor<any>> {
-    return getDbPool().cursor(this.toString());
+    return dbPool.cursor(this.toString());
   },
   queryMap<K>(key: string): Promise<Map<K, any>> {
-    return getDbPool().queryMap(this.toString(), key);
+    return dbPool.queryMap(this.toString(), key);
   },
   queryRows(): Promise<any[]> {
-    return getDbPool().queryRows(this.toString());
+    return dbPool.queryRows(this.toString());
   },
 };
 
