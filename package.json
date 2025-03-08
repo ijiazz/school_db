@@ -6,7 +6,7 @@
   "exports": {
     "./db": "./dist/db.js",
     "./oos": "./dist/oos.js",
-    "./cache": "./dist/oos.js",
+    "./cache": "./dist/cache.js",
     "./testlib": "./dist/testlib.js",
     "./yoursql": "./dist/yoursql.js",
     "./query": "./dist/query.js"
