@@ -95,7 +95,7 @@ export function createConflictUpdate(beaver: Record<string, UpdateBehaver | stri
     key = keys[i];
     str += ",\n" + key + "=" + getUpdateStr(key, beaver[key] as UpdateBehaver, table);
   }
-  return str;
+  return "SET " + str;
 }
 function getUpdateStr(key: string, value: UpdateBehaver | string, table: string) {
   switch (value) {
