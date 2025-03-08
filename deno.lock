@@ -6,11 +6,15 @@
     "npm:@types/node@^22.10.2": "22.10.5",
     "npm:@types/pg-cursor@^2.7.2": "2.7.2",
     "npm:@types/pg@^8.11.10": "8.11.10",
+    "npm:evlib@^3.1.0": "3.1.0",
     "npm:pg-cursor@^2.12.1": "2.12.1_pg@8.13.1",
     "npm:pg@^8.13.1": "8.13.1",
     "npm:vitest@^3.0.7": "3.0.7_@types+node@22.10.5_vite@6.2.0__@types+node@22.10.5"
   },
   "npm": {
+    "@asla/yoursql@0.8.3": {
+      "integrity": "sha512-pVUFpS5qTDlX2PNIoIN1oS9vw0Aff1mpc2GTj+v4ZFQR+NG9ITS4RG9/NrPkdGZcj7C4ruFAJ6/F7XkGS5sYDQ=="
+    },
     "@esbuild/aix-ppc64@0.25.0": {
       "integrity": "sha512-O7vun9Sf8DFjH2UtqK8Ku3LkquL9SZL8OLY1T5NZkA34+wG3OQF7cl4Ql8vdNzM6fzBbYfLaiRLIOZ+2FOCgBQ=="
     },
@@ -306,6 +310,9 @@
       "dependencies": [
         "@types/estree"
       ]
+    },
+    "evlib@3.1.0": {
+      "integrity": "sha512-VDEiSmwrQZXTiYD/a0Ss4/KuRbDS2c7+1t0CdoojHgzidb1WLvtbfgao3I9IAEH2p4Anl7mGinOPvEsC/zlz2Q=="
     },
     "expect-type@1.2.0": {
       "integrity": "sha512-80F22aiJ3GLyVnS/B3HzgR6RelZVumzj9jkL0Rhz4h0xYbNW9PjlQz5h3J/SShErbXBc295vseR4/MIbVmUbeA=="
