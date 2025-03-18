@@ -1,19 +1,15 @@
 import { createClient, RedisClientType } from "@redis/client";
-import { ENV } from "../common/env.ts";
 import { ResourcePool } from "evlib/async";
-let url = ENV.REDIS_CONNECT_URL;
 export class RedisPool {
-  constructor(url?: string) {
-    this.#url = url ? new URL(url) : undefined;
+  constructor(url: string | URL | (() => string | URL)) {
+    if (typeof url === "function") this.#getUrl = url;
+    else {
+      this.#url = new URL(url);
+    }
     this.#pool = new ResourcePool<RedisClientExtra>(
       {
         create: () => {
-          const url = this.url;
-          const client = createClient({
-            username: url.username || undefined,
-            password: url.password || undefined,
-            database: +url.pathname.slice(1) || undefined,
-          }) as RedisClientExtra;
+          const client = createClient({ url: this.url.toString() }) as RedisClientExtra;
 
           Reflect.set(client, "release", () => this.#pool.release(client));
           Reflect.set(client, Symbol.dispose, function (this: RedisPoolConnection) {
@@ -23,10 +19,13 @@ export class RedisPool {
             this.#pool.remove(client);
           };
           return new Promise<RedisClientExtra>(function (resolve, reject) {
-            client.once("error", reject);
+            const onError = (e: any) => {
+              reject(new Error("Redis 连接失败", { cause: e }));
+            };
+            client.once("error", onError);
             return client.connect().then(() => {
               resolve(client);
-              client.off("error", reject);
+              client.off("error", onError);
               client.once("error", onErrorAfterConnect);
             }, reject);
           });
@@ -47,11 +46,11 @@ export class RedisPool {
   close(force?: boolean) {
     return this.#pool.close(force);
   }
+  #getUrl?: () => string | URL;
   #url?: URL;
   get url(): URL {
     if (!this.#url) {
-      this.#url = new URL("redis://127.0.0.1:6379");
-      console.warn("未配置 REDIS_CONNECT_URL 环境变量, 将使用默认值：" + url);
+      this.#url = new URL(this.#getUrl!());
     }
     return this.#url;
   }

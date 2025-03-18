@@ -20,24 +20,28 @@ import type { DbConnectOption } from "./type.ts";
 
 export class PgDbPool extends DbQuery implements DbPool {
   #pool: ResourcePool<Client>;
-  constructor(url: URL | string) {
+  constructor(url: URL | string | (() => URL | string)) {
     super();
-    this.#connectOption = parserDbUrl(url);
+    if (typeof url === "function") {
+      this.#getConnectUrl = url;
+    } else {
+      this.#connectOption = parserDbUrl(url);
+    }
     this.#pool = this.#createPool();
   }
   #createPool() {
     return new ResourcePool<Client>({
       create: async () => {
         const pool = this.#pool;
-        if (this.connectWarning) {
-          console.warn(this.connectWarning);
-          this.connectWarning = undefined;
-        }
-        const pgClient = createPgClient(this.#connectOption);
+        const pgClient = createPgClient(this.connectOption);
         pgClient.on("end", () => pool.remove(pgClient));
         pgClient.on("error", () => pool.remove(pgClient));
-        await pgClient.connect();
-        return pgClient;
+        try {
+          await pgClient.connect();
+          return pgClient;
+        } catch (error) {
+          throw new Error("连接数据库失败", { cause: error });
+        }
       },
       dispose: (conn) => {
         conn.end().catch((e) => {
@@ -46,14 +50,20 @@ export class PgDbPool extends DbQuery implements DbPool {
       },
     }, { maxCount: 50 });
   }
-  #connectOption: DbConnectOption;
+  #getConnectUrl?: () => string | URL;
+  #connectOption?: DbConnectOption;
   set connectOption(url: URL | string | DbConnectOption) {
     if (typeof url === "object" && !(url instanceof URL)) this.#connectOption = url;
     else {
       this.#connectOption = parserDbUrl(url);
     }
   }
-  connectWarning?: string;
+  get connectOption(): DbConnectOption {
+    if (!this.#connectOption) {
+      this.#connectOption = parserDbUrl(this.#getConnectUrl!());
+    }
+    return this.#connectOption;
+  }
   // implement
   async connect(): Promise<DbPoolConnection> {
     const conn = await this.#pool.get();
