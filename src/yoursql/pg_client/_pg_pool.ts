@@ -70,7 +70,7 @@ export class PgDbPool extends DbQuery implements DbPool {
 
   //implement
   begin(mode?: TransactionMode): DbTransaction {
-    return new DbPoolTransaction(() => this.connect(), mode);
+    return new DbPoolTransaction(() => this.connect(), { mode, errorRollback: true });
   }
   //implement
   async cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): Promise<DbCursor<T>> {

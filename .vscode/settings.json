@@ -17,5 +17,6 @@
   },
   "[markdown]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
-  }
+  },
+  "vitest.debugExclude": ["<node_internals>/**"]
 }
