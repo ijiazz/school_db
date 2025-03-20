@@ -2,11 +2,11 @@
 
 进入 plpgsql. 按顺序导入以下 sql 文件(记得把路径改为绝对路径)
 
-`\i sql/init/create_tables.sql` 创建自定义类型和表\
-`\i sql/init/create_functions.sql` 定义了函数\
+`\i sql/init/tables_assets.sql` 创建自定义类型和表\
+`\i sql/init/functions.sql` 定义了函数\
 `\i sql/init/create_triggers.sql` 创建触发器
 
-其中 create_tables.sql 是必须的。其余是可选的
+其中 tables_assets.sql 是必须的。其余是可选的
 
 或者直接用 Deno 运行创建数据库的脚本文件 [scripts/create_db.ts](./scripts/create_db.ts)\
 `deno run -A scripts/create_db.ts`
