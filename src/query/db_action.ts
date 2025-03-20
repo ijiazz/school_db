@@ -30,7 +30,7 @@ export class DbResourceDelete {
     const oos = this.#oos;
     const errors: Record<string, any> = {};
     function handler({ bucket, objectName }: OosObjId) {
-      return oos.deleteObject(bucket, objectName).catch((e) => {
+      return oos.getBucket(bucket).deleteObject(objectName).catch((e) => {
         errors[bucket + "/" + objectName] = e;
         throw e;
       });
@@ -84,7 +84,7 @@ export class DbResourceDelete {
     const rows = await this.#db.queryRows<{ id: string }>(sql);
     let set = new Set<string>();
     for (const item of rows) set.add(item.id);
-    const failed = await this.#oos.deleteObjectMany(bucket, set);
+    const failed = await this.#oos.getBucket(bucket).deleteObjectMany(set);
     if (failed.size) {
       console.error("DbResourceDelete.#deleteAssetResource()", "OOS 对象删除失败", Object.fromEntries(failed));
     }

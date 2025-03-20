@@ -51,21 +51,6 @@ class FsOOS implements OOS {
   getBucket(bucket: string) {
     return new FsOOS.FsBucket(this, bucket);
   }
-  deleteObject(bucket: string, objectName: string): Promise<void> {
-    return new FsOOS.FsBucket(this, bucket).deleteObject(objectName);
-  }
-  deleteObjectMany(bucket: string, list: Set<string>): Promise<Map<string, any>> {
-    return new FsOOS.FsBucket(this, bucket).deleteObjectMany(list);
-  }
-  objectExist(bucket: string, objectName: string): Promise<Stats | null> {
-    return new FsOOS.FsBucket(this, bucket).objectExist(objectName);
-  }
-  fPutObject(bucket: string, objectPath: string, fromPath: string): Promise<void> {
-    return new FsOOS.FsBucket(this, bucket).fMoveInto(objectPath, fromPath);
-  }
-  fPutObjectMany(bucket: string, list: Map<string, string>): Promise<OosManyOperateResult> {
-    return new FsOOS.FsBucket(this, bucket).fMoveIntoMany(list);
-  }
 
   private static FsBucket = class FsOosBucket implements OosBucket {
     constructor(private oos: FsOOS, readonly bucketName: string) {
@@ -191,22 +176,6 @@ function fileExist(filename: string) {
 
 /** @public */
 export interface OOS {
-  /**
-   * fMoveInto 的别名
-   * @deprecated 改用 fMoveInto
-   */
-  fPutObject(bucket: string, objectPath: string, fromPath: string): Promise<void>;
-  /**
-   * fMoveIntoMany 的别名
-   * @deprecated 改用 fMoveInto
-   */
-  fPutObjectMany(bucket: string, list: Map<string, string>): Promise<OosManyOperateResult>;
-  /** @deprecated  */
-  objectExist(bucket: string, objectName: string): Promise<Stats | null>;
-  /** @deprecated  */
-  deleteObject(bucket: string, objectName: string): Promise<void>;
-  /** @deprecated  */
-  deleteObjectMany(bucket: string, list: Set<string>): Promise<Map<string, any>>;
   getBucket(bucketName: string): OosBucket;
 }
 
