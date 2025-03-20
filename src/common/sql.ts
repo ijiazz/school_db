@@ -19,28 +19,19 @@ export function genErrPosition(text: string, index: number) {
   return text.slice(from, index);
 }
 export function findTextPositionLine(text: string, index: number) {
-  const matchLine = /[\n\r]+/;
+  const matchLine = /(\r\n?)|(\n)/g;
   let line = 1;
-  let position = 0;
   let offset = 0;
-  while (text) {
-    let n = text.match(matchLine);
-    if (typeof n?.index !== "number") {
-      position = text.length;
-      break;
-    }
-    const next = n.index + n[0].length;
-    if (offset + next > index) {
+  let next = 0;
+  for (const n of text.matchAll(matchLine)) {
+    next = n.index + n[0].length;
+    if (next >= index) {
       return [line, index - offset];
     }
-    if (offset + next === index) {
-      return [line + 1, 0];
-    }
-    offset += next;
-    text = text.slice(next);
+    offset = next;
     line++;
   }
-  return [line, position];
+  return [line, index - offset];
 }
 
 export function genPgSqlErrorMsg(

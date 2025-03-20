@@ -9,6 +9,8 @@ const OOS_BUCKETS = {
   ASSET_AUDIO: "height_audio",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
+  /** 验证码图片 */
+  CAPTCHA_PICTURE: "captcha_picture",
 } as const;
 type OosBucket = typeof OOS_BUCKETS;
 

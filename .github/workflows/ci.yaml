@@ -49,5 +49,5 @@ jobs:
         with:
           deno-version: v2
       - run: deno task check-fmt
-      - run: deno install
+      - run: deno install --frozen
       - run: deno task check-type

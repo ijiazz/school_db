@@ -93,3 +93,8 @@ export enum MediaLevel {
   thumb = "thumb",
 }
 export const enumMediaLevel = new Set([MediaLevel.other, MediaLevel.origin, MediaLevel.thumb]);
+
+/**
+ * 公共班级根节点ID，（见SQL文件初始班级数据语句）
+ */
+export const PUBLIC_CLASS_ROOT_ID = -1;

@@ -10,7 +10,7 @@ const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
  */
 export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
   const sqlInitDir = SQL_DIR + "/init";
-  const sqlFiles: string[] = ["create_functions.sql", "create_tables.sql"];
+  const sqlFiles: string[] = ["create_functions.sql", "create_tables.sql", "tables_user.sql"];
 
   if (option.extra) {
     const extraDirName = "extra";

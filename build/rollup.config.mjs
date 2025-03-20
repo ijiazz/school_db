@@ -18,6 +18,7 @@ export function getConfig(option = {}) {
     testlib: "src/testlib.ts",
     yoursql: "src/yoursql.ts",
     query: "src/query.ts",
+    cache: "src/cache.ts",
   };
   for (const [k, v] of Object.entries(input)) {
     input[k] = path.resolve(rootDir, v);
