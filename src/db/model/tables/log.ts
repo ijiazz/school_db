@@ -1,9 +1,10 @@
 import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../_sql_value.ts";
+import type { LogLevel } from "../const.ts";
 
 const TABLE_DEFINE = {
   name: dbTypeMap.genColumn("VARCHAR", true),
-  level: dbTypeMap.genColumn("VARCHAR", true),
+  level: dbTypeMap.genColumn<LogLevel>("VARCHAR", true),
   info: dbTypeMap.genColumn("JSONB", true),
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "'now()"),
 } satisfies TableDefined;

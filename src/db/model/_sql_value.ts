@@ -1,5 +1,5 @@
 import { CustomDbType, TableDefined, TableType, YourTable, YourTypeMap } from "@asla/yoursql";
-import { CrawlTaskStatus, enumMediaLevel, enumPlatform, enumTaskType, MediaLevel, Platform } from "./tables.ts";
+import { CrawlTaskStatus, enumMediaLevel, enumPlatform, enumTaskType, MediaLevel, Platform } from "./const.ts";
 import { v } from "../../yoursql.ts";
 
 export const dbTypeMap = YourTypeMap.create({
