@@ -4,7 +4,7 @@ import { createTable, dbTypeMap } from "../_sql_value.ts";
 const TABLE_DEFINE = {
   name: dbTypeMap.genColumn("VARCHAR", true),
   level: dbTypeMap.genColumn("VARCHAR", true),
-  info: dbTypeMap.genColumn("VARCHAR", true),
+  info: dbTypeMap.genColumn("JSONB", true),
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "'now()"),
 } satisfies TableDefined;
 
