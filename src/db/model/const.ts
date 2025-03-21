@@ -98,3 +98,10 @@ export const enumMediaLevel = new Set([MediaLevel.other, MediaLevel.origin, Medi
  * 公共班级根节点ID，（见SQL文件初始班级数据语句）
  */
 export const PUBLIC_CLASS_ROOT_ID = -1;
+
+export enum LogLevel {
+  log = "log",
+  info = "info",
+  warn = "warn",
+  error = "error",
+}

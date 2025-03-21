@@ -1,6 +1,6 @@
 import { DbTableQuery, InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../_sql_value.ts";
-import type { TaskType } from "../tables.ts";
+import type { TaskType } from "../const.ts";
 import type { CrawlTaskData } from "../types/task.ts";
 import v from "../../../yoursql.ts";
 

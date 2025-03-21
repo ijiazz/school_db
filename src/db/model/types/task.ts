@@ -1,4 +1,4 @@
-import type { MediaLevel } from "../tables.ts";
+import type { MediaLevel } from "../const.ts";
 
 export type SyncUserProfileTask<E = any> = {
   uid: string;
