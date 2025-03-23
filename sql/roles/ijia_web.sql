@@ -2,7 +2,7 @@ SET client_encoding = 'UTF8';
 
 CREATE ROLE ijia_web LOGIN INHERIT;
 
-GRANT SELECT ON user_avatar TO ijia_web;
+GRANT SELECT,UPDATE ON user_avatar TO ijia_web;
 GRANT SELECT ON pla_user TO ijia_web;
 GRANT SELECT ON watching_pla_user TO ijia_web;
 
