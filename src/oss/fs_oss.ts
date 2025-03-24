@@ -2,20 +2,20 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { Stats } from "node:fs";
 
-export interface FsOosOption {
+export interface FsOssOption {
   onInitError?: (e: Error) => void;
 }
-export function createFsOOS(rootDir: string, buckets: Iterable<string>, option?: FsOosOption): OOS {
-  return new FsOOS(rootDir, buckets, option);
+export function createFsOSS(rootDir: string, buckets: Iterable<string>, option?: FsOssOption): OSS {
+  return new FsOSS(rootDir, buckets, option);
 }
 
-class FsOOS implements OOS {
+class FsOSS implements OSS {
   private bucketSet: Set<string>;
   readonly rootDir: string;
   constructor(
     rootDir: string,
     buckets: Iterable<string>,
-    option: FsOosOption = {},
+    option: FsOssOption = {},
   ) {
     rootDir = path.resolve(rootDir);
     this.rootDir = rootDir;
@@ -49,13 +49,13 @@ class FsOOS implements OOS {
     if (!this.bucketSet.has(bucket)) throw new Error(`Bucket '${bucket} does not exist'`);
   }
   getBucket(bucket: string) {
-    return new FsOOS.FsBucket(this, bucket);
+    return new FsOSS.FsBucket(this, bucket);
   }
 
-  private static FsBucket = class FsOosBucket implements OosBucket {
-    constructor(private oos: FsOOS, readonly bucketName: string) {
-      oos.checkBucket(bucketName);
-      this.baseDir = path.join(oos.rootDir, bucketName);
+  private static FsBucket = class FsOssBucket implements OssBucket {
+    constructor(private oss: FsOSS, readonly bucketName: string) {
+      oss.checkBucket(bucketName);
+      this.baseDir = path.join(oss.rootDir, bucketName);
     }
     private readonly baseDir: string;
     private checkObjectName(objectName: string) {
@@ -75,7 +75,7 @@ class FsOOS implements OOS {
     async fMoveInto(objectPath: string, fromPath: string) {
       const filename = this.checkObjectName(objectPath);
 
-      await this.oos.checkStatus();
+      await this.oss.checkStatus();
 
       const exists = await fileExist(filename);
       if (exists) await fs.rm(fromPath).catch(() => {});
@@ -83,7 +83,7 @@ class FsOOS implements OOS {
     }
 
     async fMoveIntoMany(list: Map<string, string>) {
-      await this.oos.checkStatus();
+      await this.oss.checkStatus();
       const success = new Set<string>();
       const exists = new Set<string>();
       const failed = new Map<string, any>();
@@ -131,7 +131,7 @@ class FsOOS implements OOS {
       await Promise.all(promises);
       return failed;
     }
-    async stat(objectName: string): Promise<OosObjectInfo> {
+    async stat(objectName: string): Promise<OssObjectInfo> {
       const filename = this.checkObjectName(objectName);
       const stat = await fs.stat(filename, {});
       return {
@@ -175,11 +175,11 @@ function fileExist(filename: string) {
 }
 
 /** @public */
-export interface OOS {
-  getBucket(bucketName: string): OosBucket;
+export interface OSS {
+  getBucket(bucketName: string): OssBucket;
 }
 
-export interface OosBucket {
+export interface OssBucket {
   readonly bucketName: string;
   saveObject(objectPath: string, stream: ReadableStream<Uint8Array>): Promise<void>;
   fMoveInto(objectPath: string, formPath: string): Promise<void>;
@@ -187,9 +187,9 @@ export interface OosBucket {
    * 返回失败的 objectName
    * @param list objectName -> fromPath
    */
-  fMoveIntoMany(list: Map<string, string>): Promise<OosManyOperateResult>;
+  fMoveIntoMany(list: Map<string, string>): Promise<OssManyOperateResult>;
   // fCopyInto(objectPath: string, formPath: string): Promise<void>;
-  // fCopyIntoMany(objectPath: string, list: Map<string, string>): Promise<OosManyOperateResult>;
+  // fCopyIntoMany(objectPath: string, list: Map<string, string>): Promise<OssManyOperateResult>;
   objectExist(objectName: string): Promise<Stats | null>;
   /** 删除多个对象，如果删除失败则抛出异常，如果对象不存在，则跳过 */
   deleteObject(objectName: string): Promise<void>;
@@ -197,15 +197,15 @@ export interface OosBucket {
   deleteObjectMany(list: Set<string>): Promise<Map<string, any>>;
 
   getObjectStream(objectName: string): Promise<ReadableStream<Uint8Array>>;
-  stat(objectName: string): Promise<OosObjectInfo>;
+  stat(objectName: string): Promise<OssObjectInfo>;
 }
 
-export type OosManyOperateResult = {
+export type OssManyOperateResult = {
   failed: Map<string, any>;
   success: Set<string>;
 };
 
-export interface OosObjectInfo {
+export interface OssObjectInfo {
   /** True if this is info for a symlink. Mutually exclusive to
    * `FileInfo.isFile` and `FileInfo.isDirectory`. */
   isSymlink: boolean;

@@ -14,7 +14,7 @@ export function getConfig(option = {}) {
   /** @type {import("rollup").InputOption} */
   const input = {
     db: "src/db.ts",
-    oos: "src/oos.ts",
+    oss: "src/oss.ts",
     testlib: "src/testlib.ts",
     yoursql: "src/yoursql.ts",
     query: "src/query.ts",

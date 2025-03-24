@@ -1,19 +1,5 @@
-import v from "../yoursql.ts";
 import type { DatabaseError } from "pg";
-export const operation = {
-  andEq(value: Record<string, any>): string[] {
-    let values: string[] = [];
-    const keys = Object.keys(value);
-    let val: any;
-    for (let i = 0; i < keys.length; i++) {
-      val = value[keys[i]];
-      if (val === undefined) continue;
-      if (val === null) values.push(keys[i] + " IS NULL");
-      else values.push(keys[i] + "=" + v(val));
-    }
-    return values;
-  },
-};
+
 export function genErrPosition(text: string, index: number) {
   const from = index > 100 ? index - 100 : 0;
   return text.slice(from, index);
