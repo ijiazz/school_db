@@ -36,6 +36,6 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON user_platform_bind TO ijia_web;
 
 
 -- sys
-
+GRANT USAGE ON SCHEMA sys TO ijia_web;
 GRANT SELECT,INSERT ON sys.log TO ijia_web;
 -- end

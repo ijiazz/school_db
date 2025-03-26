@@ -19,3 +19,6 @@ GRANT SELECT,INSERT,UPDATE  ON crawl_task_queue TO ijia_crawler;
 GRANT SELECT ON crawl_task_priority_queue TO ijia_crawler;
 
 GRANT SELECT, UPDATE ON SEQUENCE public.crawl_task_queue_task_id_seq TO ijia_crawler;
+
+GRANT USAGE ON SCHEMA sys TO ijia_crawler;
+GRANT SELECT,INSERT ON sys.log TO ijia_crawler;
