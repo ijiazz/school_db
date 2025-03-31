@@ -47,6 +47,7 @@ CREATE TABLE watching_pla_user (
     disabled BOOLEAN,
     pla_uid VARCHAR NOT NULL, -- 平台用户id
     platform platform_flag NOT NULL, -- 来源平台
+    visible_time_second INT, -- 帖子可见时间, 单位秒
     PRIMARY KEY (platform, pla_uid),
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE
 );
