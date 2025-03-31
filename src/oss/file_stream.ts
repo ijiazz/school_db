@@ -7,10 +7,9 @@ class RangeRead {
     if (this.end === undefined) {
       return defaultChunkSize;
     }
-    let readSize: number;
-    if (this.end - offset >= defaultChunkSize) readSize = defaultChunkSize;
-    else readSize = this.end - offset;
-    return readSize;
+    const size = this.end - offset;
+    if (size >= defaultChunkSize) return defaultChunkSize;
+    return size;
   }
 }
 function getFileStreamNode(path: string, option: CreateFileStreamOption = {}): ReadableStream<Uint8Array> {
@@ -29,8 +28,7 @@ function getFileStreamNode(path: string, option: CreateFileStreamOption = {}): R
     async pull(ctrl) {
       const readSize = rangeRead.getChunkSize(offset);
       const chunk = new Uint8Array(readSize);
-      const { bytesRead } = await fd.read(chunk, offset, readSize);
-      offset += bytesRead;
+      const { bytesRead } = await fd.read(chunk, { position: offset });
       if (bytesRead === 0) {
         ctrl.close();
         return fd.close();
@@ -38,14 +36,16 @@ function getFileStreamNode(path: string, option: CreateFileStreamOption = {}): R
         ctrl.enqueue(chunk.subarray(0, bytesRead));
         ctrl.close();
         return fd.close();
-      } else {
-        ctrl.enqueue(chunk);
       }
+      offset += bytesRead;
+      ctrl.enqueue(chunk);
     },
   });
 }
 function getFileStreamDeno(path: string, option: CreateFileStreamOption = {}): ReadableStream<Uint8Array> {
   const { start: rangeStart, end: rangeEnd } = option;
+  let offset = rangeStart ?? 0;
+  const rangeRead = new RangeRead(rangeEnd);
   //@ts-ignore
   let fd: Deno.FsFile;
   return new ReadableStream({
@@ -59,13 +59,10 @@ function getFileStreamDeno(path: string, option: CreateFileStreamOption = {}): R
         //@ts-ignore
         await fd.seek(rangeStart, Deno.SeekMode.Start);
       }
-      if (rangeEnd) {
-        //@ts-ignore
-        await fd.seek(rangeEnd, Deno.SeekMode.End);
-      }
     },
     async pull(ctrl) {
-      const chunk = new Uint8Array(defaultChunkSize);
+      const readSize = rangeRead.getChunkSize(offset);
+      const chunk = new Uint8Array(readSize);
       const bytesRead = await fd.read(chunk);
       if (bytesRead === null || bytesRead === 0) {
         ctrl.close();
@@ -74,9 +71,9 @@ function getFileStreamDeno(path: string, option: CreateFileStreamOption = {}): R
         ctrl.enqueue(chunk.subarray(0, bytesRead));
         ctrl.close();
         return fd.close();
-      } else {
-        ctrl.enqueue(chunk);
       }
+      offset += bytesRead;
+      ctrl.enqueue(chunk);
     },
   });
 }
