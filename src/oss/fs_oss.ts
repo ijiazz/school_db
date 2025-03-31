@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { Stats } from "node:fs";
+import { createFileStream, openFileStream } from "./file_stream.ts";
 
 export interface FsOssOption {
   onInitError?: (e: Error) => void;
@@ -12,11 +13,7 @@ export function createFsOSS(rootDir: string, buckets: Iterable<string>, option?:
 class FsOSS implements OSS {
   private bucketSet: Set<string>;
   readonly rootDir: string;
-  constructor(
-    rootDir: string,
-    buckets: Iterable<string>,
-    option: FsOssOption = {},
-  ) {
+  constructor(rootDir: string, buckets: Iterable<string>, option: FsOssOption = {}) {
     rootDir = path.resolve(rootDir);
     this.rootDir = rootDir;
     const bucketSet = new Set<string>();
@@ -53,7 +50,10 @@ class FsOSS implements OSS {
   }
 
   private static FsBucket = class FsOssBucket implements OssBucket {
-    constructor(private oss: FsOSS, readonly bucketName: string) {
+    constructor(
+      private oss: FsOSS,
+      readonly bucketName: string,
+    ) {
       oss.checkBucket(bucketName);
       this.baseDir = path.join(oss.rootDir, bucketName);
     }
@@ -134,29 +134,28 @@ class FsOSS implements OSS {
     async stat(objectName: string): Promise<OssObjectInfo> {
       const filename = this.checkObjectName(objectName);
       const stat = await fs.stat(filename, {});
-      return {
-        atime: stat.atime,
-        birthtime: stat.birthtime,
-        ctime: stat.ctime,
-        isSymlink: stat.isSymbolicLink(),
-        mtime: stat.mtime,
-        size: stat.size,
-      };
+      return toOssStat(stat);
     }
-    async getObjectStream(objectName: string): Promise<ReadableStream<Uint8Array>> {
-      const filename = this.checkObjectName(objectName);
-      //@ts-ignore
-      if (typeof globalThis.Deno?.open === "function") {
-        //@ts-ignore
-        const fd = await Deno.open(filename);
-        return fd.readable;
-      } else {
-        const hd = await fs.open(filename);
-        return hd.readableWebStream({ type: "bytes" }) as ReadableStream<Uint8Array>;
-      }
+    getObjectStream(objectName: string): Promise<ReadableStream<Uint8Array>> {
+      return openFileStream(this.checkObjectName(objectName));
+    }
+    /** 创建对象流，需要注意，这不会检测文件是否存在 */
+    createObjectStream(objectName: string): ReadableStream<Uint8Array> {
+      return createFileStream(this.checkObjectName(objectName));
     }
   };
 }
+function toOssStat(stat: Stats) {
+  return {
+    atime: stat.atime,
+    birthtime: stat.birthtime,
+    ctime: stat.ctime,
+    isSymlink: stat.isSymbolicLink(),
+    mtime: stat.mtime,
+    size: stat.size,
+  };
+}
+
 async function checkDir(rootDir: string, subDir?: Iterable<string>) {
   let checkList: Promise<any>[] = [];
   if (subDir) {
@@ -197,6 +196,8 @@ export interface OssBucket {
   deleteObjectMany(list: Set<string>): Promise<Map<string, any>>;
 
   getObjectStream(objectName: string): Promise<ReadableStream<Uint8Array>>;
+  /** 创建对象流，需要注意，这不会检测文件是否存在 */
+  createObjectStream(objectName: string): ReadableStream<Uint8Array>;
   stat(objectName: string): Promise<OssObjectInfo>;
 }
 
