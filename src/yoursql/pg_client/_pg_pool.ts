@@ -48,7 +48,7 @@ export class PgDbPool extends DbQuery implements DbPool {
           console.error(e);
         });
       },
-    }, { maxCount: 50 });
+    }, { maxCount: 50, idleTimeout: 5000, usageLimit: 9999 });
   }
   #getConnectUrl?: () => string | URL;
   #connectOption?: DbConnectOption;

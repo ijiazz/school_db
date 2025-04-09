@@ -9,13 +9,19 @@ export class RedisPool {
     this.#pool = new ResourcePool<RedisClientExtra>(
       {
         create: () => {
-          const client = createClient({ url: this.url.toString() }) as RedisClientExtra;
+          const client = createClient({
+            url: this.url.toString(),
+            disableOfflineQueue: true,
+            socket: { reconnectStrategy: false },
+          }) as RedisClientExtra;
 
           Reflect.set(client, "release", () => this.#pool.release(client));
           Reflect.set(client, Symbol.dispose, function (this: RedisPoolConnection) {
             return this.release();
           });
-          const onErrorAfterConnect = () => {
+          const onErrorAfterConnect = (e: any) => {
+            console.log("出错了", e);
+
             this.#pool.remove(client);
           };
           return new Promise<RedisClientExtra>(function (resolve, reject) {
@@ -26,7 +32,7 @@ export class RedisPool {
             return client.connect().then(() => {
               resolve(client);
               client.off("error", onError);
-              client.once("error", onErrorAfterConnect);
+              client.on("error", onErrorAfterConnect);
             }, reject);
           });
         },
@@ -36,7 +42,7 @@ export class RedisPool {
           });
         },
       },
-      { maxCount: 10 },
+      { maxCount: 10, idleTimeout: 5000, usageLimit: 9999 },
     );
   }
   #pool: ResourcePool<RedisClientType>;
