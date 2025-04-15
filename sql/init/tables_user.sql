@@ -12,7 +12,9 @@ CREATE INDEX idx_user_email ON public.user(email);
 
 CREATE TABLE user_profile(
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE,
-    live_notice BOOLEAN -- 是否接收直播通知
+    live_notice BOOLEAN DEFAULT FALSE NOT NULL, -- 是否接收直播通知
+    acquaintance_time  TIMESTAMPTZ,  
+    comment_stat_enabled BOOLEAN DEFAULT FALSE NOT NULL -- 是否开启评论统计
 );
 CREATE INDEX idx_user_live_notice ON user_profile(live_notice);
 
