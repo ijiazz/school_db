@@ -25,6 +25,10 @@ import { createConflictUpdate, insetFrom, UpdateBehaver } from "./_statement.ts"
  */
 export function savePlaUserList(values: DbPlaUserCreate[]) {
   if (!values.length) throw new Error("values不能为空");
+  values = values.map((item) => ({
+    ...item,
+    signature_struct: item.signature_struct ? JSON.stringify(item.signature_struct) : undefined,
+  }));
   pla_user_check.checkList(values);
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude
   type UpdateKey = Exclude<keyof DbPlaUser | "crawl_check_time", "platform" | "pla_uid" | "create_time">;
