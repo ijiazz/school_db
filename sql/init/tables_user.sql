@@ -2,7 +2,6 @@ CREATE TABLE public.user(
     id SERIAL PRIMARY KEY,
     nickname VARCHAR(50),
     avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
-
     email VARCHAR(256) NOT NULL UNIQUE,
     password CHAR(128),
     pwd_salt CHAR(32),
@@ -10,17 +9,6 @@ CREATE TABLE public.user(
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 CREATE INDEX idx_user_email ON public.user(email);
-CREATE INDEX idxfk_avatar ON public.user(avatar);
-
--- 更新需要审核的用户信息
-CREATE TABLE update_user_request(
-    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE,
-    nickname VARCHAR(50),
-    avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
-    review_pass_count INT,
-    review_failed_count INT,
-);
-CREATE INDEX idxfk_update_user_request_avatar ON public.user(avatar);
 
 CREATE TABLE user_profile(
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE,
