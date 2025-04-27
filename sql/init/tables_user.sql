@@ -5,9 +5,11 @@ CREATE TABLE public.user(
     email VARCHAR(256) NOT NULL UNIQUE,
     password CHAR(128),
     pwd_salt CHAR(32),
-    status BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 高 1 位：是否不可登录
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE
-);
+    status BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 高位到低位：是否不可登录,是否被拉黑
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 账号创建时间
+    last_login_time TIMESTAMPTZ NOT NULL DEFAULT now() -- 最后登录时间
+); 
 CREATE INDEX idx_user_email ON public.user(email);
 
 CREATE TABLE user_profile(
