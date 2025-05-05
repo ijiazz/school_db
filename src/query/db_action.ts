@@ -1,7 +1,7 @@
-import { asset_audio, asset_image, asset_video, comment_image, user_avatar } from "../db.ts";
-import { v } from "../yoursql.ts";
-import type { SqlStatementDataset, YourTable } from "@asla/yoursql";
-import { getBucket, getOSS, OssBucket } from "../oss.ts";
+import { comment_image, pla_asset_media, user_avatar } from "../db.ts";
+import { dbPool, v } from "../yoursql.ts";
+import type { SqlStatementDataset } from "@asla/yoursql";
+import { getBucket, getOSS } from "../oss.ts";
 import { PromiseConcurrency } from "evlib/async";
 
 type OssObjId = {
@@ -65,29 +65,38 @@ export async function deleteUserAvatarZero(option: { signal?: AbortSignal }) {
     .returning<{ id: string }>({ id: true });
   await deleteOssObj(iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
 }
-async function deleteAssetResource(table: YourTable<any>, id: string | string[], bucket: OssBucket) {
-  const sql = table
+export async function deleteAssetMedia(id: string | string[]) {
+  const pool = dbPool.begin();
+
+  const sql = pla_asset_media
     .delete({
       where: () => {
         if (typeof id === "string") return "id=" + v(id);
         return "id IN (" + v.toValues(id) + ")";
       },
     })
-    .returning<{ id: string }>({ id: true });
-  const rows = await sql.queryRows();
-  let set = new Set<string>();
-  for (const item of rows) set.add(item.id);
-  const failed = await bucket.deleteObjectMany(set);
-  if (failed.size) {
-    console.error("DbResourceDelete.#deleteAssetResource()", "OSS 对象删除失败", Object.fromEntries(failed));
+    .returning<{ file_id: string; ext: string | null }>({
+      ext: true,
+      file_id: true,
+    });
+  const rows = await pool.queryRows(sql);
+
+  const failedAll = new Map<string, any>();
+
+  const bucket = getOSS().getBucket(getBucket().PLA_POST_MEDIA);
+  const keys = new Set<string>();
+  for (const { ext, file_id } of rows) {
+    const file = ext ? file_id + "." + ext : file_id;
+    keys.add(file);
   }
-}
-export function deleteAssetVideo(videoId: string | string[]) {
-  return deleteAssetResource(asset_video, videoId, getOSS().getBucket(getBucket().ASSET_VIDEO));
-}
-export function deleteAssetImage(videoId: string | string[]) {
-  return deleteAssetResource(asset_image, videoId, getOSS().getBucket(getBucket().ASSET_VIDEO));
-}
-export function deleteAssetAudio(videoId: string | string[]) {
-  return deleteAssetResource(asset_audio, videoId, getOSS().getBucket(getBucket().ASSET_VIDEO));
+  const failed = await bucket.deleteObjectMany(keys);
+  for (const [k, v] of failed) {
+    failedAll.set(k, v);
+  }
+
+  await pool.commit();
+
+  if (failedAll.size) {
+    console.error("DbResourceDelete.#deleteAssetResource()", "OSS 对象删除失败", Object.fromEntries(failedAll));
+  }
 }

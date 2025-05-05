@@ -1,5 +1,14 @@
 import { CustomDbType, TableDefined, TableType, YourTable, YourTypeMap } from "@asla/yoursql";
-import { CrawlTaskStatus, enumMediaLevel, enumPlatform, enumTaskType, MediaLevel, Platform } from "./const.ts";
+import {
+  AssetMediaType,
+  CrawlTaskStatus,
+  enumAssetMediaType,
+  enumMediaLevel,
+  enumPlatform,
+  enumTaskType,
+  MediaLevel,
+  Platform,
+} from "./const.ts";
 import { v } from "../../yoursql.ts";
 
 export const dbTypeMap = YourTypeMap.create({
@@ -18,6 +27,7 @@ export const dbTypeMap = YourTypeMap.create({
   "BIT(8)": CustomDbType.string,
 
   media_level: new CustomDbType<MediaLevel>((v) => enumMediaLevel.has(v), "media_level"),
+  media_type: new CustomDbType<AssetMediaType>((v) => enumAssetMediaType.has(v), "media_type"),
   platform_flag: new CustomDbType<Platform>((v) => enumPlatform.has(v), "platform_flag"),
   crawl_task_status: new CustomDbType<CrawlTaskStatus>((v) => enumTaskType.has(v), "crawl_task_status"),
 });

@@ -2,6 +2,7 @@ SET client_encoding = 'UTF8';
 
 CREATE TYPE platform_flag AS ENUM('douyin','bilibili','xiaohonshu','weibo','v5sing','wangyiyun');
 CREATE TYPE media_level AS ENUM('origin','thumb');
+CREATE TYPE media_type AS ENUM('video','audio','image'); -- 资源类型
 
 ----------
 -- 用户相关
@@ -111,61 +112,43 @@ CREATE TABLE watching_pla_asset (
 CREATE INDEX idx_watching_pla_asset_comment_last_full_update_time ON watching_pla_asset(comment_last_full_update_time);
 CREATE INDEX idx_watching_pla_asset_comment_last_update_time ON watching_pla_asset(comment_last_update_time);
 
-
-CREATE TABLE asset_image (
+CREATE TABLE pla_asset_media_missing(
     platform platform_flag,
     asset_id VARCHAR,
-    uri VARCHAR PRIMARY KEY,
-    index SMALLINT, -- 索引。如果为空，则不显示在作品资源下
-
-    size INT, --文件大小
-    level media_level, -- 媒体质量等级
-
-    width SMALLINT,
-    height SMALLINT,
-
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
+    index INT NOT NULL,
+    type media_type NOT NULL, -- 资源类
+    description VARCHAR, -- 描述
+    
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    PRIMARY KEY (platform, asset_id, index)
 );
-CREATE INDEX idxfk_asset_image_pid ON asset_image(platform, asset_id);
 
-CREATE TABLE asset_audio (
+-- file_path `pla_post_media/${file_id}.${ext}`
+CREATE TABLE pla_asset_media(
+    file_id VARCHAR PRIMARY KEY,
+    ext VARCHAR(10) NOT NULL, -- 文件扩展名   
+
     platform platform_flag,
     asset_id VARCHAR,
-    uri VARCHAR PRIMARY KEY,
-    index SMALLINT, -- 索引。
+    index INT NOT NULL, -- 作品在列表中的索引
+    level media_level NOT NULL, -- 媒体质量等级
 
-    size INT,
-    level media_level,
-    format VARCHAR(20),
+    size INT NOT NULL, --文件大小
 
-    duration INTEGER,
-
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
+    type media_type NOT NULL, -- 资源类型
+    meta JSONB NOT NULL, -- 资源元数据
+    hash VARCHAR NOT NULL, -- 16进制hash值
+    hash_type VARCHAR NOT NULL, -- hash算法类型 
+    
+    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT pla_asset_media_index UNIQUE (platform, asset_id,index,level)
 );
-CREATE INDEX idxfk_asset_audio_pid ON asset_audio(platform, asset_id);
+CREATE INDEX idxfk_pla_asset_media_asset_id ON pla_asset_media(platform, asset_id,index);
+CREATE INDEX idx_pla_asset_media_media_type ON pla_asset_media(type);
+CREATE INDEX idx_pla_asset_media_meta ON pla_asset_media USING gin(meta);
 
-CREATE TABLE asset_video (
-    platform platform_flag,
-    asset_id VARCHAR,
-    uri VARCHAR PRIMARY KEY,
-    index SMALLINT, -- 索引。
+-- meta 结构在 data\src\db\model\tables\pla_asset_media.ts
 
-    size INT,
-    level media_level,
-    format VARCHAR(20), --格式 h264/h265
-
-    frame_num INTEGER, --帧数
-    width SMALLINT,
-    height SMALLINT,
-    fps SMALLINT,   --帧速率
-    bit_rate INT, --比特率
-
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE
-);
-CREATE INDEX idxfk_asset_video_pid ON asset_video(platform, asset_id);
-
-----------
-----------
 
 CREATE TYPE crawl_task_status AS ENUM('waiting', 'processing', 'success', 'failed', 'hide');
 

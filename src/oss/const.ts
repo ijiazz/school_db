@@ -1,12 +1,8 @@
 const OSS_BUCKETS = {
   /** 用户头像。 名称格式 sha256.suffix*/
   AVATAR: "avatar",
-  /** 作品视频。 名称格式 PlatformCode-pid-md5.suffix */
-  ASSET_VIDEO: "height_video",
-  /** 作品图片。 名称格式 PlatformCode-pid-md5.suffix */
-  ASSET_IMAGES: "height_image",
-  /** 作品音频。 名称格式 PlatformCode-pid-md5.suffix */
-  ASSET_AUDIO: "height_audio",
+  /** 评论区图片 名称格式 `${file_id}.${ext}` */
+  PLA_POST_MEDIA: "pla_post_media",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
   /** 验证码图片 */

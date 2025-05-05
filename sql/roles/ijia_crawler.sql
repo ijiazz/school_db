@@ -7,9 +7,8 @@ GRANT SELECT,INSERT,UPDATE ON pla_user TO ijia_crawler;
 GRANT SELECT,INSERT,UPDATE ON watching_pla_user TO ijia_crawler;
 
 GRANT SELECT,INSERT,UPDATE ON pla_asset TO ijia_crawler;
-GRANT SELECT,INSERT,UPDATE ON asset_image TO ijia_crawler;
-GRANT SELECT,INSERT,UPDATE ON asset_video TO ijia_crawler;
-GRANT SELECT,INSERT,UPDATE ON asset_audio TO ijia_crawler;
+GRANT SELECT,INSERT,UPDATE ON pla_asset_media_missing TO ijia_crawler;
+GRANT SELECT,INSERT,UPDATE ON pla_asset_media TO ijia_crawler;
 
 GRANT SELECT,INSERT,UPDATE ON pla_comment TO ijia_crawler;
 GRANT SELECT,INSERT,UPDATE ON comment_image TO ijia_crawler;
