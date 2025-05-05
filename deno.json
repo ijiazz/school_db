@@ -18,7 +18,9 @@
     "./testlib": "./src/testlib.ts",
     "./yoursql": "./src/yoursql.ts"
   },
-
+  "compilerOptions": {
+    "lib": ["deno.window"]
+  },
   "fmt": {
     "lineWidth": 120
   },

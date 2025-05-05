@@ -1,6 +1,6 @@
 import type { Client } from "pg";
 
-import { DbConnection, DbQuery, MultipleQueryResult, QueryRowsResult } from "@asla/yoursql/client";
+import { DbConnection, DbQuery, MultipleQueryResult, QueryRowsResult, StringLike } from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
 import { createPgClient } from "./_pg_client.ts";
 import type { DbConnectOption } from "./type.ts";
@@ -25,11 +25,11 @@ export class PgConnection extends DbQuery implements DbConnection {
 
   #pool: Client;
   //implement
-  override query<T extends object = any>(sql: ToString): Promise<QueryRowsResult<T>> {
+  override query<T = any>(sql: StringLike): Promise<QueryRowsResult<T>> {
     const text = sql.toString();
-    return this.#pool.query<T>(text).catch((e) => addPgErrorInfo(e, text)) as any;
+    return this.#pool.query(text).catch((e) => addPgErrorInfo(e, text)) as any;
   }
-  override multipleQuery<T extends MultipleQueryResult>(sql: ToString): Promise<T> {
+  override multipleQuery<T extends MultipleQueryResult>(sql: StringLike): Promise<T> {
     return this.query(sql) as any;
   }
   //implement
@@ -37,7 +37,6 @@ export class PgConnection extends DbQuery implements DbConnection {
     return this.close();
   }
 }
-type ToString = { toString(): string };
 
 export function createDbConnection(url: string | URL | DbConnectOption): Promise<DbConnection> {
   return PgConnection.connect(url);

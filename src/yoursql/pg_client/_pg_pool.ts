@@ -8,6 +8,7 @@ import {
   DbQuery,
   DbTransaction,
   MultipleQueryResult,
+  StringLike,
   TransactionMode,
 } from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
@@ -69,12 +70,12 @@ export class PgDbPool extends DbQuery implements DbPool {
     const conn = await this.#pool.get();
     return new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
   }
-  override async query<T>(sql: ToString): Promise<T> {
+  override async query<T>(sql: StringLike): Promise<T> {
     const text = sql.toString();
     using conn = await this.connect();
     return conn.query(text).catch((e) => addPgErrorInfo(e, text)) as Promise<T>;
   }
-  override multipleQuery(sql: ToString): Promise<MultipleQueryResult> {
+  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: StringLike): Promise<T> {
     return this.query(sql);
   }
 
@@ -83,7 +84,7 @@ export class PgDbPool extends DbQuery implements DbPool {
     return new DbPoolTransaction(() => this.connect(), { mode, errorRollback: true });
   }
   //implement
-  async cursor<T extends object = any>(sql: ToString, option?: DbCursorOption): Promise<DbCursor<T>> {
+  async cursor<T extends object = any>(sql: StringLike, option?: DbCursorOption): Promise<DbCursor<T>> {
     const conn = await this.#pool.get();
     const cursor = conn.query(new Cursor(sql.toString()));
     const poolConn = new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
@@ -136,8 +137,6 @@ class PgListen implements Disposable {
     connect.on("notification", (msg) => {});
   }
 }
-
-type ToString = { toString(): string };
 
 /*
   pg 的一些行为

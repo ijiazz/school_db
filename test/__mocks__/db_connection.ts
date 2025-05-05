@@ -1,4 +1,4 @@
-import { DbConnection, DbPoolConnection, DbQuery } from "@ijia/data/yoursql";
+import { DbConnection, DbPoolConnection, DbQuery, MultipleQueryResult, StringLike } from "@ijia/data/yoursql";
 import { Mock, vi } from "vitest";
 
 export class MockDbConnection extends DbQuery implements DbConnection {
@@ -14,9 +14,11 @@ export class MockDbConnection extends DbQuery implements DbConnection {
   query = vi.fn(async function () {
     return { rowCount: 0, rows: [] };
   });
-  multipleQuery = vi.fn(async function () {
-    return [{ rowCount: 0, rows: [] }, { rowCount: 0, rows: [] }];
-  });
+  multipleQuery = vi.fn(
+    async function () {
+      return [{ rowCount: 0, rows: [] }, { rowCount: 0, rows: [] }];
+    },
+  ) as <T extends MultipleQueryResult = MultipleQueryResult>(sql: StringLike) => Promise<T>;
 }
 export class MockDbPoolConnection extends DbPoolConnection {
   constructor() {
