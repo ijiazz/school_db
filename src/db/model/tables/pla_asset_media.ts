@@ -23,7 +23,7 @@ export type DbPlaAssetMedia<Meta = Record<string, any>> = Omit<InferTableDefined
 };
 export type DbPlaAssetMediaCreate<Meta = Record<string, any>> = PickColumn<DbPlaAssetMedia<Meta>>;
 
-export const pla_asset_media = createTable("pla_asset_media", TABLE);
+export const pla_asset_media = createTable<DbPlaAssetMedia, DbPlaAssetMediaCreate>("pla_asset_media", TABLE);
 
 const TABLE2 = {
   platform: dbTypeMap.genColumn("platform_flag"),
@@ -34,7 +34,10 @@ const TABLE2 = {
 } satisfies TableDefined;
 export type DbPlaAssetMediaMissing = InferTableDefined<typeof TABLE2>;
 export type DbPlaAssetMediaMissingCreate = PickColumn<DbPlaAssetMediaMissing>;
-export const pla_asset_media_missing = createTable("pla_asset_media_missing", TABLE2);
+export const pla_asset_media_missing = createTable<DbPlaAssetMediaMissing, DbPlaAssetMediaMissingCreate>(
+  "pla_asset_media_missing",
+  TABLE2,
+);
 
 type MediaFileBase<Meta extends {}> = {
   path: string;
