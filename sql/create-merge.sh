@@ -11,6 +11,7 @@ cat "$rooDir/init/tables_system.sql" >> $targetFile
 cat "$rooDir/init/tables_assets.sql" >> $targetFile
 cat "$rooDir/init/tables_user.sql" >> $targetFile
 cat "$rooDir/init/extra/comment.sql" >> $targetFile
+cat "$rooDir/init/tables_post.sql" >> $targetFile
 
 # 创建角色的 sql 文件
 cat "$rooDir/roles/ijia_crawler.sql" >> $targetFile

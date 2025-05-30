@@ -19,6 +19,8 @@ export * from "./tables/user_role_bind.ts";
 export * from "./tables/user_class_bind.ts";
 export * from "./tables/user_platform_bind.ts";
 
+export * from "./tables/post.ts";
+
 export * from "./tables/captcha_picture.ts";
 
 export * from "./tables/log.ts";
