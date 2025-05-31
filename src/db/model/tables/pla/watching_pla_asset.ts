@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 const DEFINE = {
   comment_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
@@ -9,7 +9,7 @@ const DEFINE = {
 } satisfies TableDefined;
 
 export type DbWatchingPlaAsset = InferTableDefined<typeof DEFINE>;
-export type DbWatchingPlaAssetCreate = PickColumn<DbWatchingPlaAsset, keyof typeof DEFINE>;
+export type DbWatchingPlaAssetCreate = ToInsertType<DbWatchingPlaAsset>;
 
 export const watching_pla_asset = createTable<DbWatchingPlaAsset, DbWatchingPlaAssetCreate>(
   "watching_pla_asset",

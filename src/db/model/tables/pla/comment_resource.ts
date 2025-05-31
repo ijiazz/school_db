@@ -1,14 +1,14 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
-const comment_imageDefined = {
+const TABLE = {
   id: dbTypeMap.genColumn("VARCHAR", true),
-  size: dbTypeMap.genColumn("INT", true),
+  size: dbTypeMap.genColumn("INT"),
   image_width: dbTypeMap.genColumn("SMALLINT"),
   image_height: dbTypeMap.genColumn("SMALLINT"),
 
-  ref_count: dbTypeMap.genColumn("SMALLINT", true),
+  ref_count: dbTypeMap.genColumn("SMALLINT", true, "0"),
 } satisfies TableDefined;
-export type DbCommentImage = InferTableDefined<typeof comment_imageDefined>;
-export type DbDbCommentImageCreate = PickColumn<DbCommentImage, "id" | "size" | "image_width" | "image_height">;
-export const comment_image = createTable<DbCommentImage, DbDbCommentImageCreate>("comment_image", comment_imageDefined);
+export type DbCommentImage = InferTableDefined<typeof TABLE>;
+export type DbDbCommentImageCreate = ToInsertType<DbCommentImage, "ref_count">;
+export const comment_image = createTable<DbCommentImage, DbDbCommentImageCreate>("comment_image", TABLE);

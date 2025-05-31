@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { AssetMediaType } from "../../const.ts";
 
@@ -13,7 +13,7 @@ const TABLE = {
   level: dbTypeMap.genColumn("media_level"),
 
   type: dbTypeMap.genColumn("media_type", true),
-  meta: dbTypeMap.genColumn<Record<string, any>>("JSONB", true, "'{}'"),
+  meta: dbTypeMap.genColumn<Record<string, any>>("JSONB", true),
   hash: dbTypeMap.genColumn("VARCHAR", true),
   hash_type: dbTypeMap.genColumn("VARCHAR", true),
 } satisfies TableDefined;
@@ -21,7 +21,7 @@ const TABLE = {
 export type DbPlaAssetMedia<Meta = Record<string, any>> = Omit<InferTableDefined<typeof TABLE>, "meta"> & {
   meta: Meta;
 };
-export type DbPlaAssetMediaCreate<Meta = Record<string, any>> = PickColumn<DbPlaAssetMedia<Meta>>;
+export type DbPlaAssetMediaCreate<Meta = Record<string, any>> = ToInsertType<DbPlaAssetMedia<Meta>>;
 
 export const pla_asset_media = createTable<DbPlaAssetMedia, DbPlaAssetMediaCreate>("pla_asset_media", TABLE);
 
@@ -33,7 +33,7 @@ const TABLE2 = {
   description: dbTypeMap.genColumn("VARCHAR"),
 } satisfies TableDefined;
 export type DbPlaAssetMediaMissing = InferTableDefined<typeof TABLE2>;
-export type DbPlaAssetMediaMissingCreate = PickColumn<DbPlaAssetMediaMissing>;
+export type DbPlaAssetMediaMissingCreate = ToInsertType<DbPlaAssetMediaMissing>;
 export const pla_asset_media_missing = createTable<DbPlaAssetMediaMissing, DbPlaAssetMediaMissingCreate>(
   "pla_asset_media_missing",
   TABLE2,

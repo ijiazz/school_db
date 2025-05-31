@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
@@ -7,6 +7,6 @@ const TABLE_DEFINE = {
 } satisfies TableDefined;
 
 export type DbUserRoleBind = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbUserRoleBindCreate = PickColumn<DbUserRoleBind, "role_id" | "user_id">;
+export type DbUserRoleBindCreate = ToInsertType<DbUserRoleBind>;
 
 export const user_role_bind = createTable<DbUserRoleBind, DbUserRoleBindCreate>("user_role_bind", TABLE_DEFINE);

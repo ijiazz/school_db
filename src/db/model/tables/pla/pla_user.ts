@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { UserExtra } from "../../type.ts";
 const TABLE_DEFINE = {
@@ -24,20 +24,7 @@ const createOptionalKeys = ["extra"] as const;
 const TABLE_CREATE_KEY = [...createRequiredKeys, ...createOptionalKeys] as const;
 
 export type DbPlaUser = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbPlaUserCreate = PickColumn<
-  DbPlaUser,
-  | "avatar"
-  | "pla_avatar_uri"
-  | "pla_uid"
-  | "platform"
-  | "user_name"
-  | "ip_location"
-  | "follower_count"
-  | "following_count"
-  | "signature"
-  | "signature_struct",
-  "extra"
->;
+export type DbPlaUserCreate = ToInsertType<DbPlaUser, "create_time" | "crawl_check_time" | "extra">;
 
 export const pla_user = createTable<DbPlaUser, DbPlaUserCreate>("pla_user", TABLE_DEFINE);
 

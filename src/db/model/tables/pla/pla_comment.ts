@@ -1,8 +1,8 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { CommentExtra } from "../../type.ts";
 
-const pla_commentDefine = {
+const TABLE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   reply_last_sync_date: dbTypeMap.genColumn("TIMESTAMPTZ"),
@@ -51,27 +51,12 @@ export const pla_comment_create_key = [
   "reply_count",
 ] as const;
 
-export type DbPlaComment = InferTableDefined<typeof pla_commentDefine>;
+export type DbPlaComment = InferTableDefined<typeof TABLE>;
 
-export type DbPlaCommentCreate = PickColumn<
+export type DbPlaCommentCreate = ToInsertType<
   DbPlaComment,
-  | "author_like"
-  | "comment_id"
-  | "content_text"
-  | "content_text_struct"
-  | "ip_location"
-  | "like_count"
-  | "reply_count"
-  | "parent_comment_id"
-  | "pla_uid"
-  | "platform"
-  | "publish_time"
-  | "asset_id"
-  | "additional_image"
-  | "additional_image_thumb"
-  | "root_comment_id",
-  "comment_type" | "extra"
+  "create_time" | "crawl_check_time" | "extra" | "is_deleted" | "platform_delete" | "comment_type"
 >;
 
-export const pla_comment = createTable<DbPlaComment, DbPlaCommentCreate>("pla_comment", pla_commentDefine);
+export const pla_comment = createTable<DbPlaComment, DbPlaCommentCreate>("pla_comment", TABLE);
 export const pla_pla_comment_check = pla_comment.createTypeChecker<DbPlaCommentCreate>(pla_comment_create_key);
