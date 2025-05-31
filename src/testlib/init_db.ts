@@ -8,7 +8,13 @@ const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 
 const IJIA_DB_SQL_BASE_DIR = SQL_DIR + "/init";
-const IJIA_DB_SQL_FILES = ["functions.sql", "tables_system.sql", "tables_assets.sql", "tables_user.sql"] as const;
+const IJIA_DB_SQL_FILES = [
+  "functions.sql",
+  "tables_system.sql",
+  "tables_assets.sql",
+  "tables_user.sql",
+  "tables_post.sql",
+] as const;
 /**
  * 初始化数据库
  */
