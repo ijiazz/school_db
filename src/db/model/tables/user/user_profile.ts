@@ -1,5 +1,5 @@
 import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
   user_id: dbTypeMap.genColumn("SERIAL", true),

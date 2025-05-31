@@ -1,5 +1,5 @@
 import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
 const watching_pla_userDefine = {
   published_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   published_last_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),

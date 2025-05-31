@@ -1,5 +1,5 @@
-import { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
+import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const comment_imageDefined = {
   id: dbTypeMap.genColumn("VARCHAR", true),
