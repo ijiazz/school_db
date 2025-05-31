@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
@@ -9,10 +9,6 @@ const TABLE_DEFINE = {
 } satisfies TableDefined;
 
 export type DbUserProfile = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbUserProfileCreate = PickColumn<
-  DbUserProfile,
-  "user_id",
-  "acquaintance_time" | "comment_stat_enabled" | "live_notice"
->;
+export type DbUserProfileCreate = ToInsertType<DbUserProfile, "comment_stat_enabled" | "live_notice">;
 
 export const user_profile = createTable<DbUserProfile, DbUserProfileCreate>("public.user_profile", TABLE_DEFINE);

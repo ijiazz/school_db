@@ -1,7 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@asla/yoursql@~0.8.9": "0.8.9",
+    "npm:@asla/yoursql@~0.8.10": "0.8.10",
     "npm:@redis/client@^1.6.0": "1.6.0",
     "npm:@types/node@^22.10.2": "22.10.5",
     "npm:@types/pg-cursor@^2.7.2": "2.7.2",
@@ -12,9 +12,9 @@
     "npm:vitest@^3.0.7": "3.0.7_@types+node@22.10.5_vite@6.2.0__@types+node@22.10.5"
   },
   "npm": {
-    "@asla/yoursql@0.8.9": {
-      "integrity": "sha512-bVIxt+btZYJISwjQkyYt7gkZVFIjczQfwfgXTKpLUEorJ6l3iIj/54o7wGQLn30pl2TNxMKoCz7vbkzSJJswCw==",
-      "tarball": "https://registry.npmmirror.com/@asla/yoursql/-/yoursql-0.8.9.tgz"
+    "@asla/yoursql@0.8.10": {
+      "integrity": "sha512-m/IKYaZBQqGzxcGIqNCOBAll6GEVwD/xginSSnXN/IcmNTAs83bEcd5JD5v9njYajpU9sLqus4aPzxVfY9gy1A==",
+      "tarball": "https://registry.npmmirror.com/@asla/yoursql/-/yoursql-0.8.10.tgz"
     },
     "@esbuild/aix-ppc64@0.25.0": {
       "integrity": "sha512-O7vun9Sf8DFjH2UtqK8Ku3LkquL9SZL8OLY1T5NZkA34+wG3OQF7cl4Ql8vdNzM6fzBbYfLaiRLIOZ+2FOCgBQ==",
@@ -816,7 +816,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@asla/yoursql@~0.8.9",
+        "npm:@asla/yoursql@~0.8.10",
         "npm:@redis/client@^1.6.0",
         "npm:@types/node@^22.10.2",
         "npm:@types/pg-cursor@^2.7.2",

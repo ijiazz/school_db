@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
@@ -10,10 +10,7 @@ const TABLE_DEFINE = {
 } satisfies TableDefined;
 
 export type DbUserPlatformBind = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbUserPlatformBindCreate = PickColumn<
-  DbUserPlatformBind,
-  "is_primary" | "user_id" | "pla_uid" | "platform"
->;
+export type DbUserPlatformBindCreate = ToInsertType<DbUserPlatformBind, "create_time">;
 
 export const user_platform_bind = createTable<DbUserPlatformBind, DbUserPlatformBindCreate>(
   "user_platform_bind",

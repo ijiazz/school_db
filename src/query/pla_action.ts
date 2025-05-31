@@ -1,5 +1,7 @@
 import {
+  DbPlaAsset,
   DbPlaAssetCreate,
+  DbPlaComment,
   DbPlaCommentCreate,
   DbPlaUser,
   DbPlaUserCreate,
@@ -73,7 +75,7 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
   });
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude
   type UpdateKey = Exclude<
-    keyof DbPlaCommentCreate | "user_name_snapshot" | "user_avatar_snapshot" | "crawl_check_time",
+    keyof DbPlaComment,
     | "asset_id"
     | "platform"
     | "pla_uid"
@@ -82,6 +84,10 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
     | "comment_id"
     | "root_comment_id"
     | "parent_comment_id"
+    | "create_time"
+    | "reply_last_sync_date"
+    | "is_deleted"
+    | "platform_delete"
   >;
 
   const upsertSql = pla_comment
@@ -128,7 +134,7 @@ export function savePlaAssetList(values: DbPlaAssetCreate[]) {
 
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude
   type UpdateKey = Exclude<
-    keyof DbPlaAssetCreate | "user_name_snapshot" | "user_avatar_snapshot" | "crawl_check_time",
+    keyof DbPlaAsset,
     | "asset_id"
     | "platform"
     | "pla_uid"
@@ -138,6 +144,11 @@ export function savePlaAssetList(values: DbPlaAssetCreate[]) {
     | "root_comment_id"
     | "parent_comment_id"
     | "content_type"
+    | "create_time"
+    | "is_deleted"
+    | "platform_delete"
+    | "comment_last_full_update_time"
+    | "comment_last_update_time"
   >;
 
   const upsertSql = pla_asset

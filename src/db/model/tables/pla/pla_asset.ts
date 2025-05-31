@@ -1,14 +1,13 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { AssetExtra } from "../../type.ts";
-import v from "../../../../yoursql.ts";
 
 const pla_assetDefine = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),
   comment_last_full_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   comment_last_update_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
-  extra: dbTypeMap.genColumn<AssetExtra>("JSONB", true, v({})),
+  extra: dbTypeMap.genColumn<AssetExtra>("JSONB", true, "'{}'"),
 
   platform_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
   is_deleted: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
@@ -44,16 +43,14 @@ const createRequiredKeys = [
   "content_text_struct",
   "comment_num",
 ] as const;
-const createOptionalKeys = ["extra", "content_type"] as const;
 
-export const pla_asset_create_key = [...createRequiredKeys, ...createOptionalKeys] as const;
+export const pla_asset_create_key = [...createRequiredKeys, "extra", "content_type"] as const;
 
 export const pla_asset = createTable<DbPlaAsset, DbPlaAssetCreate>("pla_asset", pla_assetDefine);
 
 export const pla_asset_check = pla_asset.createTypeChecker<DbPlaAssetCreate>(pla_asset_create_key);
 
-export type DbPlaAssetCreate = PickColumn<
+export type DbPlaAssetCreate = ToInsertType<
   DbPlaAsset,
-  (typeof createRequiredKeys)[number],
-  (typeof createOptionalKeys)[number]
+  "create_time" | "crawl_check_time" | "extra" | "platform_delete" | "is_deleted" | "content_type"
 >;

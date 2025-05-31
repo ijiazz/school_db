@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
@@ -14,9 +14,10 @@ const TABLE_DEFINE = {
   last_login_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
 } satisfies TableDefined;
 
-const TABLE_CREATE_KEYS = ["nickname", "avatar", "email", "password", "pwd_salt"] as const;
-
 export type DbUser = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbUserCreate = PickColumn<DbUser, (typeof TABLE_CREATE_KEYS)[number]>;
+export type DbUserCreate = Omit<
+  ToInsertType<DbUser, "id" | "status" | "is_deleted">,
+  "create_time" | "last_login_time"
+>;
 
 export const user = createTable<DbUser, DbUserCreate>("public.user", TABLE_DEFINE);

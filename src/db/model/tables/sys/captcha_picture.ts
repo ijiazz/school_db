@@ -1,5 +1,5 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
   id: dbTypeMap.genColumn("VARCHAR", true),
@@ -10,6 +10,6 @@ const TABLE_DEFINE = {
 } satisfies TableDefined;
 
 export type DbCaptchaPicture = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbCaptchaPictureCreate = PickColumn<DbCaptchaPicture, "id" | "type" | "is_true", "yes_count" | "no_count">;
+export type DbCaptchaPictureCreate = ToInsertType<DbCaptchaPicture, "yes_count" | "no_count">;
 
 export const captcha_picture = createTable<DbCaptchaPicture, DbCaptchaPictureCreate>("captcha_picture", TABLE_DEFINE);

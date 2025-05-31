@@ -1,4 +1,4 @@
-import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 
 const TABLE_DEFINE = {
@@ -8,6 +8,6 @@ const TABLE_DEFINE = {
 } satisfies TableDefined;
 
 export type DbUserClassBind = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbUserClassBindCreate = PickColumn<DbUserClassBind, "class_id" | "user_id">;
+export type DbUserClassBindCreate = ToInsertType<DbUserClassBind, "create_time">;
 
 export const user_class_bind = createTable<DbUserClassBind, DbUserClassBindCreate>("user_class_bind", TABLE_DEFINE);
