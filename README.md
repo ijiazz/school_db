@@ -1,19 +1,15 @@
 ## 数据库初始化
 
-进入 plpgsql. 按顺序导入以下 sql 文件(记得把路径改为绝对路径)
+`sql/create-merge.sh` 脚本文件标注了需要执行sql文件的顺序
+进入 plpgsql. 按顺序导入sql 文件即可(记得把路径改为绝对路径)
 
+例如：
 `\i sql/init/tables_assets.sql` 创建自定义类型和表\
 `\i sql/init/functions.sql` 定义了函数\
 `\i sql/init/create_triggers.sql` 创建触发器
-
-其中 tables_assets.sql 是必须的。其余是可选的
-
+ 
 或者直接用 Deno 运行创建数据库的脚本文件 [scripts/create_db.ts](./scripts/create_db.ts)\
 `deno run -A scripts/create_db.ts`
-
-### 角色与权限
-
-`sql/roles` 定义了一些开发与生产环境中可能用到的角色
 
 ### 备份
 

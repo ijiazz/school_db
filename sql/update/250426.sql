@@ -47,12 +47,6 @@ CREATE INDEX idxfk_pla_asset_media_asset_id ON pla_asset_media(platform, asset_i
 CREATE INDEX idx_pla_asset_media_media_type ON pla_asset_media(type);
 CREATE INDEX idx_pla_asset_media_meta ON pla_asset_media USING gin(meta);
 
-
-GRANT SELECT,INSERT,UPDATE ON pla_asset_media_missing TO ijia_crawler;
-GRANT SELECT,INSERT,UPDATE ON pla_asset_media TO ijia_crawler;
-GRANT SELECT ON pla_asset_media TO ijia_web;
-
-
 INSERT INTO pla_asset_media (file_id, ext, platform, asset_id, index, size, level, type, meta, hash, hash_type,uri)
 SElECT 
 get_platform_flag_index(platform)||'-'||asset_id||'-'||index||'-'||level AS file_id,

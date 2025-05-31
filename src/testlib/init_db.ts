@@ -1,20 +1,23 @@
-import { createDbConnection, DbConnection, DbConnectOption, DbQuery } from "../yoursql.ts";
+import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
 import { genPgSqlErrorMsg } from "../common/sql.ts";
+import { v } from "@asla/yoursql";
 const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
+
+const IJIA_DB_SQL_BASE_DIR = SQL_DIR + "/init";
+const IJIA_DB_SQL_FILES = ["functions.sql", "tables_system.sql", "tables_assets.sql", "tables_user.sql"] as const;
 /**
  * 初始化数据库
  */
 export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
-  const sqlInitDir = SQL_DIR + "/init";
-  const sqlFiles: string[] = ["functions.sql", "tables_system.sql", "tables_assets.sql", "tables_user.sql"];
+  const sqlFiles: string[] = [...IJIA_DB_SQL_FILES];
 
   if (option.extra) {
     const extraDirName = "extra";
-    const extraFiles = await fs.readdir(path.join(sqlInitDir, extraDirName)).then(
+    const extraFiles = await fs.readdir(path.join(IJIA_DB_SQL_BASE_DIR, extraDirName)).then(
       (dir) => dir,
       (e) => {
         if (e?.code === "ENOENT") {
@@ -29,7 +32,7 @@ export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = 
   }
 
   for (const relSqlFile of sqlFiles) {
-    const sqlFile = path.resolve(sqlInitDir, relSqlFile);
+    const sqlFile = path.resolve(IJIA_DB_SQL_BASE_DIR, relSqlFile);
     try {
       await execSqlFile(sqlFile, client);
     } catch (error) {
@@ -37,29 +40,52 @@ export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = 
     }
   }
 }
+
+export type CreateInitIjiaDbOption = {
+  /** user 用于连接数据库，也将成为新建数据库的 owner。默认使用 connect url 的用户 */
+  owner?: string;
+  /** 如果为 true, 则如果 owner 不存在，则先创建 owner。这依赖 connect 的用户要拥有创建角色的权限 */
+  ensureOwner?: boolean;
+  /** 如为 true，则尝试删除同名数据库 */
+  dropIfExists?: boolean;
+  /** 是否启用扩展功能 */
+  extra?: boolean;
+};
 /**
  * 创建并初始化 ijia_db
- * @param connect 必须提供一个数据库连接，用于执行SQL语句创建数据库
+ * @param connect 必须提供一个数据库连接，用于执行SQL语句创建数据库。要求这个连接用户拥有创建数据库的权限
  */
 export async function createInitIjiaDb(
-  connect: DbConnectOption | URL,
+  connect: DbConnectOption | URL | string,
   dbname: string,
-  option: {
-    /** user 用于连接数据库，也将成为新建数据库的 owner */
-    owner?: string;
-    dropIfExists?: boolean;
-    /** 是否启用扩展功能 */
-    extra?: boolean;
-  } = {},
+  option: CreateInitIjiaDbOption = {},
 ): Promise<void> {
-  const manage = await DbManage.connect(connect);
-  try {
-    if (option.dropIfExists) await manage.dropDb(dbname);
-    await manage.createDb(dbname, { owner: option.owner });
-  } finally {
-    await manage.close();
+  const { owner, ensureOwner, dropIfExists } = option;
+  {
+    await using mange = await DbManage.connect(connect);
+    if (dropIfExists) await mange.dropDb(dbname);
+    if (owner) {
+      if (ensureOwner) {
+        const sql = `DO $$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = ${v(owner)})
+   THEN CREATE USER ${owner} WITH LOGIN;
+   END IF;
+END $$;`;
+        await mange.dbClient.query(sql);
+      }
+    }
+
+    await mange.createDb(dbname, { owner });
   }
-  await using client = await createDbConnection({ ...connect, database: dbname });
+  let connConf: DbConnectOption;
+  if (typeof connect === "object" && !(connect instanceof URL)) {
+    connConf = { ...connect, database: dbname };
+  } else {
+    connConf = parserDbUrl(connect);
+    connConf.database = dbname;
+  }
+  await using client = await createDbConnection(connConf);
   await initIjiaDb(client, { extra: true });
 }
 
@@ -86,8 +112,9 @@ export class DbManage {
 
   constructor(readonly dbClient: DbConnection) {}
   /** 删除 dbAddr 对应数据库 */
-  createDb(dbName: string, option: CreateDataBaseOption = {}) {
-    return createDb(this.dbClient, dbName, option);
+  async createDb(dbName: string, option: CreateDataBaseOption = {}) {
+    const sql = genCreateDb(dbName, option);
+    await this.dbClient.query(sql);
   }
   /** 删除 dbAddr 对应数据库 */
   async dropDb(dbName: string) {
@@ -95,13 +122,13 @@ export class DbManage {
   }
   async copy(templateDbName: string, newDbName: string) {
     const client = this.dbClient;
-    await client.query(`DROP DATABASE IF EXISTS ${newDbName}`);
+    await this.dropDb(newDbName);
     await client.query(`CREATE DATABASE ${newDbName} WITH TEMPLATE ${templateDbName}`);
   }
   close() {
     return this.dbClient.close();
   }
-  async emptyDatabase(dbName: string) {
+  async recreateDb(dbName: string) {
     await this.dropDb(dbName);
     await this.createDb(dbName);
   }
@@ -112,8 +139,8 @@ export class DbManage {
 export interface CreateDataBaseOption {
   owner?: string;
 }
-async function createDb(dbQuery: DbQuery, dbName: string, option: CreateDataBaseOption = {}) {
-  await dbQuery.query(`
+function genCreateDb(dbName: string, option: CreateDataBaseOption = {}) {
+  return `
 CREATE DATABASE ${dbName}
 WITH
 ${option.owner ? "OWNER=" + option.owner : ""}
@@ -121,7 +148,7 @@ ENCODING = 'UTF8'
 LOCALE_PROVIDER = 'libc'
 CONNECTION LIMIT = -1
 IS_TEMPLATE = False;
-  `);
+  `;
 }
 
 async function execSqlFile(pathname: string, client: DbQuery): Promise<void> {

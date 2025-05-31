@@ -28,7 +28,7 @@ export const test = viTest.extend<BaseContext>({
     const dbName = "test_empty_" + VITEST_WORKER_ID;
 
     const manage = await getManage();
-    await manage.emptyDatabase(dbName);
+    await manage.recreateDb(dbName);
     await manage.close();
 
     dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
