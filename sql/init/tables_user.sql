@@ -2,15 +2,24 @@ CREATE TABLE public.user(
     id SERIAL PRIMARY KEY,
     nickname VARCHAR(50),
     avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
+    
     email VARCHAR(256) NOT NULL UNIQUE,
     password CHAR(128),
     pwd_salt CHAR(32),
-    status BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 高位到低位：是否不可登录,是否被拉黑
+    
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 账号创建时间
     last_login_time TIMESTAMPTZ NOT NULL DEFAULT now() -- 最后登录时间
 ); 
 CREATE INDEX idx_user_email ON public.user(email);
+CREATE INDEX idxfk_avatar ON public.user(avatar);
+
+CREATE TABLE user_blacklist( -- 用户黑名单
+    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
+    reason VARCHAR(100) NOT NULL -- 进黑名单原因
+);
+
 
 CREATE TABLE user_profile(
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE,
