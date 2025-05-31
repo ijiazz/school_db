@@ -1,11 +1,10 @@
 import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
-import type { UserExtra } from "../type.ts";
-import v from "../../../yoursql.ts";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
+import type { UserExtra } from "../../type.ts";
 const TABLE_DEFINE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
-  extra: dbTypeMap.genColumn<UserExtra>("JSONB", true, v({})),
+  extra: dbTypeMap.genColumn<UserExtra>("JSONB", true, "'{}'"),
   pla_avatar_uri: dbTypeMap.genColumn("VARCHAR"),
 
   user_name: dbTypeMap.genColumn("VARCHAR"),

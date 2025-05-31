@@ -1,7 +1,7 @@
-import { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
-import { AssetExtra } from "../type.ts";
-import v from "../../../yoursql.ts";
+import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
+import type { AssetExtra } from "../../type.ts";
+import v from "../../../../yoursql.ts";
 
 const pla_assetDefine = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),

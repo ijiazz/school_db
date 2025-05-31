@@ -1,6 +1,6 @@
 import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
-import type { AssetMediaType } from "../const.ts";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
+import type { AssetMediaType } from "../../const.ts";
 
 const TABLE = {
   file_id: dbTypeMap.genColumn("VARCHAR", true),

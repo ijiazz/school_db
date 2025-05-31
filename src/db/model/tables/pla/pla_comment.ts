@@ -1,13 +1,12 @@
 import type { InferTableDefined, PickColumn, TableDefined } from "@asla/yoursql";
-import { createTable, dbTypeMap } from "../_sql_value.ts";
-import type { CommentExtra } from "../type.ts";
-import v from "../../../yoursql.ts";
+import { createTable, dbTypeMap } from "../../_sql_value.ts";
+import type { CommentExtra } from "../../type.ts";
 
 const pla_commentDefine = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   reply_last_sync_date: dbTypeMap.genColumn("TIMESTAMPTZ"),
-  extra: dbTypeMap.genColumn<CommentExtra>("JSONB", true, v({})),
+  extra: dbTypeMap.genColumn<CommentExtra>("JSONB", true, "'{}'"),
 
   is_deleted: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
   platform_delete: dbTypeMap.genColumn("BOOLEAN", true, "FALSE"),
