@@ -1,9 +1,10 @@
-import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../yoursql.ts";
+import { createDbConnection, DbConnection, DbConnectOption, dbPool, DbQuery, parserDbUrl } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
 import { genPgSqlErrorMsg } from "../common/sql.ts";
 import { v } from "@asla/yoursql";
+import { user } from "@ijia/data/db";
 const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 
@@ -56,6 +57,8 @@ export type CreateInitIjiaDbOption = {
   dropIfExists?: boolean;
   /** 是否启用扩展功能 */
   extra?: boolean;
+  createTestUser?: boolean;
+  /** 初始化测试用户 */
 };
 /**
  * 创建并初始化 ijia_db
@@ -93,6 +96,11 @@ END $$;`;
   }
   await using client = await createDbConnection(connConf);
   await initIjiaDb(client, { extra: true });
+
+  if (option.createTestUser) {
+    const sql = user.insert({ email: "test@ijiazz.cn", id: 1, nickname: "测试" });
+    await client.query(sql);
+  }
 }
 
 /**
