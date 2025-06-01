@@ -5,9 +5,9 @@ const DEFINE = {
   post_id: dbTypeMap.genColumn("INT", true),
   user_id: dbTypeMap.genColumn("INT", true),
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "'now()'"),
-  is_like: dbTypeMap.genColumn("BOOLEAN", true, "'TRUE'"),
+  weight: dbTypeMap.genColumn("SMALLINT", true),
   reason: dbTypeMap.genColumn("VARCHAR"),
 } satisfies TableDefined;
 export type DbPostLike = InferTableDefined<typeof DEFINE>;
-export type DbPostLikeCreate = ToInsertType<DbPostLike, "create_time" | "is_like">;
+export type DbPostLikeCreate = ToInsertType<DbPostLike, "create_time">;
 export const post_like = createTable<DbPostLike, DbPostLikeCreate>("post_like", DEFINE);

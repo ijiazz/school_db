@@ -21,11 +21,11 @@ CREATE TABLE post (
     content_text_struct JSONB, -- 文本扩展信息
     content_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
-    dislike_count INT NOT NULL DEFAULT 0, -- 举报数量
+    dislike_count INT NOT NULL DEFAULT 0, -- 举报数量需要除以100，如果1人举报，则为100
     comment_num INT  NOT NULL DEFAULT 0, -- 评论数量
     options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1位:  是否匿名
 
-    review_fail_count INT NOT NULL DEFAULT 0, -- 审核通过数量，需要除以100，如果1人审核通过，则为100
+    review_fail_count INT NOT NULL DEFAULT 0, -- 审核通过数量
     review_pass_count INT NOT NULL DEFAULT 0, -- 审核通过数量
     is_reviewing BOOLEAN NOT NULL DEFAULT FALSE, -- 是否正在审核中
     is_review_pass BOOLEAN -- 是否审核通过
@@ -71,9 +71,9 @@ CREATE TABLE post_like(
     post_id INT NOT NULL REFERENCES post(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES public.user(id)ON DELETE CASCADE ON UPDATE CASCADE,
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    is_like BOOLEAN NOT NULL DEFAULT TRUE, -- 如果为 true，则表示点赞；如果为 false，则表示举报
+    weight SMALLINT NOT NULL, -- 点赞权重，举报为负数。如果过大于0则为点赞，过小于0则为举报。举报权重100为1人举报，点赞权重100为1人点赞
     reason VARCHAR(100), -- 举报需要一个理由
-    PRIMARY KEY (post_id, user_id)
+    PRIMARY KEY (post_id, user_id),
+    CONSTRAINT chk_post_like_weight CHECK (weight !=0) -- 权重范围
 );
-CREATE INDEX idxfk_post_like_user_id ON post_like(user_id);
-CREATE INDEX idxfk_post_like_user_like ON post_like(user_id,is_like,create_time); -- 查询某个用户喜欢列表和举报列表
+CREATE INDEX idxfk_post_like_user_id ON post_like(user_id,weight,create_time); -- 查询某个用户喜欢列表和举报列表
