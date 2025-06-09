@@ -20,16 +20,37 @@ CREATE TABLE user_blacklist( -- 用户黑名单
     reason VARCHAR(100) NOT NULL -- 进黑名单原因
 );
 
+-- 更新需要审核的用户信息
+CREATE TABLE update_user_request(
+    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    nickname VARCHAR(50),
+    avatar BYTEA,
+    review_pass_count INT NOT NULL DEFAULT 0,-- 审核通过数量
+    review_failed_count INT NOT NULL DEFAULT 0, -- 审核不通过数量
+
+    request_update JSONB,
+    request_update_time TIMESTAMPTZ -- 最后请求更新时间
+);
+CREATE INDEX idxfk_update_user_request_avatar ON public.user(avatar);
+
+CREATE TABLE update_user_request_review_log(
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE,
+    reviewer_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE,
+    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
+    is_pass BOOLEAN NOT NULL
+);
 
 CREATE TABLE user_profile(
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE,
     live_notice BOOLEAN DEFAULT FALSE NOT NULL, -- 是否接收直播通知
-    acquaintance_time  TIMESTAMPTZ,  
-    comment_stat_enabled BOOLEAN DEFAULT FALSE NOT NULL -- 是否开启评论统计
+    acquaintance_time  TIMESTAMPTZ, -- 纪念日
+    comment_stat_enabled BOOLEAN DEFAULT FALSE NOT NULL, -- 是否开启评论统计
+    
+    post_count INT NOT NULL DEFAULT 0, -- 发帖数
+    post_like_count INT NOT NULL DEFAULT 0 -- 帖子点赞数
 );
 CREATE INDEX idx_user_live_notice ON user_profile(live_notice);
-
-
 
 CREATE TABLE class(
     id SERIAL PRIMARY KEY,
@@ -70,6 +91,7 @@ CREATE TABLE user_platform_bind(
     PRIMARY KEY (platform, pla_uid),
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE
 );
+CREATE INDEX idxfk_user_platform_bind_user_id ON user_platform_bind(user_id, platform, pla_uid);
 
 CREATE TABLE captcha_picture(
     id VARCHAR PRIMARY KEY,
