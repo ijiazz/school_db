@@ -16,7 +16,9 @@ export interface TextStructure {
 export type TextStructureExternalLink = TextStructure & {
   link: string;
 };
-
+export type TextStructureUser = TextStructure & {
+  user_id: string;
+};
 export enum TextStructureType {
   unknown = -1,
   /** 外部链接 */
