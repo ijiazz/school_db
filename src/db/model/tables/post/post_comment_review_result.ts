@@ -6,6 +6,7 @@ const DEFINE = {
   commit_time: dbTypeMap.genColumn("TIMESTAMPTZ"),
   review_fail_count: dbTypeMap.genColumn("INT", true, "0"),
   review_pass_count: dbTypeMap.genColumn("INT", true, "0"),
+  is_review_pass: dbTypeMap.genColumn("BOOLEAN"),
 } satisfies TableDefined;
 export type DbPostCommentReviewResult = InferTableDefined<typeof DEFINE>;
 export type DbPostCommentReviewResultCreate = ToInsertType<
