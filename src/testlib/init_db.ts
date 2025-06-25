@@ -1,4 +1,4 @@
-import { createDbConnection, DbConnection, DbConnectOption, dbPool, DbQuery, parserDbUrl } from "../yoursql.ts";
+import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../yoursql.ts";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
@@ -15,6 +15,7 @@ const IJIA_DB_SQL_FILES = [
   "tables_assets.sql",
   "tables_user.sql",
   "tables_post.sql",
+  "tables_post_comment.sql",
 ] as const;
 /**
  * 初始化数据库

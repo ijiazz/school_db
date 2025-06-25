@@ -3,3 +3,7 @@ export * from "./post/post.ts";
 export * from "./post/post_asset.ts";
 export * from "./post/post_like.ts";
 export * from "./post/post_review.ts";
+export * from "./post/post_comment_like.ts";
+export * from "./post/post_comment.ts";
+export * from "./post/post_comment_review.ts";
+export * from "./post/post_comment_review_result.ts";
