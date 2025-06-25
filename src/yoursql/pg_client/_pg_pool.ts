@@ -8,7 +8,8 @@ import {
   DbQuery,
   DbTransaction,
   MultipleQueryResult,
-  StringLike,
+  SqlLike,
+  sqlLikeToString,
   TransactionMode,
 } from "@asla/yoursql/client";
 import { addPgErrorInfo } from "./_error_handler.ts";
@@ -70,12 +71,13 @@ export class PgDbPool extends DbQuery implements DbPool {
     const conn = await this.#pool.get();
     return new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
   }
-  override async query<T>(sql: StringLike): Promise<T> {
-    const text = sql.toString();
+  override async query<T>(sql: SqlLike): Promise<T> {
+    const text = sqlLikeToString(sql);
     using conn = await this.connect();
     return conn.query(text).catch((e) => addPgErrorInfo(e, text)) as Promise<T>;
   }
-  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: StringLike): Promise<T> {
+  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: SqlLike | SqlLike[]): Promise<T> {
+    if (sql instanceof Array) sql = sql.map(sqlLikeToString).join(";\n");
     return this.query(sql);
   }
 
@@ -84,7 +86,7 @@ export class PgDbPool extends DbQuery implements DbPool {
     return new DbPoolTransaction(() => this.connect(), { mode, errorRollback: true });
   }
   //implement
-  async cursor<T extends object = any>(sql: StringLike, option?: DbCursorOption): Promise<DbCursor<T>> {
+  async cursor<T extends object = any>(sql: SqlLike, option?: DbCursorOption): Promise<DbCursor<T>> {
     const conn = await this.#pool.get();
     const cursor = conn.query(new Cursor(sql.toString()));
     const poolConn = new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
