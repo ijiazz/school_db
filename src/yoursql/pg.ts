@@ -20,26 +20,26 @@ declare module "@asla/yoursql" {
   interface SqlStatementDataset<T> extends QueryableDataSql<T> {}
 }
 const base: QueryableSql = {
-  queryCount(): Promise<number> {
-    return dbPool.queryCount(this.toString());
+  queryCount(this: SqlStatement): Promise<number> {
+    return dbPool.queryCount(this.genSql());
   },
-  query(): Promise<QueryRowsResult<any>> {
-    return dbPool.query<any>(this);
+  query(this: SqlStatement): Promise<QueryRowsResult<any>> {
+    return dbPool.query<any>(this.genSql());
   },
 };
 const obj: QueryableDataSql<any> = {
   ...base,
-  cursor(): Promise<DbCursor<any>> {
-    return dbPool.cursor(this.toString());
+  cursor(this: SqlStatement): Promise<DbCursor<any>> {
+    return dbPool.cursor(this.genSql());
   },
-  queryFirstRow(): Promise<any> {
-    return dbPool.queryFirstRow(this.toString());
+  queryFirstRow(this: SqlStatement): Promise<any> {
+    return dbPool.queryFirstRow(this.genSql());
   },
-  queryMap<K>(key: string): Promise<Map<K, any>> {
-    return dbPool.queryMap(this.toString(), key);
+  queryMap<K>(this: SqlStatement, key: string): Promise<Map<K, any>> {
+    return dbPool.queryMap(this.genSql(), key);
   },
-  queryRows(): Promise<any[]> {
-    return dbPool.queryRows(this.toString());
+  queryRows(this: SqlStatement): Promise<any[]> {
+    return dbPool.queryRows(this.genSql());
   },
 };
 
