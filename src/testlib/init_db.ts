@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
 import { genPgSqlErrorMsg } from "../common/sql.ts";
 import { v } from "@asla/yoursql";
-import { user } from "@ijia/data/db";
+import { createUser } from "../query/user.ts";
 const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 
@@ -99,8 +99,8 @@ END $$;`;
   await initIjiaDb(client, { extra: true });
 
   if (option.createTestUser) {
-    const sql = user.insert({ email: "test@ijiazz.cn", id: 1, nickname: "测试" });
-    await client.query(sql);
+    const sql = createUser("test@ijiazz.cn", { nickname: "测试", id: 1 });
+    await client.queryRows(sql);
   }
 }
 

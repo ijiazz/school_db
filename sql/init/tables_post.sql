@@ -23,7 +23,7 @@ CREATE TABLE post (
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
     dislike_count INT NOT NULL DEFAULT 0, -- 举报数量需要除以100，如果1人举报，则为100
     comment_num INT  NOT NULL DEFAULT 0, -- 评论数量
-    options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1位:  是否匿名
+    options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1~2位:  是否匿名，是否关闭评论
 
     review_fail_count INT NOT NULL DEFAULT 0, -- 审核通过数量
     review_pass_count INT NOT NULL DEFAULT 0, -- 审核通过数量

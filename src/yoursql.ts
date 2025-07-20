@@ -1,5 +1,5 @@
 export * from "@asla/yoursql";
-export * from "@asla/yoursql/client"; //扩展一些抽象类，将来这个模块可能要合并到 @asla/yoursql
+export * from "@asla/yoursql/client";
 export * from "./yoursql/pg_client/mod.ts";
 export * from "./yoursql/type.ts";
 

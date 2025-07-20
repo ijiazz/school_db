@@ -20,6 +20,8 @@ CREATE TABLE user_blacklist( -- 用户黑名单
     reason VARCHAR(100) NOT NULL -- 进黑名单原因
 );
 
+SELECT setval(pg_get_serial_sequence('public.user', 'id')::regclass,10000);
+
 -- 更新需要审核的用户信息
 CREATE TABLE update_user_request(
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -42,13 +44,19 @@ CREATE TABLE update_user_request_review_log(
 );
 
 CREATE TABLE user_profile(
-    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE,
+    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     live_notice BOOLEAN DEFAULT FALSE NOT NULL, -- 是否接收直播通知
     acquaintance_time  TIMESTAMPTZ, -- 纪念日
     comment_stat_enabled BOOLEAN DEFAULT FALSE NOT NULL, -- 是否开启评论统计
-    
+
     post_count INT NOT NULL DEFAULT 0, -- 发帖数
-    post_like_count INT NOT NULL DEFAULT 0 -- 帖子点赞数
+    post_like_count INT NOT NULL DEFAULT 0, -- 用户点赞的总帖子数
+    post_like_get_count INT NOT NULL DEFAULT 0, -- 用户帖子获得的总数量
+
+    report_correct_count INT NOT NULL DEFAULT 0, -- 举报正确数 (客观类，容易判断正确性的，包括帖子、用户)
+    report_error_count INT NOT NULL DEFAULT 0, -- 举报错误数 (客观类，容易判断正确性的，包括帖子、用户)
+    report_subjective_correct_count INT NOT NULL DEFAULT 0, -- 举报正确数 (主观类，包括评论)
+    report_subjective_error_count INT NOT NULL DEFAULT 0 -- 举报错误数 (主观类，包括评论)
 );
 CREATE INDEX idx_user_live_notice ON user_profile(live_notice);
 
