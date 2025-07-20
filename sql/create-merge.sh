@@ -12,3 +12,4 @@ cat "$rooDir/init/tables_assets.sql" >> $targetFile
 cat "$rooDir/init/tables_user.sql" >> $targetFile
 cat "$rooDir/init/extra/comment.sql" >> $targetFile
 cat "$rooDir/init/tables_post.sql" >> $targetFile
+cat "$rooDir/init/tables_post_comment.sql" >> $targetFile
