@@ -22,6 +22,25 @@ CREATE TABLE user_blacklist( -- 用户黑名单
 
 SELECT setval(pg_get_serial_sequence('public.user', 'id')::regclass,10000);
 
+-- 更新需要审核的用户信息
+CREATE TABLE update_user_request(
+    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    nickname VARCHAR(50),
+    avatar BYTEA,
+    review_pass_count INT NOT NULL DEFAULT 0,-- 审核通过数量
+    review_failed_count INT NOT NULL DEFAULT 0, -- 审核不通过数量
+
+    request_update JSONB,
+    request_update_time TIMESTAMPTZ -- 最后请求更新时间
+);
+
+CREATE TABLE update_user_request_review_log(
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE,
+    reviewer_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE,
+    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
+    is_pass BOOLEAN NOT NULL
+);
 
 CREATE TABLE user_profile(
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
