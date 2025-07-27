@@ -1,0 +1,1 @@
+ALTER TABLE public.user ADD CONSTRAINT email_domain_lowercase CHECK (email ~ '@[^A-Z]+$');
