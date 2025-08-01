@@ -29,22 +29,17 @@ CREATE INDEX idxfk_post_comment_root_comment_id ON post_comment(root_comment_id,
 
 CREATE INDEX idx_comment_user_insert_limit ON post_comment(user_id,create_time);
 
-CREATE TABLE post_comment_review_result(
-    comment_id INT NOT NULL PRIMARY KEY REFERENCES post_comment(id) ON DELETE CASCADE,
-    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    review_fail_count INT NOT NULL DEFAULT 0, -- 审核通过数量，需要除以100，如果1人审核通过，则为100
-    review_pass_count INT NOT NULL DEFAULT 0, -- 审核通过数量
-    is_review_pass BOOLEAN -- 是否审核通过
-);
-CREATE INDEX idxfk_post_comment_review_result_get_list ON post_comment_review_result(commit_time,comment_id,is_review_pass); -- 获取评论需要审核的列表
 
-CREATE TABLE post_comment_review(
-    comment_id INT NOT NULL REFERENCES post_comment(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    is_pass BOOLEAN NOT NULL DEFAULT FALSE, -- 是否通过
-    reason VARCHAR(100), -- 不通过的理由
-    PRIMARY KEY (comment_id,user_id)
+CREATE TYPE post_review_type AS ENUM('post','post_comment');
+CREATE TABLE post_review_info(
+    type post_review_type NOT NULL, -- 审核类型
+    target_id INT NOT NULL, -- 目标id
+    create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
+    reviewed_time TIMESTAMPTZ, -- 审核时间
+    reviewer_id INT REFERENCES public.user(id) ON DELETE SET NULL ON UPDATE CASCADE, -- 审核人id
+    is_review_pass BOOLEAN, -- 是否审核通过
+    remark VARCHAR(100), -- 备注 
+    PRIMARY KEY (type, target_id)
 );
 
 

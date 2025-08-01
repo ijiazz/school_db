@@ -10,7 +10,7 @@ CREATE TABLE public.user(
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 账号创建时间
     last_login_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 最后登录时间
-    CONSTRAINT email_domain_lowercase CHECK (email ~ '@[^A-Z]+$') -- 确保邮箱域名部分为小写
+    CONSTRAINT email_domain_lowercase CHECK (email ~ '^[^A-Z]+$') -- 确保邮箱不区分大小写
 ); 
 CREATE INDEX idx_user_email ON public.user(email);
 CREATE INDEX idxfk_avatar ON public.user(avatar);

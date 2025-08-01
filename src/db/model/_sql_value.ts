@@ -5,9 +5,11 @@ import {
   enumAssetMediaType,
   enumMediaLevel,
   enumPlatform,
+  enumPostReviewType,
   enumTaskType,
   MediaLevel,
   Platform,
+  PostReviewType,
 } from "./const.ts";
 import { v } from "../../yoursql.ts";
 
@@ -30,6 +32,7 @@ export const dbTypeMap = YourTypeMap.create({
   media_type: new CustomDbType<AssetMediaType>((v) => enumAssetMediaType.has(v), "media_type"),
   platform_flag: new CustomDbType<Platform>((v) => enumPlatform.has(v), "platform_flag"),
   crawl_task_status: new CustomDbType<CrawlTaskStatus>((v) => enumTaskType.has(v), "crawl_task_status"),
+  post_review_type: new CustomDbType<PostReviewType>((v) => enumPostReviewType.has(v), "post_review_type"),
 });
 
 export function createTable<T extends TableType = TableType, C extends TableType = T>(

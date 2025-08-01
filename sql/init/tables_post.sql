@@ -25,8 +25,6 @@ CREATE TABLE post (
     comment_num INT  NOT NULL DEFAULT 0, -- 评论数量
     options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1~2位:  是否匿名，是否关闭评论
 
-    review_fail_count INT NOT NULL DEFAULT 0, -- 审核通过数量
-    review_pass_count INT NOT NULL DEFAULT 0, -- 审核通过数量
     is_reviewing BOOLEAN NOT NULL DEFAULT FALSE, -- 是否正在审核中
     is_review_pass BOOLEAN -- 是否审核通过
 );
@@ -34,19 +32,6 @@ CREATE TABLE post (
 CREATE INDEX idxfk_post_group ON post(group_id,publish_time);
 CREATE INDEX idx_post_get_list ON post(publish_time,id,is_delete,is_hide); -- 查询帖子列表
 CREATE INDEX idx_post_user_insert_limit ON post(user_id,create_time); -- 查询某个用户每天已发布的作品数量
-
-CREATE TABLE post_review(
-    post_update_time TIMESTAMPTZ NOT NULL, -- 更新次数
-    post_id INT NOT NULL REFERENCES post(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    is_pass BOOLEAN NOT NULL DEFAULT FALSE, -- 是否通过
-    reason VARCHAR(100), -- 不通过的理由
-    PRIMARY KEY (post_id,post_update_time,user_id)
-);
-
-CREATE INDEX idxfk_post_review_post_id ON post_review(post_id,post_update_time,commit_time);
-CREATE INDEX idxfk_post_review_user_id ON post_review(user_id);
 
 CREATE TABLE post_asset(
     id SERIAL PRIMARY KEY,
