@@ -105,3 +105,9 @@ export enum LogLevel {
   warn = "warn",
   error = "error",
 }
+
+export enum PostReviewType {
+  post = "post",
+  postComment = "post_comment",
+}
+export const enumPostReviewType = new Set([PostReviewType.post, PostReviewType.postComment]);

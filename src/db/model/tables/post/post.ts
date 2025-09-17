@@ -18,8 +18,6 @@ const DEFINE = {
   dislike_count: dbTypeMap.genColumn("INT", true, "0"),
   comment_num: dbTypeMap.genColumn("INT", true, "0"),
   options: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
-  review_fail_count: dbTypeMap.genColumn("INT", true, "0"),
-  review_pass_count: dbTypeMap.genColumn("INT", true, "0"),
   is_reviewing: dbTypeMap.genColumn("BOOLEAN", true, "'false'"),
   is_review_pass: dbTypeMap.genColumn("BOOLEAN"),
 } satisfies TableDefined;
@@ -36,8 +34,6 @@ export type DbPostCreate = Omit<
     | "dislike_count"
     | "comment_num"
     | "options"
-    | "review_fail_count"
-    | "review_pass_count"
     | "is_reviewing"
   >,
   "id"
