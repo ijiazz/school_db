@@ -1,46 +1,16 @@
 import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../yoursql.ts";
-import path from "node:path";
 import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
 import { genPgSqlErrorMsg } from "../common/sql.ts";
 import { v } from "@asla/yoursql";
 import { createUser } from "../query/user.ts";
-const dirname = import.meta.dirname!;
-const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
+import { getSQLInitFiles } from "./sql_files.ts";
 
-const IJIA_DB_SQL_BASE_DIR = SQL_DIR + "/init";
-const IJIA_DB_SQL_FILES = [
-  "functions.sql",
-  "tables_system.sql",
-  "tables_assets.sql",
-  "tables_user.sql",
-  "tables_post.sql",
-  "tables_post_comment.sql",
-] as const;
 /**
  * 初始化数据库
  */
 export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
-  const sqlFiles: string[] = [...IJIA_DB_SQL_FILES];
-
-  if (option.extra) {
-    const extraDirName = "extra";
-    const extraFiles = await fs.readdir(path.join(IJIA_DB_SQL_BASE_DIR, extraDirName)).then(
-      (dir) => dir,
-      (e) => {
-        if (e?.code === "ENOENT") {
-          return [];
-        }
-        throw e;
-      },
-    );
-    for (const item of extraFiles) {
-      sqlFiles.push(extraDirName + "/" + item);
-    }
-  }
-
-  for (const relSqlFile of sqlFiles) {
-    const sqlFile = path.resolve(IJIA_DB_SQL_BASE_DIR, relSqlFile);
+  for await (const sqlFile of getSQLInitFiles(option.extra)) {
     try {
       await execSqlFile(sqlFile, client);
     } catch (error) {
@@ -71,23 +41,23 @@ export async function createInitIjiaDb(
   option: CreateInitIjiaDbOption = {},
 ): Promise<void> {
   const { owner, ensureOwner, dropIfExists } = option;
-  {
-    await using mange = await DbManage.connect(connect);
-    if (dropIfExists) await mange.dropDb(dbname);
-    if (owner) {
-      if (ensureOwner) {
-        const sql = `DO $$
+
+  await using mange = await DbManage.connect(connect);
+  if (dropIfExists) await mange.dropDb(dbname);
+  if (owner) {
+    if (ensureOwner) {
+      const sql = `DO $$
 BEGIN
    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = ${v(owner)})
    THEN CREATE USER ${owner} WITH LOGIN;
    END IF;
 END $$;`;
-        await mange.dbClient.query(sql);
-      }
+      await mange.dbClient.query(sql);
     }
-
-    await mange.createDb(dbname, { owner });
   }
+
+  await mange.createDb(dbname, { owner });
+
   let connConf: DbConnectOption;
   if (typeof connect === "object" && !(connect instanceof URL)) {
     connConf = { ...connect, database: dbname };
@@ -96,7 +66,16 @@ END $$;`;
     connConf.database = dbname;
   }
   await using client = await createDbConnection(connConf);
-  await initIjiaDb(client, { extra: true });
+  try {
+    await initIjiaDb(client, { extra: true });
+  } catch (error) {
+    try {
+      await client.close();
+      await mange.dropDb(dbname);
+    } catch (error) {}
+
+    throw error;
+  }
 
   if (option.createTestUser) {
     const sql = createUser("test@ijiazz.cn", { nickname: "测试", id: 1 });
