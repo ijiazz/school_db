@@ -13,7 +13,7 @@ const DEFINE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "'now()'"),
   is_delete: dbTypeMap.genColumn("BOOLEAN", true, "'false'"),
   like_count: dbTypeMap.genColumn("INT", true, "0"),
-  dislike_count: dbTypeMap.genColumn("INT", true, "0"),
+  dislike_count: dbTypeMap.genColumn("SMALLINT", true, "0"),
   content_text: dbTypeMap.genColumn("VARCHAR"),
   content_text_struct: dbTypeMap.genColumn<TextStructure>("JSONB"),
 } satisfies TableDefined;

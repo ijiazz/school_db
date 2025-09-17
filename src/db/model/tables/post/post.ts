@@ -15,7 +15,7 @@ const DEFINE = {
   content_text_struct: dbTypeMap.genColumn<TextStructure>("JSONB"),
   content_type: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
   like_count: dbTypeMap.genColumn("INT", true, "0"),
-  dislike_count: dbTypeMap.genColumn("INT", true, "0"),
+  dislike_count: dbTypeMap.genColumn("SMALLINT", true, "0"),
   comment_num: dbTypeMap.genColumn("INT", true, "0"),
   options: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
   is_reviewing: dbTypeMap.genColumn("BOOLEAN", true, "'false'"),

@@ -11,7 +11,7 @@ CREATE TABLE post_comment(
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
     is_delete BOOLEAN NOT NULL DEFAULT FALSE,
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
-    dislike_count INT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
+    dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
     content_text VARCHAR(5000), -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
 

@@ -6,6 +6,9 @@ ALTER TABLE public.user
 ALTER TABLE post DROP COLUMN review_fail_count;
 ALTER TABLE post DROP COLUMN review_pass_count;
 
+ALTER TABLE post ALTER COLUMN dislike_count TYPE SMALLINT;
+ALTER TABLE post_comment ALTER COLUMN dislike_count TYPE SMALLINT;
+
 DROP TABLE post_review;
 
 DROP TABLE post_comment_review;
