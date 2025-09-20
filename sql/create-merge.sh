@@ -17,5 +17,5 @@ cat "$rooDir/init/tables_post_comment.sql" >> $targetFile
 # 递归读取 functions 目录下的所有 sql 文件
 find "$rooDir/functions" -name "*.sql" -type f | sort | while read sqlFile; do
     cat "$sqlFile" >> "$targetFile"
-    echo "\n" >> "$targetFile"
+    echo -e "\n" >> "$targetFile"
 done
