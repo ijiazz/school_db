@@ -11,7 +11,7 @@ CREATE TABLE post_comment(
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
     is_delete BOOLEAN NOT NULL DEFAULT FALSE,
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
-    dislike_count INT NOT NULL DEFAULT 0, -- 举报数量
+    dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
     content_text VARCHAR(5000), -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
 
@@ -29,22 +29,17 @@ CREATE INDEX idxfk_post_comment_root_comment_id ON post_comment(root_comment_id,
 
 CREATE INDEX idx_comment_user_insert_limit ON post_comment(user_id,create_time);
 
-CREATE TABLE post_comment_review_result(
-    comment_id INT NOT NULL PRIMARY KEY REFERENCES post_comment(id) ON DELETE CASCADE,
-    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    review_fail_count INT NOT NULL DEFAULT 0, -- 审核通过数量，需要除以100，如果1人审核通过，则为100
-    review_pass_count INT NOT NULL DEFAULT 0, -- 审核通过数量
-    is_review_pass BOOLEAN -- 是否审核通过
-);
-CREATE INDEX idxfk_post_comment_review_result_get_list ON post_comment_review_result(commit_time,comment_id,is_review_pass); -- 获取评论需要审核的列表
 
-CREATE TABLE post_comment_review(
-    comment_id INT NOT NULL REFERENCES post_comment(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    commit_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    is_pass BOOLEAN NOT NULL DEFAULT FALSE, -- 是否通过
-    reason VARCHAR(100), -- 不通过的理由
-    PRIMARY KEY (comment_id,user_id)
+CREATE TYPE post_review_type AS ENUM('post','post_comment');
+CREATE TABLE post_review_info(
+    type post_review_type NOT NULL, -- 审核类型
+    target_id INT NOT NULL, -- 目标id
+    create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
+    reviewed_time TIMESTAMPTZ, -- 审核时间
+    reviewer_id INT REFERENCES public.user(id) ON DELETE SET NULL ON UPDATE CASCADE, -- 审核人id
+    is_review_pass BOOLEAN, -- 是否审核通过
+    remark VARCHAR(100), -- 备注 
+    PRIMARY KEY (type, target_id)
 );
 
 
@@ -52,7 +47,7 @@ CREATE TABLE post_comment_like(
     comment_id INT NOT NULL REFERENCES post_comment(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    weight SMALLINT NOT NULL, -- 点赞权重，举报为负数。如果过大于0则为点赞，过小于0则为举报。举报权重100为1人举报，点赞权重100为1人点赞
+    weight SMALLINT NOT NULL, -- 点赞权重，举报为负数。如果过大于0则为点赞，过小于0则为举报。这个值可以用于以后推荐
     reason VARCHAR(100), -- 举报需要一个理由
     PRIMARY KEY (comment_id, user_id)
 );
