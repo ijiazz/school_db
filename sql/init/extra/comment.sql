@@ -26,9 +26,7 @@ CREATE TABLE pla_comment (
     platform_delete BOOLEAN NOT NULL DEFAULT FALSE,
     --
     content_text VARCHAR,
-    content_text_struct JSONB, -- 文本扩展信息
-    user_name_snapshot VARCHAR,
-    user_avatar_snapshot VARCHAR REFERENCES user_avatar(id),
+    content_text_struct JSONB, -- 文本扩展信息 
     comment_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
     additional_image VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片
     additional_image_thumb VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片缩略图
@@ -54,8 +52,7 @@ CREATE TABLE pla_comment (
 CREATE INDEX idxfk_pla_comment_root_comment_id ON pla_comment(platform, root_comment_id);
 CREATE INDEX idxfk_pla_comment_parent_comment_id ON pla_comment(platform, parent_comment_id);
 CREATE INDEX idxfk_pla_comment_asset_id ON pla_comment(platform, asset_id);
-CREATE INDEX idxfk_pla_comment_pla_uid ON pla_comment(platform, pla_uid);
-CREATE INDEX idxfk_pla_comment_user_avatar_snapshot ON pla_comment USING hash(user_avatar_snapshot);
+CREATE INDEX idxfk_pla_comment_pla_uid ON pla_comment(platform, pla_uid); 
 CREATE INDEX idxfk_pla_comment_user_additional_image ON pla_comment USING hash(additional_image);
 CREATE INDEX idxfk_pla_comment_user_additional_image_thumb ON pla_comment USING hash(additional_image_thumb);
 
@@ -72,7 +69,6 @@ BEGIN
     CASE TG_TABLE_NAME
     
     WHEN 'pla_comment' THEN
-        PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot,'user_avatar');
         PERFORM res_update_operate(OLD.additional_image, NEW.additional_image,'comment_image');
         PERFORM res_update_operate(OLD.additional_image_thumb, NEW.additional_image_thumb,'comment_image');
     ELSE

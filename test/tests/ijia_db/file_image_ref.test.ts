@@ -36,9 +36,9 @@ test("创建或修改评论表，会触发数据库触发器并自动更新用�
   await addAsset("u0", "p0", "a");
 
   await addCommentImage(["b", "c"]);
-  await addComment({ uid: "u0", pid: "p0", cid: "c0" }, "a", "b");
+  await addComment({ uid: "u0", pid: "p0", cid: "c0" }, "b");
 
-  await expect(getAvatar()).resolves.toMatchObject({ a: 3 });
+  await expect(getAvatar()).resolves.toMatchObject({ a: 2 });
   await expect(getCommentImage()).resolves.toMatchObject({ b: 1, c: 0 });
 
   await ijiaDbPool.query(pla_comment.updateFrom({ additional_image: "c" }));
@@ -89,7 +89,6 @@ async function addAsset(uid: string, pid: string, user_avatar_snapshot: string) 
 
 async function addComment(
   id: { uid: string; pid: string; cid: string },
-  user_avatar_snapshot: string,
   commentImg?: string,
 ) {
   let q = pla_comment.insert({
@@ -100,5 +99,4 @@ async function addComment(
     additional_image: commentImg,
   });
   await dbPool.query(q);
-  await dbPool.query(pla_comment.updateFrom({ user_avatar_snapshot }).where("comment_id=" + v(id.cid)));
 }
