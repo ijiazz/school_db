@@ -13,8 +13,6 @@ const TABLE = {
 
   content_text: dbTypeMap.genColumn("VARCHAR"),
   content_text_struct: dbTypeMap.genColumn("JSONB"),
-  user_name_snapshot: dbTypeMap.genColumn("VARCHAR"),
-  user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
 
   additional_image: dbTypeMap.genColumn("VARCHAR"),
   additional_image_thumb: dbTypeMap.genColumn("VARCHAR"),
@@ -32,7 +30,7 @@ const TABLE = {
   parent_comment_id: dbTypeMap.genColumn("VARCHAR"),
   asset_id: dbTypeMap.genColumn("VARCHAR", true),
 } satisfies TableDefined;
-export const pla_comment_create_key = [
+const pla_comment_create_key = [
   "author_like",
   "comment_id",
   "content_text",

@@ -9,7 +9,6 @@ import {
   pla_asset_check,
   pla_asset_create_key,
   pla_comment,
-  pla_comment_create_key,
   pla_pla_comment_check,
   pla_user,
   pla_user_check,
@@ -68,11 +67,7 @@ export function savePlaUserList(values: DbPlaUserCreate[]) {
 export function savePlaCommentList(values: DbPlaCommentCreate[]) {
   if (!values.length) throw new Error("values不能为空");
   pla_pla_comment_check.checkList(values);
-  const { columns, statement } = insetFrom(values, getDbRawMeta(pla_comment, pla_comment_create_key), {
-    table: pla_user,
-    keyMap: { user_avatar_snapshot: "avatar", user_name_snapshot: "user_name" },
-    on: { pla_uid: "pla_uid", platform: "platform" },
-  });
+
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude
   type UpdateKey = Exclude<
     keyof DbPlaComment,
@@ -91,7 +86,7 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
   >;
 
   const upsertSql = pla_comment
-    .insert(columns.join(","), statement.toString())
+    .insert(values)
     .onConflict(["platform", "comment_id"])
     .doUpdate(
       createConflictUpdate<UpdateKey>(
@@ -101,8 +96,6 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
           like_count: `CASE WHEN ${pla_comment.name}.like_count > EXCLUDED.like_count
   THEN ${pla_comment.name}.like_count ELSE EXCLUDED.like_count END`, // 只记录最高数量
           extra: "pla_comment.extra || EXCLUDED.extra",
-          user_avatar_snapshot: UpdateBehaver.overIfOldIsNull,
-          user_name_snapshot: UpdateBehaver.overIfOldIsNull,
           additional_image: UpdateBehaver.overIfOldIsNull,
           additional_image_thumb: UpdateBehaver.overIfOldIsNull,
           content_text: UpdateBehaver.overIfOldIsNull,
