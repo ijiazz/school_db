@@ -16,6 +16,8 @@ import {
 } from "../db.ts";
 import { ColumnMeta, SqlTextStatementDataset, YourTable } from "@asla/yoursql";
 import { createConflictUpdate, insetFrom, UpdateBehaver } from "./_statement.ts";
+import { insertIntoValues } from "../dbclient/pg.ts";
+import { insertInto } from "@asla/yoursql";
 
 /**
  * 保存用户数据
@@ -33,8 +35,7 @@ export function savePlaUserList(values: DbPlaUserCreate[]) {
   pla_user_check.checkList(values);
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude
   type UpdateKey = Exclude<keyof DbPlaUser | "crawl_check_time", "platform" | "pla_uid" | "create_time">;
-  const upsertSql = pla_user
-    .insert(values)
+  const upsertSql = insertIntoValues(pla_user.name, values)
     .onConflict(["pla_uid", "platform"])
     .doUpdate(
       createConflictUpdate<UpdateKey>(
@@ -56,7 +57,8 @@ export function savePlaUserList(values: DbPlaUserCreate[]) {
     )
     .returning({ pla_uid: true, platform: true, create_time: true, crawl_check_time: true });
   // 返回的将是执行插入的行
-  const sql = `WITH tb AS (\n${upsertSql})\nSELECT pla_uid, platform FROM tb where crawl_check_time = create_time;`;
+  const sql =
+    `WITH tb AS (\n${upsertSql.genSql()})\nSELECT pla_uid, platform FROM tb where crawl_check_time = create_time;`;
 
   return new SqlTextStatementDataset<{ pla_uid: string; platform: Platform }>(sql);
 }
@@ -84,9 +86,7 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
     | "is_deleted"
     | "platform_delete"
   >;
-
-  const upsertSql = pla_comment
-    .insert(values)
+  const upsertSql = insertIntoValues(pla_comment.name, values)
     .onConflict(["platform", "comment_id"])
     .doUpdate(
       createConflictUpdate<UpdateKey>(
@@ -108,7 +108,8 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
       ),
     )
     .returning({ comment_id: true, platform: true, create_time: true, crawl_check_time: true });
-  const sql = `WITH tb AS (\n${upsertSql})\nSELECT comment_id, platform FROM tb where crawl_check_time = create_time;`;
+  const sql =
+    `WITH tb AS (\n${upsertSql.genSql()})\nSELECT comment_id, platform FROM tb where crawl_check_time = create_time;`;
 
   return new SqlTextStatementDataset<{ comment_id: string; platform: Platform }>(sql);
 }
@@ -143,9 +144,8 @@ export function savePlaAssetList(values: DbPlaAssetCreate[]) {
     | "comment_last_full_update_time"
     | "comment_last_update_time"
   >;
-
-  const upsertSql = pla_asset
-    .insert(columns.join(","), statement.toString())
+  const upsertSql = insertInto(pla_asset.name, columns)
+    .select(statement.toString())
     .onConflict(["asset_id", "platform"])
     .doUpdate(
       createConflictUpdate<UpdateKey>(

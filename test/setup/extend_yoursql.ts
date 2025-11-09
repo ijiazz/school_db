@@ -1,1 +1,1 @@
-import "@ijia/data/yoursql"; // 扩展查询链方法
+import "@ijia/data/dbclient"; // 扩展查询链方法

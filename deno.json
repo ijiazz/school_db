@@ -9,14 +9,14 @@
     "@ijia/data/cache": "./src/cache.ts",
     "@ijia/data/query": "./src/query.ts",
     "@ijia/data/testlib": "./src/testlib.ts",
-    "@ijia/data/yoursql": "./src/yoursql.ts"
+    "@ijia/data/dbclient": "./src/dbclient.ts"
   },
   "exports": {
     "./db": "./src/db.ts",
     "./oss": "./src/oss.ts",
     "./query": "./src/query.ts",
     "./testlib": "./src/testlib.ts",
-    "./yoursql": "./src/yoursql.ts"
+    "./dbclient": "./src/dbclient.ts"
   },
   "compilerOptions": {
     "lib": ["deno.window"]

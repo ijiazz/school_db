@@ -1,5 +1,5 @@
 import { test as viTest } from "vitest";
-import { DbPool, dbPool, parserDbUrl } from "@ijia/data/yoursql";
+import { DbPool, dbPool, parserDbUrl } from "@ijia/data/dbclient";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
 export interface BaseContext {

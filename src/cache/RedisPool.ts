@@ -37,9 +37,7 @@ export class RedisPool {
           });
         },
         dispose(conn) {
-          conn.disconnect().catch((e) => {
-            console.error("redis连接断开失败", e);
-          });
+          conn.destroy();
         },
       },
       { maxCount: 10, idleTimeout: 5000, usageLimit: 9999 },

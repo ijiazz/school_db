@@ -1,8 +1,10 @@
 import { comment_image, pla_asset_media, user_avatar } from "../db.ts";
-import { dbPool, v } from "../yoursql.ts";
+import { dbPool } from "../dbclient.ts";
 import type { SqlStatementDataset } from "@asla/yoursql";
 import { getBucket, getOSS } from "../oss.ts";
 import { PromiseConcurrency } from "evlib/async";
+import { v } from "../dbclient/pg.ts";
+import { deleteFrom, select } from "@asla/yoursql";
 
 type OssObjId = {
   bucket: string;
@@ -23,10 +25,13 @@ async function deleteOssObj(iter: AsyncGenerator<OssObjId[]>, options: { signal?
   const oss = getOSS();
   const errors: Record<string, any> = {};
   function handler({ bucket, objectName }: OssObjId) {
-    return oss.getBucket(bucket).deleteObject(objectName).catch((e) => {
-      errors[bucket + "/" + objectName] = e;
-      throw e;
-    });
+    return oss
+      .getBucket(bucket)
+      .deleteObject(objectName)
+      .catch((e) => {
+        errors[bucket + "/" + objectName] = e;
+        throw e;
+      });
   }
   try {
     for await (const chunk of iter) {
@@ -45,40 +50,37 @@ async function* iterQueryRows(
   sql: SqlStatementDataset<{ id: string }>,
   bucket: string,
 ): AsyncGenerator<OssObjId[], undefined, undefined> {
-  let rows = await sql.queryRows();
+  let rows = await dbPool.queryRows(sql);
   while (rows.length) {
     yield rows.map(({ id }) => ({ bucket, objectName: id }));
-    rows = await sql.queryRows();
+    rows = await dbPool.queryRows(sql);
   }
 }
 export async function deleteCommentImageZero(option: { signal?: AbortSignal }) {
-  const sql = comment_image
-    .delete({
-      where: "id IN (" + comment_image.select({ id: true }).where("ref_count=0").limit(10) + ")",
-    })
+  const sql = deleteFrom(comment_image.name)
+    .where("id IN (" + select({ id: true }).from(comment_image.name).where("ref_count=0").limit(10) + ")")
     .returning<{ id: string }>({ id: true });
   await deleteOssObj(iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
 }
 export async function deleteUserAvatarZero(option: { signal?: AbortSignal }) {
-  const sql = user_avatar
-    .delete({ where: "id IN (" + user_avatar.select({ id: true }).where("ref_count=0").limit(10) + ")" })
+  const sql = deleteFrom(user_avatar.name)
+    .where("id IN (" + select({ id: true }).from(user_avatar.name).where("ref_count=0").limit(10) + ")")
     .returning<{ id: string }>({ id: true });
   await deleteOssObj(iterQueryRows(sql, getBucket().COMMENT_IMAGE), option);
 }
 export async function deleteAssetMedia(id: string | string[]) {
   const pool = dbPool.begin();
 
-  const sql = pla_asset_media
-    .delete({
-      where: () => {
-        if (typeof id === "string") return "id=" + v(id);
-        return "id IN (" + v.toValues(id) + ")";
-      },
+  const sql = deleteFrom(pla_asset_media.name)
+    .where(() => {
+      if (typeof id === "string") return "id=" + v(id);
+      return "id IN (" + v.toValues(id) + ")";
     })
     .returning<{ file_id: string; ext: string | null }>({
       ext: true,
       file_id: true,
     });
+
   const rows = await pool.queryRows(sql);
 
   const failedAll = new Map<string, any>();

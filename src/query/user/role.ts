@@ -1,25 +1,27 @@
+import { insertInto } from "@asla/yoursql";
 import { role, user_role_bind } from "@ijia/data/db";
+import { insertIntoValues, v } from "../../dbclient/pg.ts";
+import { deleteFrom } from "@asla/yoursql";
+import { dbPool, ExecutableSql } from "@ijia/data/dbclient";
 
 export type Role = {
   id: string;
   description?: string;
   roleName: string;
 };
-export async function createRole(roleData: Role): Promise<void> {
-  await role
-    .insert({ id: roleData.id, description: roleData.description, role_name: roleData.roleName })
-    .returning("id")
-    .queryCount();
+export function createRole(roleData: Role): ExecutableSql<void> {
+  const value = v.createImplicitValues(roleData);
+  return insertInto(role.name, value.columns).values(value.text).returning("id").client(dbPool);
 }
 
-export async function addRoleToUser(userId: number, roleId: string): Promise<void> {
-  await user_role_bind
-    .insert({ user_id: userId, role_id: roleId })
+export function addRoleToUser(userId: number, roleId: string): ExecutableSql<void> {
+  return insertIntoValues(user_role_bind.name, { user_id: userId, role_id: roleId })
     .onConflict(["user_id", "role_id"])
-    .doNotThing()
-    .queryCount();
+    .doNotThing().client(dbPool);
 }
 
-export async function deleteUserRole(userId: number, roleId: string): Promise<void> {
-  await user_role_bind.delete({ where: `user_id = ${userId} AND role_id = ${roleId}` }).queryCount();
+export function deleteUserRole(userId: number, roleId: string): ExecutableSql<void> {
+  return deleteFrom(user_role_bind.name).where(`user_id = ${v(userId)} AND role_id = ${v(roleId)}`).client(
+    dbPool,
+  );
 }

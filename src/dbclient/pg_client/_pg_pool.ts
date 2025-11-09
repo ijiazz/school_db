@@ -15,10 +15,9 @@ import {
 import { addPgErrorInfo } from "./_error_handler.ts";
 import Cursor from "pg-cursor";
 import { parserDbUrl, PgConnection } from "./pg_connect.ts";
-import type { DbPool } from "../type.ts";
 import { ResourcePool } from "evlib/async";
 import { createPgClient } from "./_pg_client.ts";
-import type { DbConnectOption } from "./type.ts";
+import type { DbConnectOption, DbPool } from "./type.ts";
 
 export class PgDbPool extends DbQuery implements DbPool {
   #pool: ResourcePool<Client>;

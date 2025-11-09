@@ -8,6 +8,7 @@ pgTypes.setTypeParser(pgTypes.builtins.INT8, BigInt);
 
 export * from "./type.ts";
 export * from "./pg_connect.ts";
+export * from "./queryable.ts"; // 副作用模块
 
 export const dbPool = new PgDbPool(() => {
   let url = ENV.DATABASE_URL;

@@ -1,4 +1,4 @@
-import { DbConnection, DbPoolConnection, DbQuery, MultipleQueryResult, SqlLike } from "@ijia/data/yoursql";
+import { DbConnection, DbPoolConnection, DbQuery, MultipleQueryResult, SqlLike } from "@ijia/data/dbclient";
 import { Mock, vi } from "vitest";
 
 export class MockDbConnection extends DbQuery implements DbConnection {

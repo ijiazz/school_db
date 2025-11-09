@@ -1,8 +1,7 @@
-import { DbTableQuery, InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
+import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { TaskType } from "../../const.ts";
 import type { CrawlTaskData } from "../../types/task.ts";
-import v from "../../../../yoursql.ts";
 
 const TABLE = {
   task_id: dbTypeMap.genColumn("SERIAL", true),
@@ -30,11 +29,18 @@ export type DbCrawlerTaskQueueCreate = Omit<
   "task_id"
 >;
 
-export const crawl_task_queue = createTable<DbCrawlerTaskQueue, DbCrawlerTaskQueueCreate>(
-  "crawl_task_queue",
-  TABLE,
-);
-export const crawl_task_priority_queue = new DbTableQuery<DbCrawlerTaskPriorityQueue, {}>(
+const priority = {
+  task_id: TABLE.task_id,
+  platform: TABLE.platform,
+  args: TABLE.args,
+  create_time: TABLE.create_time,
+  name: TABLE.name,
+  level: TABLE.level,
+  creator: TABLE.creator,
+} as const;
+
+export const crawl_task_queue = createTable<DbCrawlerTaskQueue, DbCrawlerTaskQueueCreate>("crawl_task_queue", TABLE);
+export const crawl_task_priority_queue = createTable<DbCrawlerTaskPriorityQueue, {}>(
   "crawl_task_priority_queue",
-  v,
+  priority,
 );
