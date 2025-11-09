@@ -8,7 +8,7 @@
     "./oss": "./dist/oss.js",
     "./cache": "./dist/cache.js",
     "./testlib": "./dist/testlib.js",
-    "./yoursql": "./dist/yoursql.js",
+    "./dbclient": "./dist/dbclient.js",
     "./query": "./dist/query.js"
   },
   "author": "Eaviyi",
