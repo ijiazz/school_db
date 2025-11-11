@@ -1,6 +1,6 @@
 import { DbClassCreate, dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-import { insertIntoValues } from "../dbclient/pg.ts";
 import { dbPool } from "@ijia/data/dbclient";
+import { insertIntoValues } from "../common/sql.ts";
 
 export async function initPublicClass() {
   const list: DbClassCreate[] = [];

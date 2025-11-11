@@ -16,8 +16,8 @@ import {
 } from "../db.ts";
 import { ColumnMeta, SqlTextStatementDataset, YourTable } from "@asla/yoursql";
 import { createConflictUpdate, insetFrom, UpdateBehaver } from "./_statement.ts";
-import { insertIntoValues } from "../dbclient/pg.ts";
 import { insertInto } from "@asla/yoursql";
+import { insertIntoValues } from "../common/sql.ts";
 
 /**
  * 保存用户数据

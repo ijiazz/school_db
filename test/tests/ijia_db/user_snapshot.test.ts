@@ -3,7 +3,7 @@ import { beforeEach, expect } from "vitest";
 import { DbPlaAssetCreate, DbPlaUserCreate, DbUserAvatarCreate, pla_asset, Platform, user_avatar } from "@ijia/data/db";
 import { savePlaAssetList, savePlaUserList } from "@ijia/data/query";
 import { select } from "@asla/yoursql";
-import { insertIntoValues } from "@/dbclient/pg.ts";
+import { insertIntoValues } from "@/common/sql.ts";
 
 const mockAvatars: DbUserAvatarCreate[] = ["a.jpg", "b.jpg", "c.jpg"].map((uri) => ({ id: uri, size: 1 }));
 const mockUser: DbPlaUserCreate[] = [

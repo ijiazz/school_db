@@ -3,8 +3,8 @@ import { dbPool } from "../dbclient.ts";
 import type { SqlStatementDataset } from "@asla/yoursql";
 import { getBucket, getOSS } from "../oss.ts";
 import { PromiseConcurrency } from "evlib/async";
-import { v } from "../dbclient/pg.ts";
 import { deleteFrom, select } from "@asla/yoursql";
+import { v } from "../common/sql.ts";
 
 type OssObjId = {
   bucket: string;

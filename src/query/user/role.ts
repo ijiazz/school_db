@@ -1,8 +1,8 @@
-import { insertInto } from "@asla/yoursql";
+import { v } from "@asla/yoursql";
 import { role, user_role_bind } from "@ijia/data/db";
-import { insertIntoValues, v } from "../../dbclient/pg.ts";
 import { deleteFrom } from "@asla/yoursql";
 import { dbPool, ExecutableSql } from "@ijia/data/dbclient";
+import { insertIntoValues } from "../../common/sql.ts";
 
 export type Role = {
   id: string;
@@ -10,8 +10,7 @@ export type Role = {
   roleName: string;
 };
 export function createRole(roleData: Role): ExecutableSql<void> {
-  const value = v.createImplicitValues(roleData);
-  return insertInto(role.name, value.columns).values(value.text).returning("id").client(dbPool);
+  return insertIntoValues(role.name, roleData).returning("id").client(dbPool);
 }
 
 export function addRoleToUser(userId: number, roleId: string): ExecutableSql<void> {

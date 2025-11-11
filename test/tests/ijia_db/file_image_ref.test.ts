@@ -1,7 +1,7 @@
 import { comment_image, DbUserAvatar, pla_asset, pla_comment, pla_user, Platform, user_avatar } from "@ijia/data/db";
 import { expect } from "vitest";
 import { test } from "../../fixtures/db_connect.ts";
-import { insertIntoValues, v } from "@/dbclient/pg.ts";
+import { insertIntoValues, v } from "@/common/sql.ts";
 import { deleteFrom, select } from "@asla/yoursql";
 import { update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";

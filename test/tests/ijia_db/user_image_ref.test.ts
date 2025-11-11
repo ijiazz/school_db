@@ -2,7 +2,7 @@ import { DbUserAvatar, user, user_avatar } from "@ijia/data/db";
 import { expect } from "vitest";
 import { test } from "../../fixtures/db_connect.ts";
 import { select } from "@asla/yoursql";
-import { insertIntoValues } from "@/dbclient/pg.ts";
+import { insertIntoValues } from "@/common/sql.ts";
 import { deleteFrom } from "@asla/yoursql";
 import { update } from "@asla/yoursql";
 import { dbPool } from "@ijia/data/dbclient";
