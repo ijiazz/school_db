@@ -1,7 +1,7 @@
 import type { AssertJsType, ColumnMeta, SqlStatementDataset, TableType, YourTable } from "@asla/yoursql";
 import { SqlTextStatementDataset } from "@asla/yoursql";
-import { v } from "../dbclient/pg.ts";
 import { select } from "@asla/yoursql";
+import { v } from "../common/sql.ts";
 interface InsertForm {
   table: YourTable<any>;
   /** insertColumn -> formTableColumn  */
