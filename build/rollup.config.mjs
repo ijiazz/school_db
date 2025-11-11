@@ -16,7 +16,7 @@ export function getConfig(option = {}) {
     db: "src/db.ts",
     oss: "src/oss.ts",
     testlib: "src/testlib.ts",
-    yoursql: "src/yoursql.ts",
+    dbclient: "src/dbclient.ts",
     query: "src/query.ts",
     cache: "src/cache.ts",
   };
@@ -28,16 +28,19 @@ export function getConfig(option = {}) {
   return {
     input,
     external: [...Object.keys(packageJson.dependencies), "tslib", /^node:/],
-    plugins: [esmTsPlugin({
-      tslib: option.tslib,
-      tsconfig: path.join(rootDir, "tsconfig.json"),
-      compilerOptions: {
-        baseUrl: "",
-        declaration: true,
-        declarationDir: outputDir,
-        rootDir: "src",
-      },
-    })],
+    plugins: [
+      esmTsPlugin({
+        tslib: option.tslib,
+        tsconfig: path.join(rootDir, "tsconfig.json"),
+        compilerOptions: {
+          baseUrl: "",
+          declaration: true,
+          declarationDir: outputDir,
+          rootDir: "src",
+          outDir: outputDir,
+        },
+      }),
+    ],
     output: {
       dir: outputDir,
       compact: false,

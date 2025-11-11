@@ -11,7 +11,6 @@ import {
   Platform,
   PostReviewType,
 } from "./const.ts";
-import { v } from "../../yoursql.ts";
 
 export const dbTypeMap = YourTypeMap.create({
   TIMESTAMPTZ: Date,
@@ -35,9 +34,9 @@ export const dbTypeMap = YourTypeMap.create({
   post_review_type: new CustomDbType<PostReviewType>((v) => enumPostReviewType.has(v), "post_review_type"),
 });
 
-export function createTable<T extends TableType = TableType, C extends TableType = T>(
+export function createTable<T extends TableType = TableType, C = any>(
   name: string,
   define: TableDefined,
-): YourTable<T, C> {
-  return new YourTable(name, define, v);
+): YourTable<T> {
+  return new YourTable(name, define);
 }

@@ -86,6 +86,7 @@ export const createFileStream: (filePath: string, option?: CreateFileStreamOptio
 
 async function openFileStreamNode(filePath: string) {
   const hd = await fs.open(filePath);
+  //@ts-ignore 这里 deno 还不支持
   const stream = hd.readableWebStream({ type: "bytes" }) as ReadableStream<Uint8Array>;
   return stream.pipeThrough(
     new TransformStream({

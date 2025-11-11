@@ -1,8 +1,7 @@
-import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../yoursql.ts";
+import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../dbclient.ts";
 import fs from "node:fs/promises";
 import { DatabaseError } from "../common/pg.ts";
-import { genPgSqlErrorMsg } from "../common/sql.ts";
-import { v } from "@asla/yoursql";
+import { genPgSqlErrorMsg, v } from "../common/sql.ts";
 import { createUser } from "../query/user.ts";
 import { getSQLInitFiles } from "./sql_files.ts";
 

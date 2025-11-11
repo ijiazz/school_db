@@ -1,13 +1,15 @@
-import type { AssertJsType, ColumnMeta, DbTableQuery, SqlStatementDataset, TableType } from "@asla/yoursql";
-import { Selection, SqlTextStatementDataset } from "@asla/yoursql";
-import v from "../yoursql.ts";
+import type { AssertJsType, ColumnMeta, SqlStatementDataset, TableType, YourTable } from "@asla/yoursql";
+import { SqlTextStatementDataset } from "@asla/yoursql";
+import { select } from "@asla/yoursql";
+import { v } from "../common/sql.ts";
 interface InsertForm {
-  table: DbTableQuery<any>;
+  table: YourTable<any>;
   /** insertColumn -> formTableColumn  */
   keyMap: Record<string, string>;
   /** insertKey -> fromTableKey */
   on: Record<string, string>;
 }
+
 export function insetFrom<T extends TableType>(
   values: T[],
   valuesTypes: Record<string, ColumnMeta<any>>,
@@ -15,15 +17,14 @@ export function insetFrom<T extends TableType>(
 ): { statement: SqlStatementDataset<T>; columns: string[] } {
   const insertKeys: readonly string[] = Object.keys(valuesTypes);
   const fTableName = from.table.name;
-  const selectable = Selection.from(v.createValues("t1", values, initValuesTypes(insertKeys, valuesTypes)))
-    .innerJoin(
-      from.table,
-      undefined,
-      () => Object.entries(from.on).map(([insert, from]) => "t1." + insert + " = " + fTableName + "." + from),
-    )
-    .select(() => {
-      const formTableColumns = Object.entries(from.keyMap).map(([k, v]) => fTableName + "." + v + " AS " + k);
-      return insertKeys.map((key) => "t1." + key).join(",\n") + ",\n" + formTableColumns.join(",\n");
+
+  const selectable = select(() => {
+    const formTableColumns = Object.entries(from.keyMap).map(([k, v]) => fTableName + "." + v + " AS " + k);
+    return insertKeys.map((key) => "t1." + key).join(",\n") + ",\n" + formTableColumns.join(",\n");
+  })
+    .from(v.createExplicitValues(values, initValuesTypes(insertKeys, valuesTypes)).toSelect("t1"))
+    .innerJoin(from.table.name, {
+      on: Object.entries(from.on).map(([insert, from]) => "t1." + insert + " = " + fTableName + "." + from),
     });
 
   // Selection.from 目前返回的 SqlStatementDataset 缺少 columns
