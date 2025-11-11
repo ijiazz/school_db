@@ -15,7 +15,7 @@
   "license": "Apache",
   "dependencies": {
     "@redis/client": "^5.9.0",
-    "@asla/yoursql": "~0.10.2",
+    "@asla/yoursql": "~0.11.0",
     "evlib": "^3.1.3",
     "pg": "^8.16.3",
     "pg-cursor": "^2.15.3"
