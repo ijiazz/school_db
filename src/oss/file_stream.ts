@@ -13,29 +13,32 @@ class RangeRead {
   }
 }
 function getFileStreamNode(path: string, option: CreateFileStreamOption = {}): ReadableStream<Uint8Array> {
-  let fd: FileHandle;
+  let fd: FileHandle | Promise<FileHandle>;
   const { start: rangeStart, end: rangeEnd } = option;
   let offset = rangeStart ?? 0;
   const rangeRead = new RangeRead(rangeEnd);
 
   return new ReadableStream({
-    cancel() {
-      return fd.close();
+    async cancel() {
+      const fhd = await fd;
+      return fhd.close();
     },
     async start() {
-      fd = await fs.open(path, "r");
+      fd = fs.open(path, "r");
+      fd = await fd;
     },
     async pull(ctrl) {
+      const fhd = fd as FileHandle;
       const readSize = rangeRead.getChunkSize(offset);
       const chunk = new Uint8Array(readSize);
-      const { bytesRead } = await fd.read(chunk, { position: offset });
+      const { bytesRead } = await fhd.read(chunk, { position: offset });
       if (bytesRead === 0) {
         ctrl.close();
-        return fd.close();
+        return fhd.close();
       } else if (bytesRead < readSize) {
         ctrl.enqueue(chunk.subarray(0, bytesRead));
         ctrl.close();
-        return fd.close();
+        return fhd.close();
       }
       offset += bytesRead;
       ctrl.enqueue(chunk);
@@ -47,30 +50,33 @@ function getFileStreamDeno(path: string, option: CreateFileStreamOption = {}): R
   let offset = rangeStart ?? 0;
   const rangeRead = new RangeRead(rangeEnd);
   //@ts-ignore
-  let fd: Deno.FsFile;
+  let fd: Deno.FsFile | Promise<Deno.FsFille>;
   return new ReadableStream({
-    cancel() {
-      return fd.close();
+    async cancel() {
+      const fhd = await fd;
+      return fhd.close();
     },
     async start() {
+      fd = Deno.open(path);
       //@ts-ignore
-      fd = await Deno.open(path);
+      fd = await fd;
       if (rangeStart) {
         //@ts-ignore
         await fd.seek(rangeStart, Deno.SeekMode.Start);
       }
     },
     async pull(ctrl) {
+      const fhd = fd as Deno.FsFile;
       const readSize = rangeRead.getChunkSize(offset);
       const chunk = new Uint8Array(readSize);
-      const bytesRead = await fd.read(chunk);
+      const bytesRead = await fhd.read(chunk);
       if (bytesRead === null || bytesRead === 0) {
         ctrl.close();
-        return fd.close();
+        return fhd.close();
       } else if (bytesRead < defaultChunkSize) {
         ctrl.enqueue(chunk.subarray(0, bytesRead));
         ctrl.close();
-        return fd.close();
+        return fhd.close();
       }
       offset += bytesRead;
       ctrl.enqueue(chunk);
