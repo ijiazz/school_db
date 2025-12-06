@@ -5,21 +5,21 @@ import {
   DbCursorOption,
   DbPoolConnection,
   DbPoolTransaction,
-  DbQuery,
+  DbQueryPool,
   DbTransaction,
+  MultipleQueryInput,
   MultipleQueryResult,
+  QueryInput,
   SqlLike,
-  sqlLikeToString,
   TransactionMode,
 } from "@asla/yoursql/client";
-import { addPgErrorInfo } from "./_error_handler.ts";
 import Cursor from "pg-cursor";
 import { parserDbUrl, PgConnection } from "./pg_connect.ts";
 import { ResourcePool } from "evlib/async";
 import { createPgClient } from "./_pg_client.ts";
-import type { DbConnectOption, DbPool } from "./type.ts";
+import type { DbConnectOption, DbConnPool } from "./type.ts";
 
-export class PgDbPool extends DbQuery implements DbPool {
+export class PgDbPool extends DbQueryPool implements DbConnPool, AsyncDisposable {
   #pool: ResourcePool<Client>;
   constructor(url: URL | string | (() => URL | string)) {
     super();
@@ -70,14 +70,19 @@ export class PgDbPool extends DbQuery implements DbPool {
     const conn = await this.#pool.get();
     return new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
   }
-  override async query<T>(sql: SqlLike): Promise<T> {
-    const text = sqlLikeToString(sql);
+  override async query<T>(sql: QueryInput | MultipleQueryInput): Promise<T> {
     using conn = await this.connect();
-    return conn.query(text).catch((e) => addPgErrorInfo(e, text)) as Promise<T>;
+    return await conn.query<T>(sql as any) as any;
   }
-  override multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(sql: SqlLike | SqlLike[]): Promise<T> {
-    if (sql instanceof Array) sql = sql.map(sqlLikeToString).join(";\n");
-    return this.query(sql);
+  override async execute(sql: QueryInput | MultipleQueryInput): Promise<void> {
+    using conn = await this.connect();
+    return await conn.execute(sql);
+  }
+  override async multipleQuery<T extends MultipleQueryResult = MultipleQueryResult>(
+    sql: SqlLike | SqlLike[],
+  ): Promise<T> {
+    using conn = await this.connect();
+    return await conn.multipleQuery<T>(sql);
   }
 
   //implement

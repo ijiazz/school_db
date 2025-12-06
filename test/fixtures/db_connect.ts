@@ -1,11 +1,11 @@
 import { test as viTest } from "vitest";
-import { DbPool, dbPool, parserDbUrl } from "@ijia/data/dbclient";
+import { dbPool, DbQueryPool, parserDbUrl } from "@ijia/data/dbclient";
 import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
 import process from "node:process";
 export interface BaseContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
-  ijiaDbPool: DbPool;
-  emptyDbPool: DbPool;
+  ijiaDbPool: DbQueryPool;
+  emptyDbPool: DbQueryPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
