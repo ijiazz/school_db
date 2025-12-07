@@ -1,9 +1,7 @@
-import { createDbConnection, DbConnection, DbConnectOption, DbQuery, parserDbUrl } from "../dbclient.ts";
-import fs from "node:fs/promises";
-import { DatabaseError } from "../common/pg.ts";
-import { genPgSqlErrorMsg, v } from "../common/sql.ts";
+import { v } from "../common/sql.ts";
 import { createUser } from "../query/user.ts";
 import { getSQLInitFiles } from "./sql_files.ts";
+import { createDbConnection, DbConnectOption, DbManage, DbQuery, execSqlFile, parserDbConnectUrl } from "@asla/pg";
 
 /**
  * 初始化数据库
@@ -39,9 +37,20 @@ export async function createInitIjiaDb(
   dbname: string,
   option: CreateInitIjiaDbOption = {},
 ): Promise<void> {
+  const mange = await DbManage.connect(connect);
+  try {
+    await execCreateInitIjiaDb(mange, connect, dbname, option);
+  } finally {
+    mange.close();
+  }
+}
+async function execCreateInitIjiaDb(
+  mange: DbManage,
+  connect: DbConnectOption | URL | string,
+  dbname: string,
+  option: CreateInitIjiaDbOption = {},
+) {
   const { owner, ensureOwner, dropIfExists } = option;
-
-  await using mange = await DbManage.connect(connect);
   if (dropIfExists) await mange.dropDb(dbname);
   if (owner) {
     if (ensureOwner) {
@@ -51,7 +60,7 @@ BEGIN
    THEN CREATE USER ${owner} WITH LOGIN;
    END IF;
 END $$;`;
-      await mange.dbClient.query(sql);
+      await mange.dbClient.multipleQuery(sql);
     }
   }
 
@@ -61,7 +70,7 @@ END $$;`;
   if (typeof connect === "object" && !(connect instanceof URL)) {
     connConf = { ...connect, database: dbname };
   } else {
-    connConf = parserDbUrl(connect);
+    connConf = parserDbConnectUrl(connect);
     connConf.database = dbname;
   }
   await using client = await createDbConnection(connConf);
@@ -86,7 +95,7 @@ END $$;`;
  * 清空传入连接的数据库的所有表的所有数据
  */
 export async function clearAllTablesData(client: DbQuery) {
-  await client.query(`DO $$
+  await client.multipleQuery(`DO $$
 DECLARE
     r RECORD;
 BEGIN
@@ -96,65 +105,4 @@ BEGIN
     END LOOP;
 END $$;
  `);
-}
-export class DbManage {
-  static async connect(url: string | URL | DbConnectOption) {
-    const client = await createDbConnection(url);
-    return new DbManage(client);
-  }
-
-  constructor(readonly dbClient: DbConnection) {}
-  /** 删除 dbAddr 对应数据库 */
-  async createDb(dbName: string, option: CreateDataBaseOption = {}) {
-    const sql = genCreateDb(dbName, option);
-    await this.dbClient.query(sql);
-  }
-  /** 删除 dbAddr 对应数据库 */
-  async dropDb(dbName: string) {
-    await this.dbClient.query(`DROP DATABASE IF EXISTS ${dbName}`);
-  }
-  async copy(templateDbName: string, newDbName: string) {
-    const client = this.dbClient;
-    await this.dropDb(newDbName);
-    await client.query(`CREATE DATABASE ${newDbName} WITH TEMPLATE ${templateDbName}`);
-  }
-  close() {
-    return this.dbClient.close();
-  }
-  async recreateDb(dbName: string) {
-    await this.dropDb(dbName);
-    await this.createDb(dbName);
-  }
-  [Symbol.asyncDispose]() {
-    return this.close();
-  }
-}
-export interface CreateDataBaseOption {
-  owner?: string;
-}
-function genCreateDb(dbName: string, option: CreateDataBaseOption = {}) {
-  return `
-CREATE DATABASE ${dbName}
-WITH
-${option.owner ? "OWNER=" + option.owner : ""}
-ENCODING = 'UTF8'
-LOCALE_PROVIDER = 'libc'
-CONNECTION LIMIT = -1
-IS_TEMPLATE = False;
-  `;
-}
-
-async function execSqlFile(pathname: string, client: DbQuery): Promise<void> {
-  const file = await fs.readFile(pathname, "utf-8");
-  try {
-    await client.query(file);
-  } catch (error) {
-    if (error instanceof DatabaseError) {
-      const detail = genPgSqlErrorMsg(error, { sqlFileName: pathname, sqlText: file });
-      error.message = `执行SQL文件失败:${error.message}\n${detail}`;
-      throw error;
-    } else {
-      throw new Error(`执行SQL文件失败\n${pathname}`, { cause: error });
-    }
-  }
 }
