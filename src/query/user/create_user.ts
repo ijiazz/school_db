@@ -32,6 +32,6 @@ export function createUser(email: string, userInfo: CreateUserOption): Executabl
   const sql = `${base.toString()}\nSELECT * FROM inserted`;
   return dbPool.createQueryableSQL(
     sql,
-    (pool, sql) => pool.queryFirstRow<{ user_id: number }>(sql),
+    (pool, sql) => pool.queryRows<{ user_id: number }>(sql).then((rows) => rows[0]),
   );
 }
