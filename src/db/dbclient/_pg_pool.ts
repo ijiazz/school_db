@@ -68,7 +68,9 @@ export class PgDbPool extends DbQueryPool implements DbConnPool, AsyncDisposable
   // implement
   async connect(): Promise<DbPoolConnection> {
     const conn = await this.#pool.get();
-    return new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn));
+    return new DbPoolConnection(new PgConnection(conn), () => this.#pool.release(conn), () => {
+      conn.end().catch(() => {});
+    });
   }
   override async query<T>(sql: QueryInput | MultipleQueryInput): Promise<T> {
     using conn = await this.connect();
