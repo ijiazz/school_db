@@ -1,8 +1,8 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@jsr/asla__pg@0.1": "0.1.0_pg@8.16.3",
-    "npm:@jsr/asla__yoursql@~0.11.4": "0.11.4",
+    "npm:@jsr/asla__pg@0.2": "0.2.0_pg@8.16.3",
+    "npm:@jsr/asla__yoursql@0.12": "0.12.0",
     "npm:@redis/client@^5.9.0": "5.9.0",
     "npm:@types/node@^24.10.0": "24.10.0",
     "npm:evlib@^3.1.3": "3.1.3",
@@ -169,18 +169,18 @@
       "integrity": "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==",
       "tarball": "https://registry.npmmirror.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz"
     },
-    "@jsr/asla__pg@0.1.0_pg@8.16.3": {
-      "integrity": "sha512-DLBSXT07TFgjA4E69BeTA8WWpdYYjze3YsBpvGrlGRGgK9RSoh8DKq1TB/EC559d3HEddhEoE2Q+Pynk/SiXUg==",
+    "@jsr/asla__pg@0.2.0_pg@8.16.3": {
+      "integrity": "sha512-i3TQhSwFqqKzgf8GFENouLRE8tyILumo0wXJTbPaJsHX/t6CgsiW2Ppl0YFHu3UXTXJ71EkXn3vvybNOmL35Ww==",
       "dependencies": [
         "@jsr/asla__yoursql",
         "pg",
         "pg-cursor"
       ],
-      "tarball": "https://npm.jsr.io/~/11/@jsr/asla__pg/0.1.0.tgz"
+      "tarball": "https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.0.tgz"
     },
-    "@jsr/asla__yoursql@0.11.4": {
-      "integrity": "sha512-nrivQ7kq+fi+BAzH3VTXzQsASBCDKIfG+dIR79u6vZwlHGT6PRWX81/5VlNRQ/hEBO0TOU8I6pyzASCxOYZ8rA==",
-      "tarball": "https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.11.4.tgz"
+    "@jsr/asla__yoursql@0.12.0": {
+      "integrity": "sha512-ljnWTe41JGTVqAWA8NP4WR5THwVCaOMBiFsRMhBEY10PjWu7DxfSq9eMbuB3fnO1efYhcHdfzxavrfCvwuHUSQ==",
+      "tarball": "https://npm.jsr.io/~/11/@jsr/asla__yoursql/0.12.0.tgz"
     },
     "@redis/client@5.9.0": {
       "integrity": "sha512-EI0Ti5pojD2p7TmcS7RRa+AJVahdQvP/urpcSbK/K9Rlk6+dwMJTQ354pCNGCwfke8x4yKr5+iH85wcERSkwLQ==",
@@ -760,8 +760,8 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@jsr/asla__pg@0.1",
-        "npm:@jsr/asla__yoursql@~0.11.4",
+        "npm:@jsr/asla__pg@0.2",
+        "npm:@jsr/asla__yoursql@0.12",
         "npm:@redis/client@^5.9.0",
         "npm:@types/node@^24.10.0",
         "npm:evlib@^3.1.3",
