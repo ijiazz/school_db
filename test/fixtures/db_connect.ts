@@ -1,11 +1,13 @@
 import { test as viTest } from "vitest";
-import { DbPool, dbPool, parserDbUrl } from "@ijia/data/dbclient";
-import { createInitIjiaDb, DbManage } from "@ijia/data/testlib";
+import { dbPool } from "@ijia/data/dbclient";
+import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
+import { DbManage, DbQueryPool, parserDbConnectUrl } from "@asla/pg";
+
 export interface BaseContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
-  ijiaDbPool: DbPool;
-  emptyDbPool: DbPool;
+  ijiaDbPool: DbQueryPool;
+  emptyDbPool: DbQueryPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
@@ -44,7 +46,7 @@ export const test = viTest.extend<BaseContext>({
 function getConfigEnv(env: Record<string, string | undefined>) {
   const url = env["TEST_LOGIN_DB"];
   if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
-  return parserDbUrl(url);
+  return parserDbConnectUrl(url);
 }
 async function clearDropDb(dbName: string) {
   try {

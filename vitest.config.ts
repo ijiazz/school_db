@@ -16,6 +16,5 @@ export default {
     env: {
       TEST_LOGIN_DB: PG_URL,
     },
-    setupFiles: ["./test/setup/extend_yoursql.ts"],
   },
 } satisfies ViteUserConfig;

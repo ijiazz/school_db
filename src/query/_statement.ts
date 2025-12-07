@@ -1,6 +1,5 @@
 import type { AssertJsType, ColumnMeta, SqlStatementDataset, TableType, YourTable } from "@asla/yoursql";
-import { SqlTextStatementDataset } from "@asla/yoursql";
-import { select } from "@asla/yoursql";
+import { select, SqlTextStatementDataset } from "@asla/yoursql";
 import { v } from "../common/sql.ts";
 interface InsertForm {
   table: YourTable<any>;
