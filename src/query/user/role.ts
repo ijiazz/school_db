@@ -1,8 +1,7 @@
-import { v } from "@asla/yoursql";
 import { role, user_role_bind } from "@ijia/data/db";
 import { deleteFrom } from "@asla/yoursql";
-import { dbPool, ExecutableSQL } from "@ijia/data/dbclient";
-import { insertIntoValues } from "../../common/sql.ts";
+import { dbPool, ExecutableSQL } from "../../common/dbclient.ts";
+import { insertIntoValues, v } from "../../common/sql.ts";
 
 export type Role = {
   id: string;

@@ -6,7 +6,6 @@
     "@test/": "./test/",
     "@ijia/data/db": "./src/db.ts",
     "@ijia/data/oss": "./src/oss.ts",
-    "@ijia/data/cache": "./src/cache.ts",
     "@ijia/data/query": "./src/query.ts",
     "@ijia/data/testlib": "./src/testlib.ts",
     "@ijia/data/dbclient": "./src/dbclient.ts"
@@ -15,8 +14,7 @@
     "./db": "./src/db.ts",
     "./oss": "./src/oss.ts",
     "./query": "./src/query.ts",
-    "./testlib": "./src/testlib.ts",
-    "./dbclient": "./src/dbclient.ts"
+    "./testlib": "./src/testlib.ts"
   },
   "compilerOptions": {
     "lib": ["deno.window"]

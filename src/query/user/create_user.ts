@@ -1,7 +1,6 @@
 import { user, user_profile } from "@ijia/data/db";
-import { withAs } from "@asla/yoursql";
-import { insertInto } from "@asla/yoursql";
-import { dbPool, ExecutableSQL } from "@ijia/data/dbclient";
+import { insertInto, withAs } from "@asla/yoursql";
+import { dbPool, ExecutableSQL } from "../../common/dbclient.ts";
 import { insertIntoValues } from "../../common/sql.ts";
 
 //TODO 账号注销后重新注册 (is_deleted = true). 需要清除账号数据

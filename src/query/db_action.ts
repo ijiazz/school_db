@@ -1,5 +1,5 @@
 import { comment_image, pla_asset_media, user_avatar } from "../db.ts";
-import { dbPool } from "../dbclient.ts";
+import { dbPool } from "../common/dbclient.ts";
 import type { SqlStatementDataset } from "@asla/yoursql";
 import { getBucket, getOSS } from "../oss.ts";
 import { PromiseConcurrency } from "evlib/async";
