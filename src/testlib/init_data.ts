@@ -1,5 +1,5 @@
 import { DbClassCreate, dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "../common/dbclient.ts";
 import { insertIntoValues } from "../common/sql.ts";
 
 export async function initPublicClass() {

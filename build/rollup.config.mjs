@@ -16,9 +16,7 @@ export function getConfig(option = {}) {
     db: "src/db.ts",
     oss: "src/oss.ts",
     testlib: "src/testlib.ts",
-    dbclient: "src/dbclient.ts",
     query: "src/query.ts",
-    cache: "src/cache.ts",
   };
   for (const [k, v] of Object.entries(input)) {
     input[k] = path.resolve(rootDir, v);

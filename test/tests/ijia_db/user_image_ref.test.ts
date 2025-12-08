@@ -5,7 +5,7 @@ import { select } from "@asla/yoursql";
 import { insertIntoValues } from "@/common/sql.ts";
 import { deleteFrom } from "@asla/yoursql";
 import { update } from "@asla/yoursql";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool } from "@/common/dbclient.ts";
 
 test("创建或修改 user 表，会触发数据库触发器并自动更新用户头像引用计数", async function ({ ijiaDbPool }) {
   await addUserAvatar(["a", "b"]);

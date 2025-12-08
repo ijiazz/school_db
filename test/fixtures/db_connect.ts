@@ -1,9 +1,8 @@
 import { test as viTest } from "vitest";
-import { dbPool } from "@ijia/data/dbclient";
+import { dbPool, setDbPoolConnect } from "@/common/dbclient.ts";
 import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
-import { DbManage, DbQueryPool, parserDbConnectUrl } from "@asla/pg";
-
+import { DbManage, DbQueryPool, parserDbConnectUrl, PgDbQueryPool } from "@asla/pg";
 export interface BaseContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
   ijiaDbPool: DbQueryPool;
@@ -17,11 +16,13 @@ export const test = viTest.extend<BaseContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
     await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true, extra: true });
-    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
-    dbPool.open();
+
+    const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
+    setDbPoolConnect(pool.connect.bind(pool));
+
     await use(dbPool);
     const useCount = dbPool.totalCount - dbPool.idleCount;
-    await dbPool.close(true);
+    await pool.close();
 
     await clearDropDb(dbName);
     if (useCount !== 0) throw new Error("存在未释放的连接");
@@ -33,11 +34,11 @@ export const test = viTest.extend<BaseContext>({
     await manage.recreateDb(dbName);
     await manage.close();
 
-    dbPool.connectOption = { ...DB_CONNECT_INFO, database: dbName };
-    dbPool.open();
+    const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
+    setDbPoolConnect(pool.connect.bind(pool));
     await use(dbPool);
     const useCount = dbPool.totalCount - dbPool.idleCount;
-    await dbPool.close(true);
+    await pool.close();
 
     await clearDropDb(dbName);
     if (useCount !== 0) throw new Error("存在未释放的连接");
