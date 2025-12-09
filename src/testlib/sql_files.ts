@@ -8,8 +8,11 @@ const IJIA_DB_SQL_BASE_DIR = SQL_DIR + "/init";
 const IJIA_DB_SQL_FILES = [
   "function",
 
+  "table/pla/init.sql",
   "table/pla/tables_assets.sql",
   "table/pla/tables_comment.sql",
+  "table/sys/init.sql",
+  "table/sys/tables_file.sql",
   "table/sys/tables_system.sql",
 
   "table/public/tables_user.sql",

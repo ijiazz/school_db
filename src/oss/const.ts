@@ -4,7 +4,7 @@ const OSS_BUCKETS = {
   /** 评论区图片 名称格式 `${file_id}.${ext}` */
   PLA_POST_MEDIA: "pla_post_media",
   /** 评论区图片 名称格式  sha256.suffix */
-  COMMENT_IMAGE: "comment_img",
+  COMMENT_IMAGE: "pla_post_comment_asset",
   /** 验证码图片 */
   CAPTCHA_PICTURE: "captcha_picture",
 } as const;

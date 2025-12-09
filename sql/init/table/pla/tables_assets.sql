@@ -1,8 +1,6 @@
 SET client_encoding = 'UTF8';
 
 CREATE TYPE platform_flag AS ENUM('douyin','bilibili','xiaohonshu','weibo','v5sing','wangyiyun');
-CREATE TYPE media_level AS ENUM('origin','thumb');
-CREATE TYPE media_type AS ENUM('video','audio','image'); -- 资源类型
 
 ----------
 -- 用户相关
