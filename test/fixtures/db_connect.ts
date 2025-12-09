@@ -15,7 +15,7 @@ const DB_CONNECT_INFO = getConfigEnv(process.env);
 export const test = viTest.extend<BaseContext>({
   async ijiaDbPool({}, use) {
     const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
-    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true, extra: true });
+    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
 
     const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
     setDbPoolConnect(pool.connect.bind(pool));

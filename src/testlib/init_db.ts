@@ -6,8 +6,8 @@ import { createDbConnection, DbConnectOption, DbManage, DbQuery, execSqlFile, pa
 /**
  * 初始化数据库
  */
-export async function initIjiaDb(client: DbQuery, option: { extra?: boolean } = {}): Promise<void> {
-  for await (const sqlFile of getSQLInitFiles(option.extra)) {
+export async function initIjiaDb(client: DbQuery): Promise<void> {
+  for await (const sqlFile of getSQLInitFiles()) {
     try {
       await execSqlFile(sqlFile, client);
     } catch (error) {
@@ -23,8 +23,6 @@ export type CreateInitIjiaDbOption = {
   ensureOwner?: boolean;
   /** 如为 true，则尝试删除同名数据库 */
   dropIfExists?: boolean;
-  /** 是否启用扩展功能 */
-  extra?: boolean;
   createTestUser?: boolean;
   /** 初始化测试用户 */
 };
@@ -75,7 +73,7 @@ END $$;`;
   }
   await using client = await createDbConnection(connConf);
   try {
-    await initIjiaDb(client, { extra: true });
+    await initIjiaDb(client);
   } catch (error) {
     try {
       await client.close();
