@@ -9,12 +9,13 @@ import {
   pla_asset_check,
   pla_asset_create_key,
   pla_comment,
+  pla_comment_create_key,
   pla_pla_comment_check,
   pla_user,
   pla_user_check,
   Platform,
 } from "../db.ts";
-import { ColumnMeta, SqlTextStatementDataset, YourTable } from "@asla/yoursql";
+import { ColumnMeta, ObjectToValueKeys, SqlTextStatementDataset, YourTable } from "@asla/yoursql";
 import { createConflictUpdate, insetFrom, UpdateBehaver } from "./_statement.ts";
 import { insertInto } from "@asla/yoursql";
 import { insertIntoValues } from "../common/sql.ts";
@@ -86,7 +87,12 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
     | "is_deleted"
     | "platform_delete"
   >;
-  const upsertSql = insertIntoValues(pla_comment.name, values)
+  // 需要注意
+  const upsertSql = insertIntoValues(
+    pla_comment.name,
+    values,
+    getPlaPostCommentRawMeta(pla_comment, pla_comment_create_key),
+  )
     .onConflict(["platform", "comment_id"])
     .doUpdate(
       createConflictUpdate<UpdateKey>(
@@ -113,6 +119,7 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
 
   return new SqlTextStatementDataset<{ comment_id: string; platform: Platform }>(sql);
 }
+
 /**
  * 保存作品
  * 如果已存在，则更新
@@ -177,6 +184,19 @@ function getDbRawMeta(table: YourTable<any>, keys: readonly string[]) {
   let types: Record<string, ColumnMeta<unknown>> = {};
   for (const k of keys) {
     types[k] = table.getColumnMeta(k);
+  }
+  return types;
+}
+
+function getPlaPostCommentRawMeta(table: YourTable<any>, keys: readonly string[]) {
+  let types: ObjectToValueKeys<object> = {};
+  for (const k of keys) {
+    const meta = table.getColumnMeta(k);
+    types[k] = {
+      sqlDefault: meta.sqlDefault,
+      sqlType: meta.sqlType,
+      assertJsType: meta.sqlType.includes("JSON") ? Object : undefined, // JSON 类型需要特殊处理,避免 Array 会被转为 ARRAY []. 如 content_text_struct 字段
+    };
   }
   return types;
 }

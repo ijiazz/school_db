@@ -30,10 +30,11 @@ const TABLE = {
   parent_comment_id: dbTypeMap.genColumn("VARCHAR"),
   asset_id: dbTypeMap.genColumn("VARCHAR", true),
 } satisfies TableDefined;
-const pla_comment_create_key = [
+export const pla_comment_create_key = [
   "author_like",
   "comment_id",
   "content_text",
+  "content_text_struct",
   "extra",
   "ip_location",
   "like_count",
