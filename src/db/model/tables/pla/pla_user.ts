@@ -1,6 +1,7 @@
 import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { UserExtra } from "../../type.ts";
+
 const TABLE_DEFINE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),

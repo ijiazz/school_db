@@ -28,7 +28,7 @@
     "check-type": "deno check src test",
     "doc:gen": "deno doc --name @ijia/data --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
     "build": "deno run -c build/deno.jsonc -A build/build.ts",
-    "test": "deno run -A npm:vitest run",
+    "test": "deno x vitest run",
     "test:node": "node ./node_modules/vitest/vitest.mjs run"
   },
   "nodeModulesDir": "manual"

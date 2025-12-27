@@ -107,16 +107,3 @@ BEGIN
     END IF;
     RETURN;
 END; $$ LANGUAGE plpgsql; */
-
-CREATE OR REPLACE FUNCTION resource_ref_sync() RETURNS TRIGGER AS $$
-BEGIN
-    CASE TG_TABLE_NAME
-    WHEN 'pla_user' THEN
-        PERFORM res_update_operate(OLD.avatar, NEW.avatar, 'user_avatar');
-    WHEN 'pla_asset' THEN
-        PERFORM res_update_operate(OLD.user_avatar_snapshot, NEW.user_avatar_snapshot, 'user_avatar');
-    ELSE
-        RAISE '不支持的触发表 %', TG_TABLE_NAME;
-    END CASE;
-    RETURN NEW;
-END; $$ LANGUAGE PLPGSQL;

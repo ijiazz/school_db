@@ -1,3 +1,5 @@
+export * from "./pla/init.ts";
+
 export * from "./pla/pla_user.ts";
 export * from "./pla/watching_pla_user.ts";
 

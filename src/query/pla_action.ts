@@ -36,7 +36,7 @@ export function savePlaUserList(values: DbPlaUserCreate[]) {
   pla_user_check.checkList(values);
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude
   type UpdateKey = Exclude<keyof DbPlaUser | "crawl_check_time", "platform" | "pla_uid" | "create_time">;
-  const upsertSql = insertIntoValues(pla_user.name, values)
+  return insertIntoValues(pla_user.name, values)
     .onConflict(["pla_uid", "platform"])
     .doUpdate(
       createConflictUpdate<UpdateKey>(
@@ -56,12 +56,13 @@ export function savePlaUserList(values: DbPlaUserCreate[]) {
         pla_user.name,
       ),
     )
-    .returning({ pla_uid: true, platform: true, create_time: true, crawl_check_time: true });
-  // 返回的将是执行插入的行
-  const sql =
-    `WITH tb AS (\n${upsertSql.genSql()})\nSELECT pla_uid, platform FROM tb where crawl_check_time = create_time;`;
-
-  return new SqlTextStatementDataset<{ pla_uid: string; platform: Platform }>(sql);
+    .returning<Pick<DbPlaUser, "pla_uid" | "platform" | "create_time" | "crawl_check_time" | "pla_avatar_uri">>([
+      "pla_uid",
+      "platform",
+      "create_time",
+      "crawl_check_time",
+      "pla_avatar_uri",
+    ]);
 }
 /**
  * 如果已存在，则更新
@@ -102,8 +103,6 @@ export function savePlaCommentList(values: DbPlaCommentCreate[]) {
           like_count: `CASE WHEN ${pla_comment.name}.like_count > EXCLUDED.like_count
   THEN ${pla_comment.name}.like_count ELSE EXCLUDED.like_count END`, // 只记录最高数量
           extra: "pla_comment.extra || EXCLUDED.extra",
-          additional_image: UpdateBehaver.overIfOldIsNull,
-          additional_image_thumb: UpdateBehaver.overIfOldIsNull,
           content_text: UpdateBehaver.overIfOldIsNull,
           content_text_struct: UpdateBehaver.overIfOldIsNull,
           ip_location: UpdateBehaver.overIfOldIsNull,
