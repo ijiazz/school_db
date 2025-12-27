@@ -1,4 +1,3 @@
-
 export type DbLog = {
   name: string;
   level: LogLevel;

@@ -1,7 +1,7 @@
 import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
 import type { TaskType } from "../../const.ts";
-import type { MediaLevel } from "../sys/file.ts";
+import type { MediaLevel } from "../../sys/file.ts";
 
 const TABLE = {
   task_id: dbTypeMap.genColumn("SERIAL", true),
