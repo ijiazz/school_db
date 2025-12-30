@@ -1,6 +1,25 @@
-import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
+import type { TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
-import type { UserExtra } from "../../type.ts";
+import type { Platform, UserExtra } from "./init.ts";
+import type { TextStructure } from "../../type.ts";
+
+export type DbPlaUser = {
+  create_time: Date;
+  crawl_check_time: Date;
+  extra: UserExtra;
+  pla_avatar_uri: string | null;
+  user_name: string | null;
+  ip_location: string | null;
+  avatar: string | null;
+  pla_uid: string;
+  platform: Platform;
+  follower_count: number | null;
+  following_count: number | null;
+  signature: string | null;
+  signature_struct: TextStructure[] | null;
+};
+export type DbPlaUserCreate = ToInsertType<DbPlaUser, "create_time" | "crawl_check_time" | "extra">;
+
 const TABLE_DEFINE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
   crawl_check_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
@@ -18,14 +37,5 @@ const TABLE_DEFINE = {
   signature: dbTypeMap.genColumn("VARCHAR"),
   signature_struct: dbTypeMap.genColumn("JSONB"),
 } satisfies TableDefined;
-const createRequiredKeys = ["avatar", "pla_avatar_uri", "pla_uid", "platform", "user_name", "ip_location"] as const;
-const createOptionalKeys = ["extra"] as const;
-
-const TABLE_CREATE_KEY = [...createRequiredKeys, ...createOptionalKeys] as const;
-
-export type DbPlaUser = InferTableDefined<typeof TABLE_DEFINE>;
-export type DbPlaUserCreate = ToInsertType<DbPlaUser, "create_time" | "crawl_check_time" | "extra">;
 
 export const pla_user = createTable<DbPlaUser, DbPlaUserCreate>("pla_user", TABLE_DEFINE);
-
-export const pla_user_check = pla_user.createTypeChecker<DbPlaUserCreate>(TABLE_CREATE_KEY);

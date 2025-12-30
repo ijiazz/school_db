@@ -4,17 +4,6 @@
 
 SET client_encoding = 'UTF8';
 
-CREATE TABLE comment_image (
-    id VARCHAR PRIMARY KEY,
-
-    size INT,
-    image_width SMALLINT,
-    image_height SMALLINT,
-
-    ref_count INTEGER NOT NULL DEFAULT 0
-);
-CREATE INDEX idx_comment_image_ref_count ON comment_image(ref_count);
-CREATE INDEX idx_comment_image_size ON comment_image(size);
 
 CREATE TABLE pla_comment (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -28,8 +17,6 @@ CREATE TABLE pla_comment (
     content_text VARCHAR,
     content_text_struct JSONB, -- 文本扩展信息 
     comment_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
-    additional_image VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片
-    additional_image_thumb VARCHAR REFERENCES comment_image(id) ON UPDATE CASCADE, -- 评论附带图片缩略图
     publish_time TIMESTAMPTZ,
     ip_location VARCHAR,
     reply_count INT, -- 回复数量
@@ -53,8 +40,6 @@ CREATE INDEX idxfk_pla_comment_root_comment_id ON pla_comment(platform, root_com
 CREATE INDEX idxfk_pla_comment_parent_comment_id ON pla_comment(platform, parent_comment_id);
 CREATE INDEX idxfk_pla_comment_asset_id ON pla_comment(platform, asset_id);
 CREATE INDEX idxfk_pla_comment_pla_uid ON pla_comment(platform, pla_uid); 
-CREATE INDEX idxfk_pla_comment_user_additional_image ON pla_comment USING hash(additional_image);
-CREATE INDEX idxfk_pla_comment_user_additional_image_thumb ON pla_comment USING hash(additional_image_thumb);
 
 CREATE INDEX idx_pla_comment_crawl_check_time ON pla_comment(crawl_check_time);
 CREATE INDEX idx_pla_comment_reply_last_sync_date ON pla_comment(reply_last_sync_date);
@@ -62,22 +47,18 @@ CREATE INDEX idx_pla_comment_reply_last_sync_date ON pla_comment(reply_last_sync
 CREATE INDEX idx_pla_comment_is_delete ON pla_comment(is_delete);
 CREATE INDEX idx_pla_comment_platform_delete ON pla_comment(platform_delete);
 
-  
 
-CREATE FUNCTION pla_comment_resource_ref_sync() RETURNS TRIGGER AS $$
-BEGIN
-    CASE TG_TABLE_NAME
-    
-    WHEN 'pla_comment' THEN
-        PERFORM res_update_operate(OLD.additional_image, NEW.additional_image,'comment_image');
-        PERFORM res_update_operate(OLD.additional_image_thumb, NEW.additional_image_thumb,'comment_image');
-    ELSE
-        RAISE '不支持的触发表 %', TG_TABLE_NAME;
-    END CASE;
-    RETURN NEW;
-END; $$ LANGUAGE PLPGSQL;
+/* 
+  bucket: "comment_img"
+  path: filename
+ */
+CREATE TABLE pla.post_comment_media(
+    platform platform_flag,
+    comment_id VARCHAR,
+    index INT NOT NULL, -- 作品在列表中的索引
+    level media_level NOT NULL, -- 媒体质量等级
+    filename VARCHAR, -- 如果为空，表示未录入
 
-
-CREATE TRIGGER sync_pla_comment_resource_ref_count -- 评论头像快照 和 评论图片引用
-AFTER INSERT OR DELETE OR UPDATE
-ON pla_comment FOR EACH ROW EXECUTE FUNCTION pla_comment_resource_ref_sync ();
+    FOREIGN KEY (platform, comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE SET NULL,
+    PRIMARY KEY (platform, comment_id, index, level)
+);

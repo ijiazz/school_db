@@ -1,16 +1,7 @@
 import { CustomDbType, TableDefined, TableType, YourTable, YourTypeMap } from "@asla/yoursql";
-import {
-  AssetMediaType,
-  CrawlTaskStatus,
-  enumAssetMediaType,
-  enumMediaLevel,
-  enumPlatform,
-  enumPostReviewType,
-  enumTaskType,
-  MediaLevel,
-  Platform,
-  PostReviewType,
-} from "./const.ts";
+import { CrawlTaskStatus, enumPostReviewType, enumTaskType, PostReviewType } from "./const.ts";
+import { enumAssetMediaType, enumMediaLevel, MediaLevel, MediaType } from "./sys.ts";
+import { enumPlatform, Platform } from "./tables/pla/init.ts";
 
 export const dbTypeMap = YourTypeMap.create({
   TIMESTAMPTZ: Date,
@@ -28,7 +19,7 @@ export const dbTypeMap = YourTypeMap.create({
   "BIT(8)": CustomDbType.string,
 
   media_level: new CustomDbType<MediaLevel>((v) => enumMediaLevel.has(v), "media_level"),
-  media_type: new CustomDbType<AssetMediaType>((v) => enumAssetMediaType.has(v), "media_type"),
+  media_type: new CustomDbType<MediaType>((v) => enumAssetMediaType.has(v), "media_type"),
   platform_flag: new CustomDbType<Platform>((v) => enumPlatform.has(v), "platform_flag"),
   crawl_task_status: new CustomDbType<CrawlTaskStatus>((v) => enumTaskType.has(v), "crawl_task_status"),
   post_review_type: new CustomDbType<PostReviewType>((v) => enumPostReviewType.has(v), "post_review_type"),

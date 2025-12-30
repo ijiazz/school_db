@@ -1,6 +1,7 @@
 import { v } from "../common/sql.ts";
 import { createUser } from "../query/user.ts";
 import { getSQLInitFiles } from "./sql_files.ts";
+import process from "node:process";
 import { createDbConnection, DbConnectOption, DbManage, DbQuery, execSqlFile, parserDbConnectUrl } from "@asla/pg";
 
 /**
@@ -11,6 +12,9 @@ export async function initIjiaDb(client: DbQuery): Promise<void> {
     try {
       await execSqlFile(sqlFile, client);
     } catch (error) {
+      if (process.env.TEST) {
+        console.log(sqlFile, error);
+      }
       throw new Error(`初始化数据库失败(${sqlFile})`, { cause: error });
     }
   }
@@ -39,7 +43,7 @@ export async function createInitIjiaDb(
   try {
     await execCreateInitIjiaDb(mange, connect, dbname, option);
   } finally {
-    mange.close();
+    await mange.close();
   }
 }
 async function execCreateInitIjiaDb(
