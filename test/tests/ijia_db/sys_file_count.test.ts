@@ -63,7 +63,7 @@ test("no change count", async function ({ publicDbPool }) {
   await expect(getFileRefCount(bucket, filename)).resolves.toBe(0);
 });
 
-test("bucket 和 filename 必须同时为 null 或同时不为 null", async function ({ publicDbPool }) {
+test("filename 存在时, bucket 不能为 null", async function ({ publicDbPool }) {
   const bucket1 = genId("bucket");
   const filename1 = genId("filename");
   const bucket2 = genId("bucket");
@@ -72,10 +72,11 @@ test("bucket 和 filename 必须同时为 null 或同时不为 null", async func
   await addFile(bucket2, filename2);
 
   await expect(file_update_ref_count(null, filename1, bucket1, filename2)).rejects.toThrow();
-  await expect(file_update_ref_count(bucket1, null, bucket1, filename2)).rejects.toThrow();
 
   await expect(file_update_ref_count(bucket1, filename1, null, filename2)).rejects.toThrow();
-  await expect(file_update_ref_count(bucket1, filename1, bucket1, null)).rejects.toThrow();
+
+  await expect(file_update_ref_count(bucket1, null, bucket2, filename2)).resolves.toBe(1);
+  await expect(file_update_ref_count(bucket1, filename1, bucket1, null), "只判断 filename").resolves.toBe(1);
 });
 test("旧文件不存在则跳过", async function ({ publicDbPool }) {
 });

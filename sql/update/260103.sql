@@ -246,4 +246,7 @@ DROP TABLE user_avatar;
 
 CREATE INDEX idx_pla_user_extra ON pla_user USING GIN (extra);
 
-
+DROP FUNCTION resource_operate(table_name character varying, uri character varying, op character);
+DROP FUNCTION resource_operate(table_name VARCHAR, uri_list VARCHAR[], op CHAR);
+DROP FUNCTION res_update_operate(old character varying, new character varying, table_name character varying);
+DROP FUNCTION res_update_operate(old character varying[], new character varying[], table_name character varying);
