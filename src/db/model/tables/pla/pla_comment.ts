@@ -99,14 +99,14 @@ export type DbPlaCommentCreate = {
 export const pla_comment = createTable<DbPlaComment, DbPlaCommentCreate>("pla_comment", TABLE);
 export const pla_pla_comment_check = pla_comment.createTypeChecker<DbPlaCommentCreate>(pla_comment_create_key);
 
-export type DbPlaPostCommentMedia = {
+export type DbPlaAssetCommentMedia = {
   platform: Platform;
   comment_id: string;
   index: number;
   level: MediaLevel;
   filename: string | null;
 };
-export type DbPlaPostCommentMediaCreate = {
+export type DbPlaAssetCommentMediaCreate = {
   platform: Platform;
   comment_id: string;
   index: number;

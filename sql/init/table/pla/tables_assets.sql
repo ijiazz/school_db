@@ -100,8 +100,8 @@ CREATE INDEX idx_watching_pla_asset_comment_last_update_time ON watching_pla_ass
 
 -- file_path `pla_post_media/${filename}`
 CREATE TABLE pla.asset_media(
-    platform platform_flag,
-    asset_id VARCHAR,
+    platform platform_flag NOT NULL,
+    asset_id VARCHAR NOT NULL,
     index INT NOT NULL, -- 作品在列表中的索引
     level media_level NOT NULL, -- 媒体质量等级
     filename VARCHAR, -- 如果为空，表示未录入
@@ -148,3 +148,14 @@ FROM crawl_task_queue
 WHERE
     status = 'waiting';
  
+
+CREATE FUNCTION pla.fn_sync_user_avatar_file_ref_count() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM sys.file_update_ref_count('avatar', OLD.avatar,'avatar', NEW.avatar); 
+    RETURN NEW;
+END; $$ LANGUAGE PLPGSQL;
+
+
+CREATE TRIGGER sync_pla_user_avatar_file_ref_count
+AFTER INSERT OR DELETE OR UPDATE
+ON pla_user FOR EACH ROW EXECUTE FUNCTION pla.fn_sync_user_avatar_file_ref_count();

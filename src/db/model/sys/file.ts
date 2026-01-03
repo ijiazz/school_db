@@ -51,13 +51,13 @@ export type DbSysFile<T extends MediaFileMeta = MediaFileMeta> = {
   meta: T;
 };
 
-export type DbSysFileCreate<T extends MediaFileMeta = MediaFileMeta> = {
+export type DbSysFileCreate<T extends MediaFileMeta | object = MediaFileMeta> = {
   bucket: string;
   filename: string;
   size: number;
 
   hash: string;
-  media_type: MediaType;
+  media_type?: MediaType | null;
   meta: T;
 };
 

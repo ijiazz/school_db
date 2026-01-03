@@ -89,3 +89,16 @@ CREATE TABLE captcha_picture(
     no_count INT NOT NULL DEFAULT 0 -- 不选的次数
 );
 CREATE INDEX idx_is_true ON captcha_picture(is_true);
+
+
+
+CREATE FUNCTION fn_sync_user_avatar_file_ref_count() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM sys.file_update_ref_count('avatar', OLD.avatar, 'avatar', NEW.avatar); 
+    RETURN NEW;
+END; $$ LANGUAGE PLPGSQL;
+
+
+CREATE TRIGGER sync_user_avatar_file_ref_count
+AFTER INSERT OR DELETE OR UPDATE
+ON public.user FOR EACH ROW EXECUTE FUNCTION fn_sync_user_avatar_file_ref_count();

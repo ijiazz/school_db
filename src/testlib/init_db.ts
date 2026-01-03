@@ -97,7 +97,7 @@ END $$;`;
  * 清空传入连接的数据库的所有表的所有数据
  */
 export async function clearAllTablesData(client: DbQuery) {
-  await client.multipleQuery(`DO $$
+  await client.execute(`DO $$
 DECLARE
     r RECORD;
 BEGIN

@@ -52,9 +52,9 @@ CREATE INDEX idx_pla_comment_platform_delete ON pla_comment(platform_delete);
   bucket: "comment_img"
   path: filename
  */
-CREATE TABLE pla.post_comment_media(
-    platform platform_flag,
-    comment_id VARCHAR,
+CREATE TABLE pla.asset_comment_media(
+    platform platform_flag NOT NULL,
+    comment_id VARCHAR NOT NULL,
     index INT NOT NULL, -- 作品在列表中的索引
     level media_level NOT NULL, -- 媒体质量等级
     filename VARCHAR, -- 如果为空，表示未录入
@@ -62,3 +62,15 @@ CREATE TABLE pla.post_comment_media(
     FOREIGN KEY (platform, comment_id) REFERENCES pla_comment (platform, comment_id) ON UPDATE CASCADE ON DELETE SET NULL,
     PRIMARY KEY (platform, comment_id, index, level)
 );
+
+
+CREATE FUNCTION pla.fn_sync_asset_comment_media_file_ref_count() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM sys.file_update_ref_count(OLD.filename, NEW.filename); 
+    RETURN NEW;
+END; $$ LANGUAGE PLPGSQL;
+
+
+CREATE TRIGGER sync_asset_comment_media_file_ref_count
+AFTER INSERT OR DELETE OR UPDATE
+ON pla.asset_comment_media FOR EACH ROW EXECUTE FUNCTION pla.fn_sync_asset_comment_media_file_ref_count();

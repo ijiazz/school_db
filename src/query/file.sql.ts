@@ -8,7 +8,7 @@ import { getOssBucket } from "@ijia/data/oss";
 export async function beginCreateFileTransaction<T>(
   sourceFilePath: string,
   inputFile: DbSysFileCreate,
-  run: (t: DbTransaction) => Promise<T>,
+  run: (t: DbTransaction, ctrl: { cancel: () => void }) => Promise<T>,
 ): Promise<T> {
   const file = checkFile(inputFile);
 
@@ -23,24 +23,31 @@ export async function beginCreateFileTransaction<T>(
   await using t = dbPool.begin("READ COMMITTED");
 
   await t.execute(insertIntoValues("sys.file", file));
-  const result = await run(t);
-  try {
-    await conn.execute(insertIntoValues("sys.file_operation", {
-      bucket: file.bucket,
-      filename: file.filename,
-      to_bucket: file.bucket,
-      to_path: file.filename,
-    })); //用另一个链接写入日志，在完成或失败后删除日志
-  } catch (error) {
-    console.error("遗留文件事务记录导致新的文件事务执行失败，需要尽快处理日志", error);
-    throw error;
-  }
+  let cancelled = false;
+  const result = await run(t, {
+    cancel: () => {
+      cancelled = true;
+    },
+  });
+  if (!cancelled) {
+    try {
+      await conn.execute(insertIntoValues("sys.file_operation", {
+        bucket: file.bucket,
+        filename: file.filename,
+        to_bucket: file.bucket,
+        to_path: file.filename,
+      })); //用另一个链接写入日志，在完成或失败后删除日志
+    } catch (error) {
+      console.error("遗留文件事务记录导致新的文件事务执行失败，需要尽快处理日志", error);
+      throw error;
+    }
 
-  try {
-    await bucket.fMoveInto(file.filename, sourceFilePath);
-  } catch (error) {
-    await conn.execute(deleteRecordSql); // 删除日志
-    throw error;
+    try {
+      await bucket.fMoveInto(file.filename, sourceFilePath);
+    } catch (error) {
+      await conn.execute(deleteRecordSql); // 删除日志
+      throw error;
+    }
   }
   conn.release();
 
@@ -59,7 +66,7 @@ function checkFile(file: DbSysFileCreate): DbSysFileCreate {
     meta: checkFileMeta(media_type, file.meta),
   };
 }
-function checkFileMeta(mediaType: MediaType, meta: MediaFileMeta): MediaFileMeta {
+function checkFileMeta(mediaType: MediaType | undefined | null, meta: MediaFileMeta): MediaFileMeta {
   switch (mediaType) {
     case MediaType.image: {
       const m = meta as ImageFileMeta;

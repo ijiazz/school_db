@@ -1,4 +1,4 @@
-import { test as viTest } from "vitest";
+import { afterAll, test as viTest } from "vitest";
 import { dbPool, setDbPoolConnect } from "@/common/dbclient.ts";
 import { createInitIjiaDb } from "@ijia/data/testlib";
 import process from "node:process";
@@ -6,11 +6,22 @@ import { DbManage, DbQueryPool, parserDbConnectUrl, PgDbQueryPool } from "@asla/
 export interface BaseContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
   ijiaDbPool: DbQueryPool;
-  emptyDbPool: DbQueryPool;
+  publicDbPool: DbQueryPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
 const DB_NAME_PREFIX = "test_ijia_";
 const DB_CONNECT_INFO = getConfigEnv(process.env);
+
+let publicDbPool: Promise<PgDbQueryPool> | PgDbQueryPool | undefined;
+
+const pubDbName = DB_NAME_PREFIX + "pub_" + VITEST_WORKER_ID;
+
+afterAll(async function () {
+  if (publicDbPool) {
+    const pool = await publicDbPool;
+    await clearDropDb(pool, pubDbName);
+  }
+});
 
 export const test = viTest.extend<BaseContext>({
   async ijiaDbPool({}, use) {
@@ -21,27 +32,24 @@ export const test = viTest.extend<BaseContext>({
     setDbPoolConnect(pool.connect.bind(pool));
 
     await use(dbPool);
-    const useCount = dbPool.totalCount - dbPool.idleCount;
-    await pool.close();
 
-    await clearDropDb(dbName);
-    if (useCount !== 0) throw new Error("存在未释放的连接");
+    await clearDropDb(pool, dbName);
   },
-  async emptyDbPool({}, use) {
-    const dbName = "test_empty_" + VITEST_WORKER_ID;
-
-    const manage = await getManage();
-    await manage.recreateDb(dbName);
-    await manage.close();
-
-    const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
+  async publicDbPool({}, use) {
+    if (!publicDbPool) {
+      publicDbPool = (async () => {
+        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true });
+        const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: pubDbName });
+        pool.open();
+        publicDbPool = pool;
+        return pool;
+      })();
+    }
+    const pool = await publicDbPool;
+    pool.open();
     setDbPoolConnect(pool.connect.bind(pool));
-    await use(dbPool);
-    const useCount = dbPool.totalCount - dbPool.idleCount;
-    await pool.close();
 
-    await clearDropDb(dbName);
-    if (useCount !== 0) throw new Error("存在未释放的连接");
+    await use(dbPool);
   },
 });
 function getConfigEnv(env: Record<string, string | undefined>) {
@@ -49,7 +57,9 @@ function getConfigEnv(env: Record<string, string | undefined>) {
   if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
   return parserDbConnectUrl(url);
 }
-async function clearDropDb(dbName: string) {
+async function clearDropDb(pool: PgDbQueryPool, dbName: string) {
+  await pool.close(true);
+  const useCount = pool.totalCount - pool.idleCount;
   try {
     const manage = await getManage();
     await manage.dropDb(dbName);
@@ -57,6 +67,7 @@ async function clearDropDb(dbName: string) {
   } catch (error) {
     console.error(`清理用于测试的数据库 ${dbName} 失败`, error);
   }
+  if (useCount !== 0) throw new Error("存在未释放的数据库连接");
 }
 
 function getManage() {
