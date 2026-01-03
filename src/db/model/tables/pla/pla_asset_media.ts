@@ -1,4 +1,4 @@
-import type { MediaLevel } from "../../sys/file.ts";
+import type { MediaLevel, MediaType } from "../../sys/file.ts";
 import type { Platform } from "./init.ts";
 
 export type DbPlaAssetMedia = {
@@ -7,5 +7,6 @@ export type DbPlaAssetMedia = {
   index: number;
   level: MediaLevel;
   filename?: string;
+  media_type?: MediaType;
 };
 export type DbPlaAssetMediaCreate = DbPlaAssetMedia;

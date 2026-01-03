@@ -104,6 +104,7 @@ CREATE TABLE pla.asset_media(
     asset_id VARCHAR NOT NULL,
     index INT NOT NULL, -- 作品在列表中的索引
     level media_level NOT NULL, -- 媒体质量等级
+    media_type media_type,
     filename VARCHAR, -- 如果为空，表示未录入
     
     FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL,

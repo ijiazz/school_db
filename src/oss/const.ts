@@ -1,7 +1,7 @@
 const OSS_BUCKETS = {
   /** 用户头像。 名称格式 sha256.suffix*/
   AVATAR: "avatar",
-  /** 评论区图片 名称格式 `${file_id}.${ext}` */
+  /** 帖子媒体资源 名称格式 `${platform}-${asset_id}-${index}-${media_level}.${ext}` */
   PLA_POST_MEDIA: "pla_post_media",
   /** 评论区图片 名称格式  sha256.suffix */
   COMMENT_IMAGE: "comment_img",
