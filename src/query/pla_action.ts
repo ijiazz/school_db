@@ -186,8 +186,6 @@ function getTableRawMeta(table: YourTable<any>, keys: readonly string[]) {
   for (const k of keys) {
     const meta = table.getColumnMeta(k);
     types[k] = {
-      sqlDefault: meta.sqlDefault,
-      sqlType: meta.sqlType,
       assertJsType: meta.sqlType.includes("JSON") ? Object : undefined, // JSON 类型需要特殊处理,避免 Array 会被转为 ARRAY []. 如 content_text_struct 字段
     };
   }
