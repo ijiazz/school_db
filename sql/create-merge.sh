@@ -29,9 +29,12 @@ merge_sql_files "$initDir/function"
 
 
 for file in \
+  "$initDir/table/pla/init.sql" \
   "$initDir/table/pla/tables_assets.sql" \
   "$initDir/table/pla/tables_comment.sql" \
+  "$initDir/table/sys/init.sql" \
   "$initDir/table/sys/tables_system.sql" \
+  "$initDir/table/sys/tables_file.sql" \
   "$initDir/table/public/tables_user.sql" \
   "$initDir/table/public/tables_post.sql" \
   "$initDir/table/public/tables_post_comment.sql"

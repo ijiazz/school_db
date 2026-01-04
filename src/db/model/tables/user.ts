@@ -1,5 +1,4 @@
 export * from "./user/user.ts";
-export * from "./user/user_avatar.ts";
 export * from "./user/user_profile.ts";
 export * from "./user/user_blacklist.ts";
 

@@ -1,7 +1,7 @@
 CREATE TABLE public.user(
     id SERIAL PRIMARY KEY,
     nickname VARCHAR(50),
-    avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
+    avatar VARCHAR,
     
     email VARCHAR(256) NOT NULL UNIQUE,
     password CHAR(128),
@@ -13,7 +13,6 @@ CREATE TABLE public.user(
     CONSTRAINT email_domain_lowercase CHECK (email ~ '^[^A-Z]+$') -- 确保邮箱不区分大小写
 ); 
 CREATE INDEX idx_user_email ON public.user(email);
-CREATE INDEX idxfk_avatar ON public.user(avatar);
 
 CREATE TABLE user_blacklist( -- 用户黑名单
     user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -92,20 +91,14 @@ CREATE TABLE captcha_picture(
 CREATE INDEX idx_is_true ON captcha_picture(is_true);
 
 
-CREATE OR REPLACE FUNCTION resource_ref_sync_user() RETURNS TRIGGER AS $$
+
+CREATE FUNCTION fn_sync_user_avatar_file_ref_count() RETURNS TRIGGER AS $$
 BEGIN
-    CASE TG_TABLE_NAME
-    
-    WHEN 'user' THEN
-        PERFORM res_update_operate(OLD.avatar, NEW.avatar,'user_avatar');
-    ELSE
-        RAISE '不支持的触发表 %', TG_TABLE_NAME;
-    END CASE;
-    
+    PERFORM sys.file_update_ref_count('avatar', OLD.avatar, 'avatar', NEW.avatar); 
     RETURN NEW;
 END; $$ LANGUAGE PLPGSQL;
 
 
-CREATE TRIGGER sync_user_resource_ref_count -- 评论头像快照 和 评论图片引用
+CREATE TRIGGER sync_user_avatar_file_ref_count
 AFTER INSERT OR DELETE OR UPDATE
-ON public.user FOR EACH ROW EXECUTE FUNCTION resource_ref_sync_user ();
+ON public.user FOR EACH ROW EXECUTE FUNCTION fn_sync_user_avatar_file_ref_count();

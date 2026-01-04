@@ -1,22 +1,10 @@
 SET client_encoding = 'UTF8';
 
 CREATE TYPE platform_flag AS ENUM('douyin','bilibili','xiaohonshu','weibo','v5sing','wangyiyun');
-CREATE TYPE media_level AS ENUM('origin','thumb');
-CREATE TYPE media_type AS ENUM('video','audio','image'); -- 资源类型
 
 ----------
 -- 用户相关
 ----------
-CREATE TABLE user_avatar (
-    id VARCHAR PRIMARY KEY,
-    ref_count INTEGER NOT NULL DEFAULT 0,
-    image_width SMALLINT,
-    image_height SMALLINT,
-    size INT
-);
-
-CREATE INDEX idx_user_avatar_ref_count ON user_avatar(ref_count);
-CREATE INDEX idx_user_avatar_size ON user_avatar(size);
 
 CREATE TABLE pla_user (
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 数据创建时间
@@ -26,7 +14,7 @@ CREATE TABLE pla_user (
     -- 
     user_name VARCHAR, -- 用户名称
     ip_location VARCHAR, -- IP归属地
-    avatar VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE, -- 用户头像id
+    avatar VARCHAR, -- 用户头像 uri
 
     pla_uid VARCHAR, -- 平台用户id
     platform platform_flag NOT NULL, -- 来源平台
@@ -37,8 +25,8 @@ CREATE TABLE pla_user (
     PRIMARY KEY (platform, pla_uid),
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-CREATE INDEX idx_pla_user_avatar ON pla_user USING hash(avatar);
 CREATE INDEX idx_pla_user_user_name ON pla_user (user_name);
+CREATE INDEX idx_pla_user_extra ON pla_user USING GIN (extra);
 
 
 CREATE TABLE watching_pla_user (
@@ -72,8 +60,6 @@ CREATE TABLE pla_asset (
     content_text VARCHAR, -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
     content_type BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   低4位：有视频、有音频、有图片、有文本
-    user_name_snapshot VARCHAR,
-    user_avatar_snapshot VARCHAR REFERENCES user_avatar(id) ON UPDATE CASCADE,
     ip_location VARCHAR, -- IP归属地
     like_count INTEGER, -- 点赞数量
     comment_num INTEGER, -- 评论数量
@@ -87,8 +73,7 @@ CREATE TABLE pla_asset (
     FOREIGN KEY (platform, pla_uid) REFERENCES pla_user (platform, pla_uid) ON UPDATE CASCADE,
     CONSTRAINT extra CHECK(jsonb_typeof(extra)='object')
 );
-CREATE INDEX idxfk_pla_asset_pla_uid ON pla_asset(platform, pla_uid);
-CREATE INDEX idxfk_pla_asset_user_avatar_snapshot ON pla_asset USING hash(user_avatar_snapshot);
+CREATE INDEX idxfk_pla_asset_pla_uid ON pla_asset(platform, pla_uid); 
 
 CREATE INDEX idx_pla_asset_crawl_check_time ON pla_asset(crawl_check_time);
 
@@ -98,6 +83,7 @@ CREATE INDEX idx_pla_asset_publish_time ON pla_asset(publish_time);
 CREATE INDEX idx_pla_asset_content_text ON pla_asset(content_text);
 CREATE INDEX idx_pla_asset_content_type ON pla_asset(content_type);
 CREATE INDEX idx_pla_asset_like_count ON pla_asset(like_count);
+
 
 
 CREATE TABLE watching_pla_asset (
@@ -112,42 +98,19 @@ CREATE TABLE watching_pla_asset (
 CREATE INDEX idx_watching_pla_asset_comment_last_full_update_time ON watching_pla_asset(comment_last_full_update_time);
 CREATE INDEX idx_watching_pla_asset_comment_last_update_time ON watching_pla_asset(comment_last_update_time);
 
-CREATE TABLE pla_asset_media_missing(
-    platform platform_flag,
-    asset_id VARCHAR,
-    index INT NOT NULL,
-    type media_type NOT NULL, -- 资源类
-    description VARCHAR, -- 描述
-    
-    FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    PRIMARY KEY (platform, asset_id, index)
-);
-
--- file_path `pla_post_media/${file_id}.${ext}`
-CREATE TABLE pla_asset_media(
-    file_id VARCHAR PRIMARY KEY,
-    ext VARCHAR(10) NOT NULL, -- 文件扩展名   
-
-    platform platform_flag,
-    asset_id VARCHAR,
+-- file_path `pla_post_media/${filename}`
+CREATE TABLE pla.asset_media(
+    platform platform_flag NOT NULL,
+    asset_id VARCHAR NOT NULL,
     index INT NOT NULL, -- 作品在列表中的索引
     level media_level NOT NULL, -- 媒体质量等级
-
-    size INT NOT NULL, --文件大小
-
-    type media_type NOT NULL, -- 资源类型
-    meta JSONB NOT NULL, -- 资源元数据
-    hash VARCHAR NOT NULL, -- 16进制hash值
-    hash_type VARCHAR NOT NULL, -- hash算法类型 
+    media_type media_type,
+    filename VARCHAR, -- 如果为空，表示未录入
     
     FOREIGN KEY (platform, asset_id) REFERENCES pla_asset (platform, asset_id) ON UPDATE CASCADE ON DELETE SET NULL,
-    CONSTRAINT pla_asset_media_index UNIQUE (platform, asset_id,index,level)
+    PRIMARY KEY (platform, asset_id,index,level)
 );
-CREATE INDEX idxfk_pla_asset_media_asset_id ON pla_asset_media(platform, asset_id,index);
-CREATE INDEX idx_pla_asset_media_media_type ON pla_asset_media(type);
-CREATE INDEX idx_pla_asset_media_meta ON pla_asset_media USING gin(meta);
 
--- meta 结构在 data\src\db\model\tables\pla_asset_media.ts
 
 
 CREATE TYPE crawl_task_status AS ENUM('waiting', 'processing', 'success', 'failed', 'hide');
@@ -187,14 +150,13 @@ WHERE
     status = 'waiting';
  
 
-----------
--- 触发器
-----------
+CREATE FUNCTION pla.fn_sync_user_avatar_file_ref_count() RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM sys.file_update_ref_count('avatar', OLD.avatar,'avatar', NEW.avatar); 
+    RETURN NEW;
+END; $$ LANGUAGE PLPGSQL;
 
-CREATE TRIGGER sync_pla_user_resource_ref_count -- 用户头像引用
+
+CREATE TRIGGER sync_pla_user_avatar_file_ref_count
 AFTER INSERT OR DELETE OR UPDATE
-ON pla_user FOR EACH ROW EXECUTE FUNCTION resource_ref_sync ();
-
-CREATE TRIGGER sync_pla_asset_resource_ref_count -- 作品头像快照
-AFTER INSERT OR DELETE OR UPDATE 
-ON pla_asset FOR EACH ROW EXECUTE FUNCTION resource_ref_sync ();
+ON pla_user FOR EACH ROW EXECUTE FUNCTION pla.fn_sync_user_avatar_file_ref_count();

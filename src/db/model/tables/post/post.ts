@@ -1,6 +1,6 @@
 import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
-import type { TextStructure } from "@/db/model/types/extra.ts";
+import { TextStructure } from "../../type.ts";
 
 const DEFINE = {
   id: dbTypeMap.genColumn("SERIAL", true),

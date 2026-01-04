@@ -1,9 +1,9 @@
 import { getAllBuckets } from "../oss/const.ts";
-import { createFsOSS, type OSS } from "../oss/fs_oss.ts";
+import { createFsOSS, type OSS, OssBucket } from "../oss/fs_oss.ts";
 import process from "node:process";
 import path from "node:path";
 import { ENV } from "../common/env.ts";
-
+// 这里的设计是为了方便测试时 mock OSS 实例
 let oss: OSS;
 export function getOSS(): OSS {
   if (!oss) {
@@ -22,6 +22,12 @@ export function getOSS(): OSS {
     }
   }
   return oss;
+}
+export function getOssBucket(bucket: string): OssBucket {
+  if (!oss) {
+    return getOSS().getBucket(bucket);
+  }
+  return oss.getBucket(bucket);
 }
 export function setOSS(newOSS: OSS) {
   if (oss) {

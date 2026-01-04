@@ -1,6 +1,7 @@
-import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
+import type { TableDefined, ToInsertType } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
-import type { AssetExtra } from "../../type.ts";
+import type { AssetExtra, Platform } from "./init.ts";
+import type { TextStructure } from "../../type.ts";
 
 const pla_assetDefine = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now"),
@@ -16,8 +17,6 @@ const pla_assetDefine = {
   content_text: dbTypeMap.genColumn("VARCHAR"),
   content_text_struct: dbTypeMap.genColumn("JSONB"),
   content_type: dbTypeMap.genColumn("BIT(8)", true, "0::BIT(8)"),
-  user_name_snapshot: dbTypeMap.genColumn("VARCHAR"),
-  user_avatar_snapshot: dbTypeMap.genColumn("VARCHAR"),
   ip_location: dbTypeMap.genColumn("VARCHAR"),
   like_count: dbTypeMap.genColumn("INTEGER"),
   comment_num: dbTypeMap.genColumn("INTEGER"),
@@ -28,9 +27,29 @@ const pla_assetDefine = {
   asset_id: dbTypeMap.genColumn("VARCHAR", true),
   platform: dbTypeMap.genColumn("platform_flag", true),
 } satisfies TableDefined;
-export type DbPlaAsset = InferTableDefined<typeof pla_assetDefine>;
+export type DbPlaAsset = {
+  create_time: Date;
+  crawl_check_time: Date;
+  comment_last_full_update_time: Date | null;
+  comment_last_update_time: Date | null;
+  extra: AssetExtra;
+  platform_delete: boolean;
+  is_deleted: boolean;
+  publish_time: Date | null;
+  content_text: string | null;
+  content_text_struct: TextStructure[] | null;
+  content_type: string;
+  ip_location: string | null;
+  like_count: number | null;
+  comment_num: number | null;
+  collection_num: number | null;
+  forward_num: number | null;
+  pla_uid: string;
+  asset_id: string;
+  platform: Platform;
+};
 
-const createRequiredKeys = [
+export const pla_asset_create_key = [
   "collection_num",
   "content_text",
   "forward_num",
@@ -42,15 +61,23 @@ const createRequiredKeys = [
   "asset_id",
   "content_text_struct",
   "comment_num",
+  "extra",
+  "content_type",
 ] as const;
-
-export const pla_asset_create_key = [...createRequiredKeys, "extra", "content_type"] as const;
+export type DbPlaAssetCreate = ToInsertType<
+  Omit<
+    DbPlaAsset,
+    | "comment_last_full_update_time"
+    | "comment_last_update_time"
+    | "crawl_check_time"
+  >,
+  | "create_time"
+  | "extra"
+  | "platform_delete"
+  | "is_deleted"
+  | "content_type"
+>;
 
 export const pla_asset = createTable<DbPlaAsset, DbPlaAssetCreate>("pla_asset", pla_assetDefine);
 
 export const pla_asset_check = pla_asset.createTypeChecker<DbPlaAssetCreate>(pla_asset_create_key);
-
-export type DbPlaAssetCreate = ToInsertType<
-  DbPlaAsset,
-  "create_time" | "crawl_check_time" | "extra" | "platform_delete" | "is_deleted" | "content_type"
->;

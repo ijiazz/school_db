@@ -6,6 +6,6 @@ export function insertIntoValues(
   values: object | object[],
   columnsTypes?: ObjectToValueKeys<object | object[]>,
 ) {
-  const { columns, text } = v.createExplicitValues(values, columnsTypes);
+  const { columns, text } = v.createImplicitValues(values, columnsTypes);
   return insertInto(table, columns).values(text);
 }

@@ -1,6 +1,7 @@
-import type { InferTableDefined, TableDefined, ToInsertType } from "@asla/yoursql";
+import type { TableDefined } from "@asla/yoursql";
 import { createTable, dbTypeMap } from "../../_sql_value.ts";
-import type { CommentExtra } from "../../type.ts";
+import { CommentExtra, Platform } from "./init.ts";
+import { MediaLevel } from "../../sys.ts";
 
 const TABLE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
@@ -43,19 +44,72 @@ export const pla_comment_create_key = [
   "platform",
   "publish_time",
   "asset_id",
-  "additional_image",
-  "additional_image_thumb",
   "root_comment_id",
   "comment_type",
   "reply_count",
 ] as const;
 
-export type DbPlaComment = InferTableDefined<typeof TABLE>;
+export type DbPlaComment = {
+  create_time: Date;
+  crawl_check_time: Date;
+  reply_last_sync_date: Date | null;
+  extra: CommentExtra;
+  is_deleted: boolean;
+  platform_delete: boolean;
+  content_text: string | null;
+  content_text_struct: object[] | null;
+  comment_type: string;
+  pla_uid: string | null;
+  publish_time: Date | null;
+  ip_location: string | null;
+  like_count: number | null;
+  reply_count: number | null;
+  author_like: boolean | null;
+  comment_id: string;
+  platform: Platform;
+  root_comment_id: string | null;
+  parent_comment_id: string | null;
+  asset_id: string;
+};
 
-export type DbPlaCommentCreate = ToInsertType<
-  DbPlaComment,
-  "create_time" | "crawl_check_time" | "extra" | "is_deleted" | "platform_delete" | "comment_type"
->;
+export type DbPlaCommentCreate = {
+  // create_time?: Date;
+  // crawl_check_time?: Date;
+  // reply_last_sync_date?: Date | null;
+  extra?: CommentExtra;
+  // is_deleted: boolean;
+  // platform_delete: boolean;
+
+  content_text?: string | null;
+  content_text_struct?: object[] | null;
+  comment_type: string;
+  pla_uid?: string | null;
+  publish_time?: Date | null;
+  ip_location?: string | null;
+  like_count?: number | null;
+  reply_count?: number | null;
+  author_like?: boolean | null;
+  comment_id: string;
+  platform: Platform;
+  root_comment_id?: string | null;
+  parent_comment_id?: string | null;
+  asset_id: string;
+};
 
 export const pla_comment = createTable<DbPlaComment, DbPlaCommentCreate>("pla_comment", TABLE);
 export const pla_pla_comment_check = pla_comment.createTypeChecker<DbPlaCommentCreate>(pla_comment_create_key);
+
+export type DbPlaAssetCommentMedia = {
+  platform: Platform;
+  comment_id: string;
+  index: number;
+  level: MediaLevel;
+  filename: string | null;
+};
+export type DbPlaAssetCommentMediaCreate = {
+  platform: Platform;
+  comment_id: string;
+  index: number;
+  level: MediaLevel;
+  filename?: string | null;
+};
