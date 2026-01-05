@@ -1,7 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@jsr/asla__pg@~0.2.1": "0.2.1_pg@8.16.3",
+    "npm:@jsr/asla__pg@~0.2.2": "0.2.2_pg@8.16.3",
     "npm:@jsr/asla__yoursql@0.13": "0.13.0",
     "npm:@types/node@*": "24.10.1",
     "npm:@types/node@^24.10.0": "24.10.1",
@@ -169,14 +169,14 @@
       "integrity": "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==",
       "tarball": "https://registry.npmmirror.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz"
     },
-    "@jsr/asla__pg@0.2.1_pg@8.16.3": {
-      "integrity": "sha512-/OXlI+Mz6Qhd1doHD/HAESLYqLgPtlMZAl7vThWUo3WX0NRFSi9pRl3WMnwEy7V3kUY/ahnr+uZA9MUhZ4nQMg==",
+    "@jsr/asla__pg@0.2.2_pg@8.16.3": {
+      "integrity": "sha512-O7nuWKxNadUJdmBxivASkpoto3EBvqP71SS1vnGVsdWmZVThHzjwp50cc1l+IgR/G7dWMcdZtpyIfRghXhyWQQ==",
       "dependencies": [
         "@jsr/asla__yoursql",
         "pg",
         "pg-cursor"
       ],
-      "tarball": "https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.1.tgz"
+      "tarball": "https://npm.jsr.io/~/11/@jsr/asla__pg/0.2.2.tgz"
     },
     "@jsr/asla__yoursql@0.13.0": {
       "integrity": "sha512-wju9pokxu6RcaRziM/pWbhJYvFY9UFa//thTIc05Wdj4jTap63sq4DbwF4YnMRmI1GIeRcJyhtpGkjImcuDZBQ==",
@@ -749,7 +749,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@jsr/asla__pg@~0.2.1",
+        "npm:@jsr/asla__pg@~0.2.2",
         "npm:@jsr/asla__yoursql@0.13",
         "npm:@types/node@^24.10.0",
         "npm:evlib@^3.1.3",

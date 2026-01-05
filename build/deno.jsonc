@@ -1,9 +1,15 @@
 // empty config
 {
-  "nodeModulesDir": "none",
-  "lock": false,
-  "imports": {
-    "@rollup/plugin-typescript": "npm:@rollup/plugin-typescript@^12.1.2",
-    "rollup": "npm:rollup@^4.30.1"
-  }
+	"nodeModulesDir": "none",
+	"lock": false,
+	"tasks": {
+		"build": "deno x rolldown -c",
+		"rollup": "deno x rollup -c"
+	},
+	"imports": {
+		"@rollup/plugin-typescript": "npm:@rollup/plugin-typescript@^12.1.2",
+		"rolldown-plugin-dts": "npm:rolldown-plugin-dts@^0.20.0",
+		"rollup": "npm:rollup@^4.30.1",
+		"rolldown": "npm:rolldown@^1.0.0-beta.58"
+	}
 }

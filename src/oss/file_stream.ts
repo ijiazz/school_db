@@ -49,8 +49,7 @@ function getFileStreamDeno(path: string, option: CreateFileStreamOption = {}): R
   const { start: rangeStart, end: rangeEnd } = option;
   let offset = rangeStart ?? 0;
   const rangeRead = new RangeRead(rangeEnd);
-  //@ts-ignore
-  let fd: Deno.FsFile | Promise<Deno.FsFille>;
+  let fd: Deno.FsFile | Promise<Deno.FsFile>;
   return new ReadableStream({
     async cancel() {
       const fhd = await fd;
@@ -58,10 +57,8 @@ function getFileStreamDeno(path: string, option: CreateFileStreamOption = {}): R
     },
     async start() {
       fd = Deno.open(path);
-      //@ts-ignore
       fd = await fd;
       if (rangeStart) {
-        //@ts-ignore
         await fd.seek(rangeStart, Deno.SeekMode.Start);
       }
     },

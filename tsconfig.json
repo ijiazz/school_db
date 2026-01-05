@@ -1,17 +1,27 @@
 {
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2023",
-    "lib": ["ESNext"],
-    "strict": true,
-    "allowImportingTsExtensions": true,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "baseUrl": ".",
-    "paths": {},
-    "resolveJsonModule": true,
-    "noEmit": true
-  },
-  "exclude": ["node_modules"]
+	"compilerOptions": {
+		"types": ["./lib.deno.d.ts", "node"],
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "es2024",
+		"lib": ["ESNext"],
+		"strict": true,
+		"allowImportingTsExtensions": true,
+		"rewriteRelativeImportExtensions": true,
+		"skipLibCheck": true,
+		"allowJs": true,
+		"baseUrl": ".",
+		"paths": {
+			"@ijia/data/db": ["./src/db.ts"],
+			"@ijia/data/oss": ["./src/oss.ts"],
+			"@ijia/data/query": ["./src/query.ts"],
+			"@ijia/data/testlib": ["./src/testlib.ts"]
+		},
+		"noEmit": false,
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"declaration": true
+	},
+	"exclude": ["node_modules"],
+	"include": ["./src"]
 }

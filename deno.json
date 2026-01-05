@@ -7,8 +7,7 @@
     "@ijia/data/db": "./src/db.ts",
     "@ijia/data/oss": "./src/oss.ts",
     "@ijia/data/query": "./src/query.ts",
-    "@ijia/data/testlib": "./src/testlib.ts",
-    "@ijia/data/dbclient": "./src/dbclient.ts"
+    "@ijia/data/testlib": "./src/testlib.ts"
   },
   "exports": {
     "./db": "./src/db.ts",
@@ -19,6 +18,7 @@
   "compilerOptions": {
     "lib": ["deno.window"]
   },
+  "exclude": ["./lib.deno.d.ts", "./dist", "./build"],
   "fmt": {
     "lineWidth": 120
   },
@@ -29,7 +29,8 @@
     "doc:gen": "deno doc --name @ijia/data --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
     "build": "deno run -c build/deno.jsonc -A build/build.ts",
     "test": "deno x vitest run",
-    "test:node": "node ./node_modules/vitest/vitest.mjs run"
+    "test:node": "node ./node_modules/vitest/vitest.mjs run",
+    "gen:types": "deno types > lib.deno.d.ts"
   },
   "nodeModulesDir": "manual"
 }
