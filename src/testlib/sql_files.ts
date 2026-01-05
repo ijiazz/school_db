@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 
+const MERGE_SQL_FILE = path.join(SQL_DIR, "init.sql");
 const IJIA_DB_SQL_BASE_DIR = SQL_DIR + "/init";
 
 const IJIA_DB_SQL_FILES = [
@@ -52,4 +53,11 @@ async function* readDirSqlFiles(dir: string): AsyncIterable<string> {
       yield absPath;
     }
   }
+}
+export async function getMergedFiles() {
+  const stat = await fs.stat(MERGE_SQL_FILE);
+  if (!stat.isFile()) {
+    throw new Error(`合并的 SQL 文件不存在，请确保你已生成合并的 SQL 文件: ${MERGE_SQL_FILE}`);
+  }
+  return fs.readFile(MERGE_SQL_FILE, "utf-8");
 }

@@ -7,25 +7,39 @@ export interface BaseContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
   ijiaDbPool: DbQueryPool;
   publicDbPool: DbQueryPool;
+  emptyDbPool: DbQueryPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
-const DB_NAME_PREFIX = "test_ijia_";
+const DB_NAME = `test_${VITEST_WORKER_ID}`;
+const DB_NAME_IJIA = DB_NAME + "_ijia";
+const DB_NAME_IJIA_PUB = DB_NAME_IJIA + "_pub";
+
 const DB_CONNECT_INFO = getConfigEnv(process.env);
 
 let publicDbPool: Promise<PgDbQueryPool> | PgDbQueryPool | undefined;
 
-const pubDbName = DB_NAME_PREFIX + "pub_" + VITEST_WORKER_ID;
-
 afterAll(async function () {
   if (publicDbPool) {
     const pool = await publicDbPool;
-    await clearDropDb(pool, pubDbName);
+    await clearDropDb(pool, DB_NAME_IJIA_PUB);
   }
 });
 
 export const test = viTest.extend<BaseContext>({
+  async emptyDbPool({}, use) {
+    const manage = await DbManage.connect(DB_CONNECT_INFO);
+    try {
+      await manage.createDb(DB_NAME);
+    } finally {
+      await manage.close();
+    }
+
+    const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: DB_NAME });
+    await use(pool);
+    await clearDropDb(pool, DB_NAME);
+  },
   async ijiaDbPool({}, use) {
-    const dbName = DB_NAME_PREFIX + VITEST_WORKER_ID;
+    const dbName = DB_NAME_IJIA;
     await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
 
     const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
@@ -36,10 +50,11 @@ export const test = viTest.extend<BaseContext>({
     await clearDropDb(pool, dbName);
   },
   async publicDbPool({}, use) {
+    const dbName = DB_NAME_IJIA_PUB;
     if (!publicDbPool) {
       publicDbPool = (async () => {
-        await createInitIjiaDb(DB_CONNECT_INFO, pubDbName, { dropIfExists: true });
-        const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: pubDbName });
+        await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
+        const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
         pool.open();
         publicDbPool = pool;
         return pool;

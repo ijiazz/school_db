@@ -3,7 +3,7 @@ import { createUser } from "../query/user.ts";
 import { getSQLInitFiles } from "./sql_files.ts";
 import process from "node:process";
 import { createDbConnection, DbConnectOption, DbManage, DbQuery, execSqlFile, parserDbConnectUrl } from "@asla/pg";
-
+export { getMergedFiles } from "./sql_files.ts";
 /**
  * 初始化数据库
  */

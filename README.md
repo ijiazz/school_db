@@ -1,6 +1,6 @@
 ## 数据库初始化
 
-`sql/create-merge.sh` 脚本文件会生成一个初始化数据库的 sql 脚本文件，可通过 `sql/create-merge.sh init.sql` 允许命令，会在当前工作目录生成一个 init.sql , 然后执行该 sql 文件即可初始化数据库。
+`sql/create-merge.sh` 脚本文件会生成一个初始化数据库的 sql 脚本文件，可通过 `sql/create-merge.sh > init.sql` 运行命令，会在当前工作目录生成一个 init.sql , 然后执行该 sql 文件即可初始化数据库。
  
 或者直接用 Deno 运行创建数据库的脚本文件 [scripts/create_db.ts](./scripts/create_db.ts)\
 `deno run -A scripts/create_db.ts` (运行前需要进入到这个文件修改数据库连接配置)

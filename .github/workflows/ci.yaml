@@ -35,6 +35,8 @@ jobs:
         with:
           deno-version: v2
       - run: deno install
+      - name: Create sql file
+        run: ./sql/create-merge.sh > ./sql/init.sql
       - name: Test
         run: deno task test
         env:
