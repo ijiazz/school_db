@@ -12,16 +12,16 @@ export class AuthToken<Data = void> {
   static readonly version = 1;
   constructor(
     options: {
-      signSysJWT: (data: SignInfo<unknown>) => Promise<string>;
+      signSysJWT: (data: SignInfo<Data>) => Promise<string>;
       parseSysJWT: (accessToken: string) => Promise<SignInfo<Data>>;
     },
   ) {
     this.#signSysJWT = options.signSysJWT;
     this.#parserSysJWT = options.parseSysJWT;
   }
-  #signSysJWT: (data: SignInfo<unknown>) => Promise<string>;
+  #signSysJWT: (data: SignInfo<Data>) => Promise<string>;
   #parserSysJWT: (accessToken: string) => Promise<SignInfo<Data>>;
-  async signAccessToken(data: Data, option: SignAccessTokenOption = {}): Promise<AccessToken> {
+  async signAccessToken(data: Data, option: SignAccessTokenOption = {}): Promise<AccessToken<Data>> {
     const signTime = Date.now() / 1000;
     const { survivalSeconds, refreshKeepAliveSeconds, refreshSurvivalSeconds } = option;
 
@@ -43,12 +43,12 @@ export class AuthToken<Data = void> {
     }
     const token = await this.#signSysJWT(body);
 
-    return new AccessTokenImpl(this.#signSysJWT, body, token);
+    return new AccessTokenImpl<Data>(this.#signSysJWT, body, token);
   }
 
-  async verifyAccessToken(accessToken: string): Promise<AccessToken> {
+  async verifyAccessToken(accessToken: string): Promise<AccessToken<Data>> {
     const data: SignInfo<Data> = await this.#parserSysJWT(accessToken);
-    return new AccessTokenImpl(this.#signSysJWT, data, accessToken);
+    return new AccessTokenImpl<Data>(this.#signSysJWT, data, accessToken);
   }
 }
 
@@ -83,7 +83,7 @@ export type SignAccessTokenOption = {
   refreshSurvivalSeconds?: number; // 可选的刷新令牌存活时间
 };
 
-export interface AccessToken {
+export interface AccessToken<T = void> {
   /** 访问令牌字符串 */
   readonly token: string;
   /** 令牌最大存活时间，单位秒 */
@@ -92,19 +92,20 @@ export interface AccessToken {
   readonly isExpired: boolean;
   /** 令牌是否需要刷新，如果为 true，则 isExpired 必定为 false */
   readonly needRefresh: boolean;
-  refresh(): Promise<AccessToken>;
+  readonly data: T;
+  refresh(): Promise<AccessToken<T>>;
 }
-class AccessTokenImpl implements AccessToken {
+class AccessTokenImpl<T> implements AccessToken<T> {
   constructor(
-    signSysJWT: (data: SignInfo<unknown>) => Promise<string>,
-    signInfo: SignInfo<unknown>,
+    signSysJWT: (data: SignInfo<T>) => Promise<string>,
+    signInfo: SignInfo<T>,
     readonly token: string,
   ) {
     this.#signSysJWT = signSysJWT;
     this.#signInfo = signInfo;
   }
-  #signSysJWT: (data: SignInfo<unknown>) => Promise<string>;
-  #signInfo: SignInfo<unknown>;
+  #signSysJWT: (data: SignInfo<T>) => Promise<string>;
+  #signInfo: SignInfo<T>;
 
   #maxAge: number | null | undefined;
   get maxAge(): number | null {
@@ -128,8 +129,11 @@ class AccessTokenImpl implements AccessToken {
     }
     return this.#verify.needRefresh;
   }
+  get data() {
+    return this.#signInfo.data;
+  }
 
-  async refresh(): Promise<AccessToken> {
+  async refresh(): Promise<AccessToken<T>> {
     const body = { ...this.#signInfo, issueTime: Date.now() / 1000 } satisfies SignInfo<unknown>;
     const token = await this.#signSysJWT(body);
 
