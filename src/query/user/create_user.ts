@@ -1,4 +1,3 @@
-import { user, user_profile } from "@ijia/data/db";
 import { insertInto, withAs } from "@asla/yoursql";
 import { dbPool, ExecutableSQL } from "../../common/dbclient.ts";
 import { insertIntoValues } from "../../common/sql.ts";
@@ -19,13 +18,13 @@ export type CreateUserOption = {
 export function createUser(email: string, userInfo: CreateUserOption): ExecutableSQL<{ user_id: number }> {
   const { nickname, password, salt, id } = userInfo;
   const base = withAs("inserted", () => {
-    return insertIntoValues(user.name, { email, password: password, pwd_salt: salt, nickname, id })
+    return insertIntoValues("public.user", { email, password: password, pwd_salt: salt, nickname, id })
       .onConflict(["email"])
       .doNotThing()
       .returning<{ user_id: number }>({ user_id: "id" })
       .genSql();
   }).as("add_profile", () => {
-    return insertInto(user_profile.name, ["user_id"]).select(`SELECT user_id FROM inserted`).genSql();
+    return insertInto("user_profile", ["user_id"]).select(`SELECT user_id FROM inserted`).genSql();
   });
 
   const sql = `${base.toString()}\nSELECT * FROM inserted`;

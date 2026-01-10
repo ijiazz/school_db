@@ -1,4 +1,4 @@
-import { DbClassCreate, dclass, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { DbClassCreate, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
 import { dbPool } from "../common/dbclient.ts";
 import { insertIntoValues } from "../common/sql.ts";
 
@@ -8,7 +8,7 @@ export async function initPublicClass() {
     list.push({ class_name: `JiaJia-${i}`, description: `${i} 群`, parent_class_id: PUBLIC_CLASS_ROOT_ID });
   }
   const inserted = await dbPool.queryCount(
-    insertIntoValues(dclass.name, list)
+    insertIntoValues("class", list)
       .onConflict(["id"])
       .doNotThing(),
   );
