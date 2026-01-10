@@ -9,10 +9,9 @@
   "exports": {
     "./db": "./dist/db.js",
     "./oss": "./dist/oss.js",
-    "./cache": "./dist/cache.js",
     "./testlib": "./dist/testlib.js",
-    "./dbclient": "./dist/dbclient.js",
-    "./query": "./dist/query.js"
+    "./query": "./dist/query.js",
+    "./auth": "./dist/auth.js"
   },
   "author": "Eaviyi",
   "license": "Apache",
