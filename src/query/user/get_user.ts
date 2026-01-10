@@ -30,7 +30,7 @@ export async function getValidUserSampleInfoByUserId(
   userId: number,
 ): Promise<SampleUserInfo | null> {
   const [info] = await dbPool.queryRows(
-    select<SampleUserInfo>(["user_id AS id", "email", "nickname", "is_deleted"])
+    select<SampleUserInfo>(["id AS user_id", "email", "nickname", "is_deleted"])
       .from("public.user")
       .where([`id=${v(userId)}`]),
   );
