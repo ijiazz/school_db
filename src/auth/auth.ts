@@ -8,25 +8,27 @@ export async function hashPwd(pwd: string, salt: string = "") {
   return str;
 }
 
-export class AuthToken<Data = void> {
+export class AuthToken<T = unknown> {
   static readonly version = 1;
   constructor(
     options: {
-      signSysJWT: (data: SignInfo<Data>) => Promise<string>;
-      parseSysJWT: (accessToken: string) => Promise<SignInfo<Data>>;
+      signSysJWT: (data: SignInfo<unknown>) => Promise<string>;
+      parseSysJWT: (accessToken: string) => Promise<unknown>;
+      checkData: (data: unknown) => T;
     },
   ) {
     this.#signSysJWT = options.signSysJWT;
     this.#parserSysJWT = options.parseSysJWT;
+    this.#checkData = options.checkData;
   }
-  #signSysJWT: (data: SignInfo<Data>) => Promise<string>;
-  #parserSysJWT: (accessToken: string) => Promise<SignInfo<Data>>;
-  async signAccessToken(data: Data, option: SignAccessTokenOption = {}): Promise<AccessToken<Data>> {
+  #checkData: (data: unknown) => T;
+  #signSysJWT: (data: SignInfo<unknown>) => Promise<string>;
+  #parserSysJWT: (accessToken: string) => Promise<unknown>;
+  async signAccessToken<T>(data: T, option: SignAccessTokenOption = {}): Promise<AccessToken<T>> {
     const signTime = Date.now() / 1000;
     const { survivalSeconds, refreshKeepAliveSeconds, refreshSurvivalSeconds } = option;
 
-    const body: SignInfo<Data> = { data: data, issueTime: signTime, version: AuthToken.version };
-
+    const body: SignInfo<T> = { data: data, issueTime: signTime, version: AuthToken.version };
     if (typeof survivalSeconds === "number") body.survivalSeconds = survivalSeconds;
 
     if (refreshKeepAliveSeconds || refreshSurvivalSeconds) {
@@ -43,16 +45,17 @@ export class AuthToken<Data = void> {
     }
     const token = await this.#signSysJWT(body);
 
-    return new AccessTokenImpl<Data>(this.#signSysJWT, body, token);
+    return new AccessTokenImpl<T>(this.#signSysJWT, body, token);
   }
 
-  async verifyAccessToken(accessToken: string): Promise<AccessToken<Data>> {
-    const data: SignInfo<Data> = await this.#parserSysJWT(accessToken);
-    return new AccessTokenImpl<Data>(this.#signSysJWT, data, accessToken);
+  async verifyAccessToken(accessToken: string): Promise<AccessToken<T>> {
+    const signInfo = await this.#parserSysJWT(accessToken).then(checkSignInfo);
+    signInfo.data = this.#checkData(signInfo.data);
+    return new AccessTokenImpl<T>(this.#signSysJWT, signInfo as SignInfo<T>, accessToken);
   }
 }
 
-export type SignInfo<T = void> = {
+export type SignInfo<T = unknown> = {
   data: T;
   /**
    * 令牌存活秒数。
@@ -140,13 +143,20 @@ class AccessTokenImpl<T> implements AccessToken<T> {
     return new AccessTokenImpl(this.#signSysJWT, body, token);
   }
 }
-
+function checkSignInfo(raw: unknown): SignInfo<unknown> {
+  if (typeof raw !== "object" || raw === null) throw new Error("无效的令牌数据");
+  const signInfo = raw as Partial<SignInfo<unknown>>;
+  if (typeof signInfo.issueTime !== "number") throw new Error("无效的令牌数据: 缺少签名时间");
+  if (!Number.isInteger(signInfo.version)) throw new Error("无效的令牌数据: 缺少版本号");
+  if (signInfo.survivalSeconds !== undefined && typeof signInfo.survivalSeconds !== "number") {
+    throw new Error("无效的令牌数据: survivalSeconds 必须是数字");
+  }
+  return raw as SignInfo<unknown>;
+}
 function verifySignInfo(
   data: SignInfo<unknown>,
   requiredVersion: number,
 ): { isExpired: boolean; needRefresh: boolean } {
-  if (typeof data.issueTime !== "number") throw new Error("缺少签名时间");
-
   const now = Date.now() / 1000;
   const refresh = data.refresh;
   const versionExpired = data.version !== requiredVersion;

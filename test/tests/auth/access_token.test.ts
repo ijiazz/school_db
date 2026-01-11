@@ -12,6 +12,7 @@ async function parseSysJWT(accessToken: string): Promise<SignInfo<null>> {
 const authToken = new AuthToken<null>({
   parseSysJWT,
   signSysJWT,
+  checkData: () => null,
 });
 
 const SignData = null;
