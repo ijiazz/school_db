@@ -13,7 +13,8 @@
     "./db": "./src/db.ts",
     "./oss": "./src/oss.ts",
     "./query": "./src/query.ts",
-    "./testlib": "./src/testlib.ts"
+    "./testlib": "./src/testlib.ts",
+    "./auth": "./src/auth.ts"
   },
   "compilerOptions": {
     "lib": ["deno.window"]
