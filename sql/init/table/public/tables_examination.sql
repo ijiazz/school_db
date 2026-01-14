@@ -1,37 +1,19 @@
 CREATE TABLE exam_question(
-    id SERIAL PRIMARY KEY,
-    creator_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 创建者 id
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE, -- 是否删除
-    create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
-    update_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 更新时间
-
-
+    id INT NOT NULL PRIMARY KEY REFERENCES post(id) ON DELETE CASCADE ON UPDATE CASCADE,
     question_type VARCHAR(20) NOT NULL, -- 题目类型
-    question_text VARCHAR NOT NULL, -- 题目文本
-    question_image BYTEA, -- 题目图片
-    question_audio BYTEA, -- 题目音频
 
     answer_index INT[] NOT NULL, -- 题目答案
     option_text VARCHAR[], -- 选项文本
-    options_image BYTEA[], -- 附加图片
 
     review_pass_count INT NOT NULL DEFAULT 0, -- 审核通过次数
     review_fail_count INT NOT NULL DEFAULT 0, --  审核未通过次数
-    is_review_pass BOOLEAN, -- 是否审核通过
-    is_reviewing BOOLEAN NOT NULL DEFAULT FALSE, -- 是否审核中
 
     correct_count INT NOT NULL DEFAULT 0, -- 正确次数
     wrong_count INT NOT NULL DEFAULT 0, -- 错误次数
     question_level INT NOT NULL DEFAULT 0 -- 题目难度等级
 ); 
 
-CREATE TABLE exam_question_review(
-    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 审核人 id
-    question_id INT NOT NULL REFERENCES exam_question(id) ON DELETE CASCADE, -- 题目 id
-    reason VARCHAR(100), -- 审核意见
-    is_pass BOOLEAN NOT NULL DEFAULT FALSE, -- 是否通过
-    PRIMARY KEY (user_id, question_id) 
-);
+
 
 
 CREATE TABLE exam_paper(    -- 试卷

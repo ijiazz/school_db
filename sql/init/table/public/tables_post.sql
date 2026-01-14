@@ -1,16 +1,14 @@
  
 CREATE TABLE post_group(
-    id SERIAL PRIMARY KEY, 
-    name VARCHAR(50) NOT NULL, 
+    id VARCHAR(50) PRIMARY KEY, 
     description VARCHAR(500), -- 描述
-    public_sort SMALLINT -- 如果为不为空，则显示在表白墙首页，根据数值排序
+    count INT NOT NULL DEFAULT 0, -- 组内帖子数量
+    reviewing_count INT NOT NULL DEFAULT 0 -- 正在审核中的帖子数量
 );
-
-CREATE INDEX idx_post_group_public_sort ON post_group(public_sort); 
 
 CREATE TABLE post (
     id SERIAL PRIMARY KEY,
-    group_id INT REFERENCES post_group(id),
+    group_id VARCHAR(50) REFERENCES post_group(id),
     user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     is_delete BOOLEAN NOT NULL DEFAULT FALSE,
     is_hide BOOLEAN NOT NULL DEFAULT FALSE, -- 是否隐藏
@@ -29,9 +27,8 @@ CREATE TABLE post (
     is_review_pass BOOLEAN -- 是否审核通过
 );
 
-CREATE INDEX idxfk_post_group ON post(group_id,publish_time);
-CREATE INDEX idx_post_get_list ON post(publish_time,id,is_delete,is_hide); -- 查询帖子列表
-CREATE INDEX idx_post_user_insert_limit ON post(user_id,create_time); -- 查询某个用户每天已发布的作品数量
+CREATE INDEX idx_post_get_list ON post(group_id,publish_time,id,is_delete,is_hide); -- 查询帖子列表
+CREATE INDEX idx_post_user_insert_limit ON post(group_id,user_id,create_time); -- 查询某个用户每天已发布的作品数量
 
 CREATE TABLE post_asset(
     id SERIAL PRIMARY KEY,
@@ -53,6 +50,7 @@ CREATE TABLE post_asset(
 CREATE INDEX idxfk_post_asset_post_id ON post_asset(post_id,index);
 
 CREATE TABLE post_like(
+    post_group_id VARCHAR(50) REFERENCES post_group(id) ON DELETE CASCADE,
     post_id INT NOT NULL REFERENCES post(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES public.user(id)ON DELETE CASCADE ON UPDATE CASCADE,
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -61,4 +59,26 @@ CREATE TABLE post_like(
     PRIMARY KEY (post_id, user_id),
     CONSTRAINT chk_post_like_weight CHECK (weight !=0) -- 权重范围
 );
-CREATE INDEX idxfk_post_like_user_id ON post_like(user_id,weight,create_time); -- 查询某个用户喜欢列表和举报列表
+CREATE INDEX idxfk_post_like_user_id ON post_like(post_group_id,user_id,weight,create_time); -- 查询某个用户喜欢列表和举报列表
+
+
+CREATE TABLE user_post_group_stat(
+    post_group_id VARCHAR(50) REFERENCES post_group(id) ON DELETE CASCADE,
+    user_id INT PRIMARY KEY REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    post_count INT NOT NULL DEFAULT 0, -- 发帖数
+    post_like_count INT NOT NULL DEFAULT 0, -- 用户点赞的总帖子数
+    post_like_get_count INT NOT NULL DEFAULT 0,
+    
+    PRIMARY KEY (user_id, post_group_id)
+);
+CREATE INDEX idx_post_group_public_sort ON post_group(public_sort); 
+
+
+CREATE TABLE post_review(
+    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    group_id INT NOT NULL REFERENCES post_group(id) ON DELETE CASCADE,
+    target_id INT NOT NULL REFERENCES post(id) ON DELETE CASCADE,
+    reason VARCHAR(100), -- 审核意见
+    is_pass BOOLEAN NOT NULL DEFAULT FALSE, -- 是否通过
+    PRIMARY KEY (user_id, target_id) 
+);
