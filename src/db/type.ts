@@ -22,3 +22,8 @@ export enum TextStructureType {
   /** 话题 */
   topic = 2,
 }
+/** 数据库中保存媒体的特殊索引 */
+export enum AssetMediaIndex {
+  cover = 0,
+  bgAudio = -1,
+}
