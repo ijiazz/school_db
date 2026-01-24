@@ -5,7 +5,8 @@ CREATE TABLE exam_paper(-- 试卷
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
     title VARCHAR(100), -- 考试名称
 
-    question_total INT NOT NULL DEFAULT 0, -- 试题总数    
+    question_total INT NOT NULL DEFAULT 0, -- 题库试题总数
+    system_question_total INT NOT NULL DEFAULT 0, -- 系统试题总数   
     use_time_total INT NOT NULL DEFAULT 0, -- 答题总耗时，单位毫秒。
     correct_count INT NOT NULL DEFAULT 0, -- 正确题数
     wrong_count INT NOT NULL DEFAULT 0, -- 错误题数 
@@ -27,12 +28,19 @@ CREATE TABLE exam_paper_question( -- 试卷试题绑定
     option_map INT [] , -- 选项映射, 打乱顺序
     PRIMARY KEY (paper_id, question_id)
 );
-CREATE TABLE exam_system_question(
+CREATE TABLE exam_paper_system_question( -- 试卷系统试题绑定
     paper_id INT NOT NULL REFERENCES exam_paper(id) ON DELETE CASCADE, -- 试卷 id
     id SERIAL PRIMARY KEY,
     weight INT NOT NULL, -- 分数权重
-    
+
+    content_text VARCHAR(10000), -- 内容文本
+    content_text_struct JSONB, -- 文本扩展信息    
+    answer_index INT[] NOT NULL, -- 题目答案
+    option_text VARCHAR[], -- 选项文本
+    question_level INT NOT NULL DEFAULT 0, -- 题目难度等级
+    files VARCHAR[] -- 试题相关文件
 );
+CREATE INDEX idxfk_exam_paper_system_question_paper_id ON exam_paper_system_question(paper_id);
 
 CREATE TABLE exam_paper_user_answer( -- 试卷作答
     paper_id INT NOT NULL REFERENCES exam_paper(id) ON DELETE CASCADE, -- 试卷 id
