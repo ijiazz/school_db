@@ -2,7 +2,9 @@ CREATE TYPE review_status AS ENUM ('pending','passed','rejected');
 
 CREATE TYPE review_target_type AS ENUM (
     'post', -- 帖子
-    'post_comment' -- 评论
+    'post_comment', -- 评论
+    'comment', -- 评论
+    'question' -- 试题
 );
 
 CREATE TABLE review(
