@@ -2,7 +2,6 @@ export interface DbReview<T extends object = object> {
   id: number;
   create_time: Date;
   resolved_time: Date | null;
-  user_id: number;
   target_type: ReviewTargetType | null;
   info: T | null;
   review_display: ReviewDisplayItem[] | null;
@@ -14,6 +13,21 @@ export interface DbReview<T extends object = object> {
   comment: string | null;
   reviewer_id: number | null;
 }
+
+export type DbReviewCreate<T extends object = object> = Partial<
+  Pick<
+    DbReview<T>,
+    | "target_type"
+    | "info"
+    | "review_display"
+    | "is_passed"
+    | "is_reviewing"
+    | "pass_count"
+    | "reject_count"
+    | "comment"
+    | "reviewer_id"
+  >
+>;
 export enum ReviewTargetType {
   post = "post",
   post_comment = "post_comment",

@@ -8,17 +8,12 @@ BEGIN
     INSERT INTO review_record(review_id, reviewer_id, is_passed, comment)
     VALUES (review_id, reviewer_id, is_passed, comment);
 
-    IF is_passed THEN
-        UPDATE review
-        SET pass_count = pass_count + 1
+    UPDATE review
+        SET pass_count = pass_count + CASE WHEN is_passed THEN 1 ELSE 0 END,
+            reject_count = reject_count + CASE WHEN NOT is_passed THEN 1 ELSE 0 END
         WHERE id = review_id
         RETURNING pass_count INTO after_count;
-    ELSE
-        UPDATE review
-        SET reject_count = reject_count + 1
-        WHERE id = review_id
-        RETURNING reject_count INTO after_count;
-    END IF;
+
     RETURN after_count;
 END;
 $$ LANGUAGE PLPGSQL;
