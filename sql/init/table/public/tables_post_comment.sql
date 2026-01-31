@@ -15,6 +15,8 @@ CREATE TABLE post_comment(
     content_text VARCHAR(5000), -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
 
+    reviewing_id INT REFERENCES review(id) ON DELETE SET NULL, -- 审核记录 id
+
     CONSTRAINT chk_root_parent_null
     CHECK ( (root_comment_id IS NULL AND parent_comment_id IS NULL)
       OR  (root_comment_id IS NOT NULL AND parent_comment_id IS NOT NULL)
@@ -27,20 +29,7 @@ CREATE INDEX idxfk_post_comment_user_id ON post_comment(user_id,is_delete);
 CREATE INDEX idxfk_post_comment_parent_comment_id ON post_comment(parent_comment_id,create_time,is_delete);
 CREATE INDEX idxfk_post_comment_root_comment_id ON post_comment(root_comment_id,parent_comment_id,create_time,is_delete);
 
-CREATE INDEX idx_comment_user_insert_limit ON post_comment(user_id,create_time);
-
-
-CREATE TYPE post_review_type AS ENUM('post','post_comment');
-CREATE TABLE post_review_info(
-    type post_review_type NOT NULL, -- 审核类型
-    target_id INT NOT NULL, -- 目标id
-    create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
-    reviewed_time TIMESTAMPTZ, -- 审核时间
-    reviewer_id INT REFERENCES public.user(id) ON DELETE SET NULL ON UPDATE CASCADE, -- 审核人id
-    is_review_pass BOOLEAN, -- 是否审核通过
-    remark VARCHAR(100), -- 备注 
-    PRIMARY KEY (type, target_id)
-);
+CREATE INDEX idx_post_comment_user_insert_limit ON post_comment(user_id,create_time);
 
 
 CREATE TABLE post_comment_like(

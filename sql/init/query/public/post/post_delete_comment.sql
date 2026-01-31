@@ -3,7 +3,7 @@ SET client_encoding = 'UTF8';
 /**
  * 用户可以删除自己的评论。
  * 帖子作者可以删除所有评论
- * 如果 user_id 为 NULL ，则不判断权限，直接删除
+ * 如果 arg_user_id 为 NULL ，则不判断权限，直接删除
  */
 CREATE OR REPLACE FUNCTION post_delete_comment(comment_id INT, arg_user_id INT)
 RETURNS INT AS $$

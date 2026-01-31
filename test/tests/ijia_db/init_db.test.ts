@@ -7,3 +7,5 @@ test.skipIf(!isCi)("使用 shell 初始化数据库", async function ({ emptyDbP
   const initSql = await getMergedFiles();
   await emptyDbPool.multipleQuery(initSql);
 });
+test("初始化数据库", async function ({ publicDbPool }) {
+});
