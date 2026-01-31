@@ -15,11 +15,11 @@ export interface DbFunctions {
 }
 
 export interface DbFunctions {
-  review_commit(review_id: INT, reviewer_id: INT, is_passed: BOOL, comment?: VARCHAR): INT;
+  review_commit(review_id: INT, reviewer_id: INT, is_passed: BOOL, comment: VARCHAR | NULL): INT;
   review_insert_record_check_old(
     review_id: INT | NULL,
     arg_target_type: ReviewTargetType,
-    arg_info?: object | NULL,
-    arg_review_display?: object | NULL,
+    arg_info: object | NULL,
+    arg_review_display: object | NULL,
   ): INT;
 }
