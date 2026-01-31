@@ -4,12 +4,10 @@ import {
   enumAssetMediaType,
   enumMediaLevel,
   enumPlatform,
-  enumPostReviewType,
   enumTaskType,
   MediaLevel,
   MediaType,
   Platform,
-  PostReviewType,
 } from "@ijia/data/db";
 
 export const dbTypeMap = YourTypeMap.create({
@@ -31,7 +29,6 @@ export const dbTypeMap = YourTypeMap.create({
   media_type: new CustomDbType<MediaType>((v) => enumAssetMediaType.has(v), "media_type"),
   platform_flag: new CustomDbType<Platform>((v) => enumPlatform.has(v), "platform_flag"),
   crawl_task_status: new CustomDbType<CrawlTaskStatus>((v) => enumTaskType.has(v), "crawl_task_status"),
-  post_review_type: new CustomDbType<PostReviewType>((v) => enumPostReviewType.has(v), "post_review_type"),
 });
 export function getTableRawMeta(table: YourTable<any>, keys: readonly string[]) {
   let types: ObjectToValueKeys<object> = {};

@@ -1,6 +1,7 @@
 export interface DbReview<T extends object = object> {
   id: number;
   create_time: Date;
+  resolved_time: Date | null;
   user_id: number;
   target_type: ReviewTargetType | null;
   info: T | null;
@@ -9,6 +10,9 @@ export interface DbReview<T extends object = object> {
   is_reviewing: boolean;
   pass_count: number;
   reject_count: number;
+
+  comment: string | null;
+  reviewer_id: number | null;
 }
 export enum ReviewTargetType {
   post = "post",

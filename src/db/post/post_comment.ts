@@ -15,10 +15,18 @@ export type DbPostComment = {
   dislike_count: number;
   content_text: string | null;
   content_text_struct: TextStructure | null;
+
+  reviewing_id: number | null;
 };
 export type DbPostCommentCreate = ToInsertType<
   DbPostComment,
-  "id" | "create_time" | "is_delete" | "dislike_count" | "like_count" | "is_root_reply_count" | "reply_count"
+  | "id"
+  | "create_time"
+  | "is_delete"
+  | "dislike_count"
+  | "like_count"
+  | "is_root_reply_count"
+  | "reply_count"
 >;
 
 export type DbPostCommentLike = {
