@@ -1,5 +1,11 @@
 import type { TextStructure } from "./type.ts";
 
+export enum ReviewStatus {
+  pending = "pending",
+  passed = "passed",
+  rejected = "rejected",
+}
+
 export interface DbReview<T extends object = object> {
   id: number;
   create_time: Date;
