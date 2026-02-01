@@ -1,3 +1,5 @@
+import type { TextStructure } from "./type.ts";
+
 export interface DbReview<T extends object = object> {
   id: number;
   create_time: Date;
@@ -48,8 +50,14 @@ export enum ReviewDisplayItemType {
 
 export type ReviewDisplayItemText = {
   label: string;
-  text?: string;
-  old_text?: string;
+  old?: {
+    text: string;
+    testStructure?: TextStructure;
+  };
+  new?: {
+    text: string;
+    testStructure?: TextStructure;
+  };
   type: ReviewDisplayItemType.text;
 };
 export type ReviewDisplayItemMedia = {
