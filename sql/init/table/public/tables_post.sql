@@ -21,6 +21,7 @@ CREATE TABLE post (
     content_text_struct JSONB, -- 文本扩展信息
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量 
     dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
+    comment_num INT  NOT NULL DEFAULT 0, -- 评论数量
     options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1~2位:  是否匿名，是否关闭评论
 
     -- 如果 reviewing_id 不为空，表示正在审核中或审核失败。审核通过后 reviewing_id 将移动到 review_id 字段

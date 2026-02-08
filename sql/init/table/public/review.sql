@@ -8,6 +8,7 @@ CREATE TYPE review_target_type AS ENUM (
 CREATE TABLE review(
   id SERIAL PRIMARY KEY,
   create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
+  resolved_time TIMESTAMPTZ, -- 解决时间
   target_type review_target_type, -- 审核目标类型
   info JSONB, -- 额外信息
   review_display JSONB, -- 审核展示内容
@@ -16,9 +17,13 @@ CREATE TABLE review(
   pass_count INT NOT NULL DEFAULT 0, -- 通过审核的人数
   reject_count INT NOT NULL DEFAULT 0, -- 拒绝通过审核的人数
 
+  comment VARCHAR(1000), -- 终审人审核意见
+  reviewer_id INT REFERENCES public.user(id) ON DELETE SET NULL, -- 终审人。终审根据 review_record 决定最终结果.如果未空，可能是机器判断。
+
   CONSTRAINT chk_info_is_object CHECK (info IS NULL OR jsonb_typeof(info) = 'object'),
   CONSTRAINT chk_review_display_is_array CHECK (review_display IS NULL OR jsonb_typeof(review_display) = 'array')
 );
+CREATE INDEX idxfk_review_reviewer_id ON review(reviewer_id);
 CREATE INDEX idx_review_list_query ON review(is_passed,create_time);
 CREATE INDEX idx_review_list_type_query ON review(is_passed,target_type,create_time);
 

@@ -15,7 +15,7 @@ export async function getUserRoleNameList(userId: number): Promise<UserWithRole 
         .toSelect(),
     })
       .from("public.user", { as: "u" })
-      .where("NOT u.is_deleted"),
+      .where(["NOT u.is_deleted", `u.id=${v(userId)}`]),
   );
   if (!userInfo) return null;
   if (!userInfo.role_id_list) userInfo.role_id_list = [];
@@ -26,9 +26,7 @@ export type UserWithRole = SampleUserInfo & {
 };
 
 /** 从数据库获取用户信息 */
-export async function getValidUserSampleInfoByUserId(
-  userId: number,
-): Promise<SampleUserInfo | null> {
+export async function getValidUserSampleInfoByUserId(userId: number): Promise<SampleUserInfo | null> {
   const [info] = await dbPool.queryRows(
     select<SampleUserInfo>(["id AS user_id", "email", "nickname", "is_deleted"])
       .from("public.user")
