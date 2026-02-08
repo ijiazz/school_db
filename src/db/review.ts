@@ -1,0 +1,83 @@
+import type { TextStructure } from "./type.ts";
+
+export enum ReviewStatus {
+  pending = "pending",
+  passed = "passed",
+  rejected = "rejected",
+}
+
+export interface DbReview<T extends object = object> {
+  id: number;
+  create_time: Date;
+  resolved_time: Date | null;
+  target_type: ReviewTargetType | null;
+  info: T;
+  review_display: ReviewDisplayItem[] | null;
+  is_passed: boolean | null;
+  is_reviewing: boolean;
+  pass_count: number;
+  reject_count: number;
+
+  comment: string | null;
+  reviewer_id: number | null;
+}
+
+export type DbReviewCreate<T extends object = object> =
+  & Partial<
+    Pick<
+      DbReview<T>,
+      | "target_type"
+      | "review_display"
+      | "is_passed"
+      | "is_reviewing"
+      | "pass_count"
+      | "reject_count"
+      | "comment"
+      | "reviewer_id"
+    >
+  >
+  & Pick<DbReview<T>, "info">;
+export enum ReviewTargetType {
+  post = "post",
+  post_comment = "post_comment",
+}
+
+export interface DbReviewRecord {
+  review_id: number;
+  reviewer_id: number;
+  review_time: Date;
+  is_passed: boolean;
+  comment: string | null;
+}
+
+export enum ReviewDisplayItemType {
+  text = "text",
+  media = "media",
+}
+
+export type ReviewDisplayItemText = {
+  label: string;
+  old?: {
+    text: string;
+    testStructure?: TextStructure[];
+  };
+  new?: {
+    text: string;
+    testStructure?: TextStructure[];
+  };
+  type: ReviewDisplayItemType.text;
+};
+export type ReviewDisplayItemMedia = {
+  label: string;
+  new?: {
+    filename: string;
+    mediaType: string;
+  };
+  old?: {
+    filename: string;
+    mediaType: string;
+  };
+  type: ReviewDisplayItemType.media;
+};
+
+export type ReviewDisplayItem = ReviewDisplayItemText | ReviewDisplayItemMedia;

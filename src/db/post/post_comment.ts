@@ -1,5 +1,6 @@
 import type { ToInsertType } from "@asla/yoursql";
 import type { TextStructure } from "../type.ts";
+import type { ReviewStatus } from "../review.ts";
 
 export type DbPostComment = {
   id: number;
@@ -15,10 +16,19 @@ export type DbPostComment = {
   dislike_count: number;
   content_text: string | null;
   content_text_struct: TextStructure | null;
+
+  review_status: ReviewStatus | null; // 审核状态
+  review_id: number | null;
 };
 export type DbPostCommentCreate = ToInsertType<
   DbPostComment,
-  "id" | "create_time" | "is_delete" | "dislike_count" | "like_count" | "is_root_reply_count" | "reply_count"
+  | "id"
+  | "create_time"
+  | "is_delete"
+  | "dislike_count"
+  | "like_count"
+  | "is_root_reply_count"
+  | "reply_count"
 >;
 
 export type DbPostCommentLike = {

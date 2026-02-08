@@ -3,6 +3,7 @@ import { createUser } from "../query/user.ts";
 import { getSQLInitFiles } from "./sql_files.ts";
 import process from "node:process";
 import { createDbConnection, DbConnectOption, DbManage, DbQuery, execSqlFile, parserDbConnectUrl } from "@asla/pg";
+import { addUserRole, initRoles } from "./init_data.ts";
 export { getMergedFiles } from "./sql_files.ts";
 /**
  * 初始化数据库
@@ -88,8 +89,11 @@ END $$;`;
   }
 
   if (option.createTestUser) {
-    const sql = createUser("test@ijiazz.cn", { nickname: "测试", id: 1 });
+    const userId = 1;
+    const sql = createUser("test@ijiazz.cn", { nickname: "测试", id: userId });
     await client.queryRows(sql);
+    await client.execute(initRoles());
+    await client.execute(addUserRole(userId, "root"));
   }
 }
 

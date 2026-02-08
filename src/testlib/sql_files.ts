@@ -1,34 +1,28 @@
 import path from "node:path";
 import fs from "node:fs/promises";
+import type { Stats } from "node:fs";
 const dirname = import.meta.dirname!;
 const SQL_DIR = path.resolve(dirname, "../../sql"); //path.resolve("db/sql");
 
 const MERGE_SQL_FILE = path.join(SQL_DIR, "init.sql");
 const IJIA_DB_SQL_BASE_DIR = SQL_DIR + "/init";
 
-const IJIA_DB_SQL_FILES = [
-  "function",
-
-  "table/sys/init.sql",
-  "table/sys/tables_file.sql",
-  "table/sys/tables_system.sql",
-
-  "table/pla/init.sql",
-  "table/pla/tables_assets.sql",
-  "table/pla/tables_comment.sql",
-
-  "table/public/tables_user.sql",
-  "table/public/tables_post.sql",
-  "table/public/tables_post_comment.sql",
-
-  "query",
-];
-
 export async function* getSQLInitFiles(): AsyncIterable<string> {
-  for (const fileName of IJIA_DB_SQL_FILES) {
-    const fullPath = path.join(IJIA_DB_SQL_BASE_DIR, fileName);
-    yield* readDirSqlFiles(fullPath);
+  const sqFile = path.join(IJIA_DB_SQL_BASE_DIR, "sq.txt"); //顺序文件
+  const text = await fs.readFile(sqFile, "utf-8");
+
+  const functionsDir = path.join(IJIA_DB_SQL_BASE_DIR, "function");
+  const queryDir = path.join(IJIA_DB_SQL_BASE_DIR, "query");
+
+  yield* readDirSqlFiles(functionsDir);
+  for (const sqlFile of text.split(/[\n\r]+/)) {
+    const filePath = sqlFile.trim();
+    if (!filePath) {
+      continue;
+    }
+    yield path.join(IJIA_DB_SQL_BASE_DIR, filePath);
   }
+  yield* readDirSqlFiles(queryDir);
 }
 
 async function* readDirSqlFiles(dir: string): AsyncIterable<string> {
@@ -55,9 +49,15 @@ async function* readDirSqlFiles(dir: string): AsyncIterable<string> {
   }
 }
 export async function getMergedFiles() {
-  const stat = await fs.stat(MERGE_SQL_FILE);
-  if (!stat.isFile()) {
+  let stat: Stats;
+  try {
+    stat = await fs.stat(MERGE_SQL_FILE);
+    if (!stat.isFile()) {
+      throw new Error(`合并的 SQL 文件不存在，请确保你已生成合并的 SQL 文件: ${MERGE_SQL_FILE}`);
+    }
+  } catch (error) {
     throw new Error(`合并的 SQL 文件不存在，请确保你已生成合并的 SQL 文件: ${MERGE_SQL_FILE}`);
   }
+
   return fs.readFile(MERGE_SQL_FILE, "utf-8");
 }
