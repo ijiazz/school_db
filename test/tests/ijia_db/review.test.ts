@@ -29,7 +29,8 @@ test("review_commit", async function ({ publicDbPool }) {
 
 function createReviewRecord(type: ReviewTargetType) {
   const sq = insertIntoValues("review", { target_type: type } satisfies DbReviewCreate).returning("id");
-  return dbPool.createQueryableSQL(sq, (queryable, sql) =>
-    queryable.queryFirstRow<{ id: number }>(sql).then((r) => r!.id),
+  return dbPool.createQueryableSQL(
+    sq,
+    (queryable, sql) => queryable.queryFirstRow<{ id: number }>(sql).then((r) => r!.id),
   );
 }
