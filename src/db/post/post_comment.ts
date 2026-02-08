@@ -1,5 +1,6 @@
 import type { ToInsertType } from "@asla/yoursql";
 import type { TextStructure } from "../type.ts";
+import type { ReviewStatus } from "../review.ts";
 
 export type DbPostComment = {
   id: number;
@@ -16,7 +17,8 @@ export type DbPostComment = {
   content_text: string | null;
   content_text_struct: TextStructure | null;
 
-  reviewing_id: number | null;
+  review_status: ReviewStatus | null; // 审核状态
+  review_id: number | null;
 };
 export type DbPostCommentCreate = ToInsertType<
   DbPostComment,

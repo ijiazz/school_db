@@ -10,7 +10,7 @@ CREATE TABLE review(
   create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
   resolved_time TIMESTAMPTZ, -- 解决时间
   target_type review_target_type, -- 审核目标类型
-  info JSONB, -- 额外信息
+  info JSONB NOT NULL, -- 额外信息
   review_display JSONB, -- 审核展示内容
   is_passed BOOLEAN, -- 是否通过审核
   is_reviewing BOOLEAN NOT NULL DEFAULT TRUE, -- 是否正在审核中
@@ -20,7 +20,7 @@ CREATE TABLE review(
   comment VARCHAR(1000), -- 终审人审核意见
   reviewer_id INT REFERENCES public.user(id) ON DELETE SET NULL, -- 终审人。终审根据 review_record 决定最终结果.如果未空，可能是机器判断。
 
-  CONSTRAINT chk_info_is_object CHECK (info IS NULL OR jsonb_typeof(info) = 'object'),
+  CONSTRAINT chk_info_is_object CHECK (jsonb_typeof(info) = 'object'),
   CONSTRAINT chk_review_display_is_array CHECK (review_display IS NULL OR jsonb_typeof(review_display) = 'array')
 );
 CREATE INDEX idxfk_review_reviewer_id ON review(reviewer_id);

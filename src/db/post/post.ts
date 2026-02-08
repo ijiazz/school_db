@@ -1,6 +1,7 @@
 import type { ToInsertType } from "@asla/yoursql";
 import type { TextStructure } from "../type.ts";
 import type { MediaLevel, MediaType } from "../sys.ts";
+import type { ReviewStatus } from "../review.ts";
 
 export type DbPost = {
   id: number;
@@ -17,8 +18,8 @@ export type DbPost = {
   dislike_count: number;
   comment_num: number;
   options: string;
+  review_status: ReviewStatus | null;
   review_id: number | null;
-  reviewing_id: number | null;
 };
 export type DbPostCreate = Omit<
   ToInsertType<

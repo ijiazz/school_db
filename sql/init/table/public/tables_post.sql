@@ -24,14 +24,13 @@ CREATE TABLE post (
     comment_num INT  NOT NULL DEFAULT 0, -- 评论数量
     options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1~2位:  是否匿名，是否关闭评论
 
-    -- 如果 reviewing_id 不为空，表示正在审核中或审核失败。审核通过后 reviewing_id 将移动到 review_id 字段
-    review_id INT REFERENCES review(id) ON DELETE SET NULL, -- 审核记录 id
-    reviewing_id INT REFERENCES review(id) ON DELETE SET NULL -- 审核中记录 id
+    review_status review_status, -- 审核状态
+    review_id INT REFERENCES review(id) ON DELETE SET NULL -- 审核记录 id
 );
 
 CREATE INDEX idxfk_post_group ON post(group_id,publish_time);
 CREATE INDEX idxfk_post_review_id ON post(review_id) WHERE review_id IS NOT NULL;
-CREATE INDEX idx_post_public_list ON post(reviewing_id, is_delete, publish_time, id) WHERE is_delete=FALSE AND is_hide=FALSE; -- 查询公开帖子列表
+CREATE INDEX idx_post_public_list ON post(review_status, is_delete, publish_time, id) WHERE is_delete=FALSE AND is_hide=FALSE; -- 查询公开帖子列表
 
 CREATE INDEX idx_post_user_insert_limit ON post(user_id,create_time); -- 查询某个用户每天已发布的作品数量
 

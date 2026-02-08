@@ -11,7 +11,7 @@ export interface DbReview<T extends object = object> {
   create_time: Date;
   resolved_time: Date | null;
   target_type: ReviewTargetType | null;
-  info: T | null;
+  info: T;
   review_display: ReviewDisplayItem[] | null;
   is_passed: boolean | null;
   is_reviewing: boolean;

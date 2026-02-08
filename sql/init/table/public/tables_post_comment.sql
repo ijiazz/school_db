@@ -15,7 +15,8 @@ CREATE TABLE post_comment(
     content_text VARCHAR(5000), -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
 
-    reviewing_id INT REFERENCES review(id) ON DELETE SET NULL, -- 审核记录 id
+    review_status review_status, -- 审核状态
+    review_id INT REFERENCES review(id) ON DELETE SET NULL, -- 审核记录 id
 
     CONSTRAINT chk_root_parent_null
     CHECK ( (root_comment_id IS NULL AND parent_comment_id IS NULL)
@@ -28,6 +29,7 @@ CREATE INDEX idxfk_post_comment_post_id ON post_comment(post_id,root_comment_id,
 CREATE INDEX idxfk_post_comment_user_id ON post_comment(user_id,is_delete);
 CREATE INDEX idxfk_post_comment_parent_comment_id ON post_comment(parent_comment_id,create_time,is_delete);
 CREATE INDEX idxfk_post_comment_root_comment_id ON post_comment(root_comment_id,parent_comment_id,create_time,is_delete);
+CREATE INDEX idxfx_post_comment_review_id ON post_comment(review_id) WHERE review_id IS NOT NULL;
 
 CREATE INDEX idx_post_comment_user_insert_limit ON post_comment(user_id,create_time);
 

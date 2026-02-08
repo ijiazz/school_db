@@ -11,5 +11,8 @@ export interface DbFunctions {
 }
 
 export interface DbFunctions {
+  /** 提交审核 */
   review_commit(review_id: INT, reviewer_id: INT, is_passed: BOOL, comment: VARCHAR | NULL): INT;
+  /** 最终审批 */
+  review_approve(review_id: INT, reviewer_id: INT, is_passed: BOOL, comment: VARCHAR | NULL): INT;
 }
