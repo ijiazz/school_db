@@ -22,20 +22,21 @@ export interface DbReview<T extends object = object> {
   reviewer_id: number | null;
 }
 
-export type DbReviewCreate<T extends object = object> = Partial<
-  Pick<
-    DbReview<T>,
-    | "target_type"
-    | "info"
-    | "review_display"
-    | "is_passed"
-    | "is_reviewing"
-    | "pass_count"
-    | "reject_count"
-    | "comment"
-    | "reviewer_id"
+export type DbReviewCreate<T extends object = object> =
+  & Partial<
+    Pick<
+      DbReview<T>,
+      | "target_type"
+      | "review_display"
+      | "is_passed"
+      | "is_reviewing"
+      | "pass_count"
+      | "reject_count"
+      | "comment"
+      | "reviewer_id"
+    >
   >
->;
+  & Pick<DbReview<T>, "info">;
 export enum ReviewTargetType {
   post = "post",
   post_comment = "post_comment",
