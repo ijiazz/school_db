@@ -39,8 +39,13 @@ export class TempDir {
   }
   async save(stream: ReadableStream<Uint8Array>, option?: GetPathOption): Promise<SaveResult> {
     const key = await this.#ensureDirExist(option);
+    const fd = await fs.open(key.path, "wx");
+    let size = 0;
     // flag: "wx" 确保文件不存在时才写入，避免重复写入导致文件内容混乱
-    await fs.writeFile(key.path, stream, { flag: "wx" });
+    for await (const chunk of stream) {
+      const res = await fd.write(chunk);
+      size += res.bytesWritten;
+    }
     return key;
   }
 
