@@ -1,6 +1,6 @@
 import fs, { type FileHandle } from "node:fs/promises";
 
-const defaultChunkSize = 1024 * 32;
+const defaultChunkSize = 1024 * 64;
 class RangeRead {
   constructor(public end?: number) {}
   getChunkSize(offset: number) {

@@ -2,6 +2,7 @@ import path from "node:path";
 import { fsAPI, type OSSFile, OssObjectInfo } from "../file_object.ts";
 import { TempDir } from "./TempDir.ts";
 import type { ObjectPath, OSS, RemoveOption } from "./OSS.ts";
+import { createFileStream, CreateFileStreamOption } from "../file_stream.ts";
 
 export interface FsOssOption {
   onInitError?: (e: Error) => void;
@@ -145,6 +146,11 @@ class FsOSS implements OSS {
       await fsAPI.remove(targetPath, { force: true });
     }
     return fsAPI.rename(from, targetPath);
+  }
+
+  /** 创建可读流，这不会检测文件是否存在 */
+  toReadable(objectPath: ObjectPath, option?: CreateFileStreamOption): ReadableStream<Uint8Array> {
+    return createFileStream(this.toFilePath(objectPath), option);
   }
 }
 

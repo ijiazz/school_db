@@ -1,5 +1,6 @@
 import { TempDir } from "./TempDir.ts";
 import { type OSSFile, OssObjectInfo } from "../file_object.ts";
+import { CreateFileStreamOption } from "../file_stream.ts";
 
 export type ObjectPath = `${string}:${string}` | { bucket: string; objectName: string };
 export interface OSS {
@@ -31,6 +32,8 @@ export interface OSS {
 
   /** 将文件系统的文件移动到 oss */
   moveInto(from: string, to: ObjectPath, option?: OverwriteOption): Promise<void>;
+  /** 创建可读流，这不会检测文件是否存在 */
+  toReadable(objectPath: ObjectPath, option?: CreateFileStreamOption): ReadableStream<Uint8Array>;
 }
 
 export type OverwriteOption = {
