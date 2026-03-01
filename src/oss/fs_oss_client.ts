@@ -1,5 +1,5 @@
 import { getAllBuckets } from "../oss/const.ts";
-import { createFsOSS, type OSS, OssBucket } from "../oss/fs_oss.ts";
+import { OSS, type OssBucket } from "../oss/fs_oss.ts";
 import process from "node:process";
 import path from "node:path";
 import { ENV } from "../common/env.ts";
@@ -15,7 +15,7 @@ export function getOSS(): OSS {
         console.warn(`缺少 OSS_ROOT_DIR 环境变量，将使用默认值 ${rooDir}`);
       }
       console.log(`OSS: ${rooDir}`);
-      oss = createFsOSS(rooDir, Object.values(buckets));
+      oss = new OSS(rooDir, Object.values(buckets));
     } catch (error) {
       console.error(error);
       process.exit(1);
