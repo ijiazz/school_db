@@ -1,6 +1,6 @@
-import fs, { FileHandle } from "node:fs/promises";
+import fs, { type FileHandle } from "node:fs/promises";
 
-const defaultChunkSize = 1024 * 32;
+const defaultChunkSize = 1024 * 64;
 class RangeRead {
   constructor(public end?: number) {}
   getChunkSize(offset: number) {
@@ -86,23 +86,3 @@ export type CreateFileStreamOption = {
 };
 export const createFileStream: (filePath: string, option?: CreateFileStreamOption) => ReadableStream<Uint8Array> =
   typeof globalThis.Deno === "object" ? getFileStreamDeno : getFileStreamNode;
-
-async function openFileStreamNode(filePath: string) {
-  const hd = await fs.open(filePath);
-  //@ts-ignore 这里 deno 还不支持
-  const stream = hd.readableWebStream({ type: "bytes" }) as ReadableStream<Uint8Array>;
-  return stream.pipeThrough(
-    new TransformStream({
-      flush() {
-        return hd.close();
-      },
-    }),
-  );
-}
-async function openFileStreamDeno(filePath: string) {
-  const fd = await Deno.open(filePath);
-  return fd.readable;
-}
-
-export const openFileStream: (filePath: string) => Promise<ReadableStream<Uint8Array>> =
-  typeof globalThis.Deno === "object" ? openFileStreamDeno : openFileStreamNode;

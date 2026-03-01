@@ -4,6 +4,7 @@ table/sys/tables_file.sql
 
 table/pla/init.sql
 table/pla/tables_assets.sql
+table/pla/tables_comment.sql
 
 table/public/tables_user.sql
 table/public/review.sql
