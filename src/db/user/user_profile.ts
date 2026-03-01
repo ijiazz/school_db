@@ -9,6 +9,10 @@ export type DbUserProfile = {
   post_like_count: number;
   /** 用户帖子获得的总数量 */
   post_like_get_count: number;
+
+  /** 用户出题数量 */
+  exam_question_count: number;
+
   /** 举报正确数 (客观类，容易判断正确性的，包括帖子、用户) */
   report_correct_count: number;
   /** 举报错误数 (客观类，容易判断正确性的，包括帖子、用户) */
