@@ -1,19 +1,16 @@
 import path from "node:path";
-import { fsAPI, type OSSFile } from "../file_object.ts";
+import { fsAPI, type OSSFile, OssObjectInfo } from "../file_object.ts";
 import { TempDir } from "./TempDir.ts";
-import { OssBucket } from "./OssBucket.ts";
+import type { ObjectPath, OSS, RemoveOption } from "./OSS.ts";
 
 export interface FsOssOption {
   onInitError?: (e: Error) => void;
 }
-export type ObjectPath = `${string}:${string}`;
 
-export type OssManyOperateResult = {
-  failed: Map<string, any>;
-  success: Set<string>;
-};
-
-class FsOSS {
+export function createFsOSS(rootDir: string, buckets: Iterable<string>, option?: FsOssOption): FsOSS {
+  return new FsOSS(rootDir, buckets, option);
+}
+class FsOSS implements OSS {
   private bucketSet: Set<string>;
   private rootDir: string;
   readonly tempDir: TempDir;
@@ -47,7 +44,7 @@ class FsOSS {
   }
   private ready: undefined | Error | Promise<void>;
 
-  checkStatus(): Promise<void> | undefined {
+  private checkStatus(): Promise<void> | undefined {
     if (this.ready instanceof Promise) return this.ready;
     if (this.ready === undefined) return;
     throw this.ready;
@@ -55,23 +52,44 @@ class FsOSS {
   private checkBucket(bucket: string) {
     if (!this.bucketSet.has(bucket)) throw new Error(`Bucket '${bucket} does not exist'`);
   }
-  getBucket(bucket: string) {
+
+  /** 确保 bucket 存在，如果不存在则创建 */
+  async ensureBucket(bucket: string): Promise<void> {
     this.checkBucket(bucket);
-    return new OssBucket(this, bucket, path.join(this.rootDir, bucket));
+    const dirName = path.join(this.rootDir, bucket);
+    await fsAPI.mkdir(dirName, { recursive: true });
   }
 
   private toFilePath(objectPath: ObjectPath): string {
-    return toReadPath(this.rootDir, objectPath);
+    const { rootDir } = this;
+    let bucket: string, objectName: string;
+    if (typeof objectPath === "string") {
+      const res = objectPath.split(":");
+      bucket = res[0];
+      objectName = res[1];
+    } else {
+      bucket = objectPath.bucket;
+      objectName = objectPath.objectName;
+    }
+    this.checkBucket(bucket);
+    if (!objectName) throw new Error(`objectName 不能为空`);
+
+    const filePath = path.join(rootDir, bucket, objectName);
+    if (!filePath.startsWith(rootDir)) {
+      throw new Error(`无效的 objectPath：${JSON.stringify(objectPath)}`);
+    }
+    return filePath;
   }
   toObjectPath(bucket: string, objectName: string): string {
-    return getObjectPath(bucket, objectName);
+    return `${bucket}:${objectName}`;
   }
 
-  open(objectPath: ObjectPath): Promise<OSSFile> {
+  openRead(objectPath: ObjectPath): Promise<OSSFile> {
     return fsAPI.open(this.toFilePath(objectPath));
   }
-  remove(objectPath: ObjectPath): Promise<void> {
-    return fsAPI.remove(this.toFilePath(objectPath), { force: true });
+  remove(objectPath: ObjectPath, option: RemoveOption = {}): Promise<void> {
+    const { force } = option;
+    return fsAPI.remove(this.toFilePath(objectPath), { force });
   }
   /** oss 内部移动文件 */
   rename(from: ObjectPath, to: ObjectPath): Promise<void> {
@@ -79,11 +97,40 @@ class FsOSS {
     const toFilename = this.toFilePath(to);
     return fsAPI.rename(fromFilename, toFilename);
   }
-
+  stat(objectPath: ObjectPath): Promise<OssObjectInfo> {
+    const filePath = this.toFilePath(objectPath);
+    return fsAPI.stat(filePath);
+  }
   /** oss 内部复制文件 */
   copy(from: ObjectPath, to: ObjectPath): Promise<void> {
     const fromFilename = this.toFilePath(from);
     return this.copyInto(fromFilename, to);
+  }
+
+  /** 先保存文件到临时目录，再移动到目标位置，确保文件完整性 */
+  async saveObject(
+    objectPath: ObjectPath,
+    stream: ReadableStream<Uint8Array>,
+    option: { overwrite?: boolean } = {},
+  ): Promise<void> {
+    const { overwrite } = option;
+    const tempDir = this.tempDir;
+    const filename = this.toFilePath(objectPath);
+
+    await this.checkStatus();
+
+    let filePath: string;
+    try {
+      const { tempKey } = await tempDir.save(stream);
+      filePath = tempDir.keyToRelPath(tempKey);
+    } catch (error) {
+      await fsAPI.remove(filename, { force: true }).catch(() => {});
+      throw error;
+    }
+    if (overwrite) {
+      await fsAPI.remove(filename, { force: true });
+    }
+    await fsAPI.rename(filePath, filename);
   }
 
   /** 将文件系统的文件复制到 oss */
@@ -92,19 +139,13 @@ class FsOSS {
     return fsAPI.rename(path, this.toFilePath(to));
   }
   /** 将文件系统的文件移动到 oss */
-  moveInto(from: string, to: ObjectPath): Promise<void> {
-    return fsAPI.rename(from, this.toFilePath(to));
+  async moveInto(from: string, to: ObjectPath, option: { overwrite?: boolean } = {}): Promise<void> {
+    const targetPath = this.toFilePath(to);
+    if (option.overwrite) {
+      await fsAPI.remove(targetPath, { force: true });
+    }
+    return fsAPI.rename(from, targetPath);
   }
-}
-export { FsOSS as OSS };
-
-const ObjectPathReg = /([^\.:\\\/].*):([^:\\\/]+)/;
-function toReadPath(baseDir: string, objectPath: ObjectPath) {
-  if (!ObjectPathReg.test(objectPath)) throw new Error(`无效的 ObjectPath`);
-  return path.join(baseDir, objectPath.replace(":", "/"));
-}
-function getObjectPath(bucket: string, objectName: string) {
-  return `${bucket}:${objectName}`;
 }
 
 async function checkDir(rootDir: string, subDir?: Iterable<string>) {

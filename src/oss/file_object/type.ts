@@ -35,6 +35,7 @@ export type FilePath = string | URL;
 
 export type Fs = {
   open(path: FilePath): Promise<OSSFile>;
+  isExist(path: FilePath): Promise<OssObjectInfo | null>;
   stat(path: FilePath): Promise<OssObjectInfo>;
   copyFile(from: FilePath, to: FilePath): Promise<void>;
   rename(from: FilePath, to: FilePath): Promise<void>;

@@ -43,6 +43,12 @@ export const fsAPI: Fs = {
     const hd = await fs.open(path);
     return new NodeOSSFile(hd);
   },
+  isExist(filename: string): Promise<OssObjectInfo | null> {
+    return fs.stat(filename).then(nodeStatToOssObjectInfo).catch((e) => {
+      if (e?.code === "ENOENT") return null;
+      throw e;
+    });
+  },
   stat(path: string): Promise<OssObjectInfo> {
     return fs.stat(path).then(nodeStatToOssObjectInfo);
   },

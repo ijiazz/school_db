@@ -1,5 +1,5 @@
 import { getAllBuckets } from "../oss/const.ts";
-import { OSS, type OssBucket } from "../oss/fs_oss.ts";
+import { createFsOSS, OSS } from "../oss/fs_oss.ts";
 import process from "node:process";
 import path from "node:path";
 import { ENV } from "../common/env.ts";
@@ -15,7 +15,7 @@ export function getOSS(): OSS {
         console.warn(`缺少 OSS_ROOT_DIR 环境变量，将使用默认值 ${rooDir}`);
       }
       console.log(`OSS: ${rooDir}`);
-      oss = new OSS(rooDir, Object.values(buckets));
+      oss = createFsOSS(rooDir, Object.values(buckets));
     } catch (error) {
       console.error(error);
       process.exit(1);
@@ -23,12 +23,7 @@ export function getOSS(): OSS {
   }
   return oss;
 }
-export function getOssBucket(bucket: string): OssBucket {
-  if (!oss) {
-    return getOSS().getBucket(bucket);
-  }
-  return oss.getBucket(bucket);
-}
+
 export function setOSS(newOSS: OSS) {
   if (oss) {
     console.warn("Update oss instance");

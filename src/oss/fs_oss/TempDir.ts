@@ -2,7 +2,9 @@ import type { OSSFile } from "../file_object.ts";
 import { fsAPI } from "../file_object.ts";
 import fs from "node:fs/promises";
 import path from "node:path";
-
+/**
+ * 临时目录格式 {rootDir}/{lifetime}/{lifetimeTz}/{prefix?}/{uuid}_{suffix?}
+ */
 export class TempDir {
   #rootDir: string;
   constructor(config: { rootDir: string }) {
@@ -11,8 +13,18 @@ export class TempDir {
 
   /** 将 key 转为完整路径 */
   keyToRelPath(tempKey: string): string {
-    if (/^[.\\\/]/.test(tempKey)) throw new Error("无效的 tempDirKey");
-    return path.join(this.#rootDir, tempKey);
+    const finalPath = path.join(this.#rootDir, tempKey);
+    if (!finalPath.startsWith(this.#rootDir)) throw new Error(`无效的 tempKey: ${tempKey}`);
+    return finalPath;
+  }
+  openRead(tempKey: string): Promise<OSSFile> {
+    const fileName = this.keyToRelPath(tempKey);
+    return fsAPI.open(fileName);
+  }
+  /** 删除临时文件，如果不存在则忽略 */
+  remove(tempKey: string): Promise<void> {
+    const fileName = this.keyToRelPath(tempKey);
+    return fsAPI.remove(fileName, { force: true });
   }
 
   async copyInto(from: string, option: GetPathOption = {}): Promise<SaveResult> {
@@ -25,20 +37,13 @@ export class TempDir {
     await fsAPI.rename(from, key.path);
     return key;
   }
-  open(tempKey: string): Promise<OSSFile> {
-    const fileName = this.keyToRelPath(tempKey);
-    return fsAPI.open(fileName);
-  }
-  remove(tempKey: string): Promise<void> {
-    const fileName = this.keyToRelPath(tempKey);
-    return fsAPI.remove(fileName, { force: true });
-  }
-
   async save(stream: ReadableStream<Uint8Array>, option?: GetPathOption): Promise<SaveResult> {
     const key = await this.#ensureDirExist(option);
+    // flag: "wx" 确保文件不存在时才写入，避免重复写入导致文件内容混乱
     await fs.writeFile(key.path, stream, { flag: "wx" });
     return key;
   }
+
   async #ensureDirExist(option: GetPathOption = {}): Promise<SaveResult> {
     const res = genNextPath(option);
     const dirPath = path.join(this.#rootDir, res.dir);

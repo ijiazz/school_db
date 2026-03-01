@@ -3,7 +3,7 @@ import { deleteFrom, v } from "@asla/yoursql";
 import type { DbTransaction } from "@asla/yoursql/client";
 import { insertIntoValues } from "../common/sql.ts";
 import { dbPool } from "../common/dbclient.ts";
-import { getOssBucket } from "@ijia/data/oss";
+import { getOSS } from "@ijia/data/oss";
 
 export async function beginCreateFileTransaction<T>(
   sourceFilePath: string,
@@ -12,7 +12,7 @@ export async function beginCreateFileTransaction<T>(
 ): Promise<T> {
   const file = checkFile(inputFile);
 
-  const bucket = getOssBucket(file.bucket);
+  const bucket = getOSS();
 
   const deleteRecordSql = deleteFrom("sys.file_operation").where([
     `bucket = ${v(file.bucket)}`,
@@ -43,7 +43,7 @@ export async function beginCreateFileTransaction<T>(
     }
 
     try {
-      await bucket.fMoveInto(file.filename, sourceFilePath);
+      await bucket.moveInto(sourceFilePath, { bucket: file.bucket, objectName: file.filename }, { overwrite: true });
     } catch (error) {
       await conn.execute(deleteRecordSql); // 删除日志
       throw error;
