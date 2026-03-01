@@ -56,7 +56,9 @@ export const fsAPI: Partial<Fs> = {
     const hd = await Deno.open(path);
     return new DenoOSSFile(hd);
   },
-  stat: Deno.stat,
+  stat(path: FilePath) {
+    return Deno.stat(path);
+  },
   // copyFile: Deno.copyFile,
   // rename: Deno.rename,
   // realPath: Deno.realPath,
