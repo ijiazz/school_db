@@ -64,7 +64,7 @@ export class TempDir {
     const res = genNextPath(option);
     const dirPath = path.join(this.#rootDir, res.dir);
     await fsAPI.mkdir(dirPath, { recursive: true });
-    return { path: path.join(dirPath, res.baseName), tempKey: res.tempKey };
+    return { path: path.join(dirPath, res.baseName), tempKey: res.tempKey, fileName: res.baseName };
   }
   async clearOutdated(): Promise<{
     useTimeMs: number;
@@ -78,6 +78,7 @@ export class TempDir {
 }
 
 export type SaveResult = {
+  fileName: string;
   tempKey: string;
   path: string;
 };
