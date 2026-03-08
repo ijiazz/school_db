@@ -26,6 +26,17 @@ export class TempDir {
     const fileName = this.keyToRelPath(tempKey);
     return fsAPI.remove(fileName, { force: true });
   }
+  /** 重命名文件，返回新的 tempKey，目前只能重命名文件名，不能修改位置 */
+  async rename(tempKey: string, newName: string): Promise<string> {
+    const oldPath = this.keyToRelPath(tempKey);
+    const { dir } = path.parse(oldPath);
+    const newPath = path.join(dir, newName);
+    if (!newPath.startsWith(dir)) throw new Error(`无效的 newName: ${newName}`);
+    const newKey = newPath.slice(this.#rootDir.length + 1).replaceAll("\\", "/");
+    await fsAPI.rename(oldPath, newPath);
+
+    return newKey;
+  }
 
   async copyInto(from: string, option: GetPathOption = {}): Promise<SaveResult> {
     const key = await this.#ensureDirExist(option);
@@ -53,15 +64,13 @@ export class TempDir {
     const res = genNextPath(option);
     const dirPath = path.join(this.#rootDir, res.dir);
     await fsAPI.mkdir(dirPath, { recursive: true });
-    return { path: path.join(dirPath, res.baseName), tempKey: res.tempKey };
+    return { path: path.join(dirPath, res.baseName), tempKey: res.tempKey, fileName: res.baseName };
   }
-  async clearOutdated(): Promise<
-    {
-      useTimeMs: number;
-      lv1Skip: { skipCount: number; clearCount: number };
-      lv2Skip: { skipCount: number; clearCount: number };
-    }
-  > {
+  async clearOutdated(): Promise<{
+    useTimeMs: number;
+    lv1Skip: { skipCount: number; clearCount: number };
+    lv2Skip: { skipCount: number; clearCount: number };
+  }> {
     const now = Date.now();
     const { lv1Skip, lv2Skip } = await clearTempDir(this.#rootDir);
     return { useTimeMs: Date.now() - now, lv1Skip, lv2Skip };
@@ -69,6 +78,7 @@ export class TempDir {
 }
 
 export type SaveResult = {
+  fileName: string;
   tempKey: string;
   path: string;
 };
