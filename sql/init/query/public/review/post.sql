@@ -101,7 +101,8 @@ BEGIN
 
 	IF arg_is_pass THEN
 		UPDATE post
-			SET review_status = 'passed'::review_status
+			SET review_status = 'passed'::review_status,
+        publish_time = COALESCE(publish_time, create_time)
 			WHERE id = review_target_id;
 	ELSE 
 		UPDATE post
