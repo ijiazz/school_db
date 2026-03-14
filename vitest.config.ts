@@ -6,7 +6,6 @@ const dirname = import.meta.dirname!;
 const PG_URL = process.env.PG_URL || "pg://test@127.0.0.1:5432/postgres";
 
 export default {
-  esbuild: { target: "es2022" },
   test: {
     alias: [
       { find: /^@ijia\/data\//, replacement: path.join(dirname, "./src") + "/" },

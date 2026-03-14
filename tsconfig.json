@@ -10,7 +10,6 @@
 		"rewriteRelativeImportExtensions": true,
 		"skipLibCheck": true,
 		"allowJs": true,
-		"baseUrl": ".",
 		"paths": {
 			"@ijia/data/db": ["./src/db.ts"],
 			"@ijia/data/oss": ["./src/oss.ts"],

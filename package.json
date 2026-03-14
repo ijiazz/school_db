@@ -24,8 +24,11 @@
   },
   "devDependencies": {
     "@asla/pg": "npm:@jsr/asla__pg@^0.2.2",
-    "@types/node": "^24.10.0",
-    "vitest": "^4.0.8"
+    "@types/node": "^25.5.0",
+    "vitest": "^4.1.0"
   },
-  "files": ["./dist"]
+  "files": [
+    "./dist",
+    "./sql"
+  ]
 }
