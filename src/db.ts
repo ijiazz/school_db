@@ -4,6 +4,7 @@ export * from "./db/type.ts";
 
 export * from "./db/sys.ts";
 export * from "./db/review.ts";
+export * from "./db/comment.ts";
 export * from "./db/pla.ts";
 export * from "./db/user.ts";
 export * from "./db/post.ts";

@@ -39,7 +39,7 @@ export type DbExamQuestion = {
 export type DbExamQuestionMedia = {
   question_id: INT;
   index: SMALLINT;
-  name: VARCHAR | null;
+  title: VARCHAR | null;
   filename: VARCHAR | null;
   type: MediaType;
 };

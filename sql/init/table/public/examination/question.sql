@@ -5,7 +5,7 @@ CREATE TYPE exam_question_type AS ENUM (
 ); 
 
 CREATE TABLE exam_question( -- 试题
-    id SERIAL PRIMARY KEY REFERENCES post(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    id SERIAL PRIMARY KEY,
     user_id INT REFERENCES public.user(id) ON DELETE SET NULL ON UPDATE CASCADE, -- 出题人 id
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
     update_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 更新时间
@@ -40,8 +40,8 @@ CREATE INDEX idxfk_exam_question_review_id ON exam_question(is_system_gen, revie
 CREATE TABLE exam_question_media( -- 试题媒体资源
     question_id INT NOT NULL REFERENCES exam_question(id) ON DELETE CASCADE, -- 试题 id
     index SMALLINT NOT NULL, -- 试题在列表中的索引。0 或正数属于选项，负数属于题目
-    name VARCHAR(200), -- 媒体名称
-    filename VARCHAR(200), -- 文件名
+    title VARCHAR(200), -- 媒体标题
+    filename VARCHAR(200) NOT NULL, -- 文件名。 引用于 sys.file 的 filename。 bucket="question" 
     type media_type NOT NULL, -- 资源类型
     PRIMARY KEY (question_id, index)
 );
