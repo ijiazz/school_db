@@ -3,15 +3,15 @@ import { test } from "../../fixtures/db_connect.ts";
 import { insertIntoValues, v } from "@/common/sql.ts";
 import { expect } from "vitest";
 import { createDbFunction, type DbReviewCreate, ReviewTargetType } from "@ijia/data/db";
-import { createTempTestUser } from "@/testlib/create_user.ts";
+import { newTestUser } from "@/testlib/create_user.ts";
 
 const f = createDbFunction(dbPool, v);
 
 test("review_commit", async function ({ publicDbPool }) {
   const id = await createReviewRecord(ReviewTargetType.post);
-  const { user_id: u1 } = await createTempTestUser();
-  const { user_id: u2 } = await createTempTestUser();
-  const { user_id: u3 } = await createTempTestUser();
+  const { id: u1 } = await newTestUser("user1");
+  const { id: u2 } = await newTestUser("user2");
+  const { id: u3 } = await newTestUser("user3");
 
   const f1 = await f.review_commit(id, u1, true, null);
   expect(f1).toBe(1);
