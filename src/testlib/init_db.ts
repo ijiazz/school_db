@@ -1,9 +1,19 @@
-import { v } from "../common/sql.ts";
-import { createUser } from "../query/user.ts";
+import { insertIntoValues, v } from "../common/sql.ts";
 import { getSQLInitFiles } from "./sql_files.ts";
 import process from "node:process";
-import { createDbConnection, DbConnectOption, DbManage, DbQuery, execSqlFile, parserDbConnectUrl } from "@asla/pg";
-import { addUserRole, initRoles } from "./init_data.ts";
+import {
+  createDbConnection,
+  DbConnection,
+  DbConnectOption,
+  DbManage,
+  DbQuery,
+  execSqlFile,
+  ExecutableSQL,
+  parserDbConnectUrl,
+} from "@asla/pg";
+import { initRoles } from "./init_data.ts";
+import { createUser } from "../query.ts";
+import { dbPool } from "../common/dbclient.ts";
 export { getMergedFiles } from "./sql_files.ts";
 /**
  * 初始化数据库
@@ -28,7 +38,7 @@ export type CreateInitIjiaDbOption = {
   ensureOwner?: boolean;
   /** 如为 true，则尝试删除同名数据库 */
   dropIfExists?: boolean;
-  createTestUser?: boolean;
+  test?: boolean;
   /** 初始化测试用户 */
 };
 /**
@@ -88,13 +98,23 @@ END $$;`;
     throw error;
   }
 
-  if (option.createTestUser) {
-    const userId = 1;
-    const sql = createUser("test@ijiazz.cn", { nickname: "测试", id: userId });
-    await client.queryRows(sql);
-    await client.execute(initRoles());
-    await client.execute(addUserRole(userId, "root"));
+  await client.execute(initRoles());
+  if (option.test) {
+    await initTestEnv(client);
   }
+}
+async function initTestEnv(client: DbConnection) {
+  const sql = createUser("test@ijiazz.cn", { nickname: "测试" });
+  const { user_id } = await client.queryFirstRow<{ user_id: number }>(sql);
+  await client.execute(addUserRole(user_id, "root"));
+
+  await client.execute(`CREATE SEQUENCE IF NOT EXISTS test_id_seq START 1;`);
+}
+
+function addUserRole(userId: number, roleId: string): ExecutableSQL<void> {
+  const sql = insertIntoValues("user_role_bind", { user_id: userId, role_id: roleId });
+
+  return dbPool.createQueryableSQL(sql.toString(), (pool, sql) => pool.queryCount(sql).then(() => {}));
 }
 
 /**

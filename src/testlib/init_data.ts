@@ -20,8 +20,3 @@ export function initRoles(): ExecutableSQL<void> {
 
   return dbPool.createQueryableSQL(sql.toString(), (pool, sql) => pool.queryCount(sql).then(() => {}));
 }
-export function addUserRole(userId: number, roleId: string): ExecutableSQL<void> {
-  const sql = insertIntoValues("user_role_bind", { user_id: userId, role_id: roleId });
-
-  return dbPool.createQueryableSQL(sql.toString(), (pool, sql) => pool.queryCount(sql).then(() => {}));
-}
