@@ -1,16 +1,21 @@
-export interface TextStructure {
+type TextStructureBase = {
   /** 字符串索引 */
   index: number;
   /** 基于索引的偏移量 */
   length: number;
-  /** 0: 平台用户。 */
-  type?: TextStructureType;
-  [key: string]: any;
-}
-export type TextStructureExternalLink = TextStructure & {
+};
+
+export type TextStructure =
+  | TextStructureExternalLink
+  | TextStructureUser
+  | (TextStructureBase & { type: TextStructureType.unknown; [key: string]: unknown });
+
+export type TextStructureExternalLink = TextStructureBase & {
+  type: TextStructureType.link;
   link: string;
 };
-export type TextStructureUser = TextStructure & {
+export type TextStructureUser = TextStructureBase & {
+  type: TextStructureType.user;
   user_id: string;
 };
 export enum TextStructureType {
