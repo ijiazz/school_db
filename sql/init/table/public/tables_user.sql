@@ -33,6 +33,8 @@ CREATE TABLE user_profile(
     post_like_count INT NOT NULL DEFAULT 0, -- 用户点赞的总帖子数
     post_like_get_count INT NOT NULL DEFAULT 0, -- 用户帖子获得的总数量
 
+    exam_question_count INT NOT NULL DEFAULT 0, -- 出题数
+
     report_correct_count INT NOT NULL DEFAULT 0, -- 举报正确数 (客观类，容易判断正确性的，包括帖子、用户)
     report_error_count INT NOT NULL DEFAULT 0, -- 举报错误数 (客观类，容易判断正确性的，包括帖子、用户)
     report_subjective_correct_count INT NOT NULL DEFAULT 0, -- 举报正确数 (主观类，包括评论)
