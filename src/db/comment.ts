@@ -2,7 +2,7 @@ import type { TextStructure } from "./type.ts";
 
 export enum CommentGroup {
   Question = "question",
-  Competition = "post",
+  Competition = "competition",
 }
 
 export type DbCommentTree = {
@@ -25,7 +25,7 @@ export type DbComment = {
   is_delete: boolean;
   like_count: number;
   dislike_count: number;
-  content_text: string;
+  content_text: string | null;
   content_text_struct: TextStructure[] | null;
 };
 

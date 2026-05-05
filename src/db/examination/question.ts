@@ -12,14 +12,14 @@ export type DbExamQuestion = {
   user_id: INT | null;
   create_time: Date;
   update_time: Date;
+  public_time: Date;
 
-  question_text: VARCHAR;
-  question_text_struct: TextStructure[];
+  question_text: VARCHAR | null;
+  question_text_struct: TextStructure[] | null;
   question_type: ExamQuestionType;
-  option_text: VARCHAR[];
 
-  answer_text: VARCHAR;
-  answer_text_struct: TextStructure[];
+  answer_text: VARCHAR | null;
+  answer_text_struct: TextStructure[] | null;
   answer_index: INT[];
 
   is_system_gen: BOOLEAN;
