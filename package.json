@@ -19,6 +19,10 @@
     "@asla/pg": "jsr:^0.2.4",
     "@asla/yoursql": "jsr:^0.14.0"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "devDependencies": {
     "@types/node": "^25.5.0",
     "evlib": "^3.1.3",
