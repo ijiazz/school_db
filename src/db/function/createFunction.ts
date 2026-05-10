@@ -1,5 +1,5 @@
 import type { SqlValuesCreator } from "@asla/yoursql";
-import type { DbQueryPool, ExecutableSQL } from "@asla/yoursql/client";
+import type { DbQueryPool, ExecutableSQL } from "@asla/pg";
 import type { DbFunctions } from "./function.ts";
 
 export function createDbFunction<T extends object = DbFunctions>(
