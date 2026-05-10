@@ -1,4 +1,4 @@
-type TextStructureBase = {
+export type TextStructureBase = {
   /** 字符串索引 */
   index: number;
   /** 基于索引的偏移量 */
