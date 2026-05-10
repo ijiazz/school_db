@@ -4,11 +4,12 @@ type TextStructureBase = {
   /** 基于索引的偏移量 */
   length: number;
 };
+export type TextStructureUnknown = TextStructureBase & { type: TextStructureType.unknown; [key: string]: unknown };
 
 export type TextStructure =
   | TextStructureExternalLink
   | TextStructureUser
-  | (TextStructureBase & { type: TextStructureType.unknown; [key: string]: unknown });
+  | TextStructureUnknown;
 
 export type TextStructureExternalLink = TextStructureBase & {
   type: TextStructureType.link;
