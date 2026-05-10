@@ -1,5 +1,3 @@
-export * from "./db/function/function.ts";
-export * from "./db/function/createFunction.ts";
 export * from "./db/type.ts";
 
 export * from "./db/sys.ts";

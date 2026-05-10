@@ -10,6 +10,8 @@ import type {
   TransactionMode,
 } from "@asla/pg";
 
+export type { ExecutableSQL } from "@asla/pg";
+
 class InnDbPool extends DbQueryPool {
   close() {
     this.connect = defaultConnect;

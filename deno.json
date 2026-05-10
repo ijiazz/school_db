@@ -1,5 +1,5 @@
 {
-  "name": "@ijia/data",
+  "name": "@ijia/school-db",
   "version": "0.0.1",
   "imports": {
     "@/": "./src/",
@@ -16,6 +16,7 @@
     "./testlib": "./src/testlib.ts",
     "./auth": "./src/auth.ts"
   },
+  "include": ["sql/**/*.sql", "sql/**/*.sh"],
   "compilerOptions": {
     "lib": ["deno.window"]
   },
@@ -27,7 +28,7 @@
     "commit-lint": "deno task check-fmt & deno task check-type",
     "check-fmt": "deno fmt --check ./src ./test ./scripts deno.json package.json",
     "check-type": "deno check src test",
-    "doc:gen": "deno doc --name @ijia/data --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
+    "doc:gen": "deno doc --name @ijia/school-db --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
     "build": "deno run -c build/deno.jsonc -A build/build.ts",
     "test": "deno x vitest run",
     "test:node": "node ./node_modules/vitest/vitest.mjs run",

@@ -2,8 +2,9 @@ import { dbPool } from "@/common/dbclient.ts";
 import { test } from "../../fixtures/db_connect.ts";
 import { insertIntoValues, v } from "@/common/sql.ts";
 import { expect } from "vitest";
-import { createDbFunction, type DbReviewCreate, ReviewTargetType } from "@ijia/data/db";
+import { type DbReviewCreate, ReviewTargetType } from "@ijia/data/db";
 import { newTestUser } from "@/testlib/create_user.ts";
+import { createDbFunction } from "@ijia/data/query";
 
 const f = createDbFunction(dbPool, v);
 

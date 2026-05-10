@@ -1,4 +1,4 @@
-import type { BOOL, INT, NULL, VARCHAR } from "../db_type.ts";
+import type { BOOL, INT, NULL, VARCHAR } from "../../db/db_type.ts";
 
 export interface DbFunctions {
   file_update_ref_count(old_filepath: VARCHAR | NULL, new_filepath: VARCHAR | NULL): INT;
