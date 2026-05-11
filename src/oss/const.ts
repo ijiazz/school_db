@@ -35,7 +35,7 @@ export interface FileObjectMeta {
  * hashAlgorithm_hashHex.ext
  * @public
  */
-export function getFileHashName(meta: FileObjectMeta) {
+export function getFileHashName(meta: FileObjectMeta): string {
   if (/md5|sha1|sha256/.test(meta.hashAlgorithm) === false) {
     throw new Error(`Unsupported hash algorithm: ${meta.hashAlgorithm}`);
   }

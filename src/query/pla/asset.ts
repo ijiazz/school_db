@@ -65,7 +65,9 @@ type UpdateKey = Exclude<
  * 保存作品
  * 如果已存在，则更新
  */
-export function savePlaAssetList(values: DbPlaAssetCreate[]) {
+export function savePlaAssetList(
+  values: DbPlaAssetCreate[],
+): SqlTextStatementDataset<{ asset_id: string; platform: Platform }> {
   if (!values.length) throw new Error("values不能为空");
   pla_asset_check.checkList(values);
 

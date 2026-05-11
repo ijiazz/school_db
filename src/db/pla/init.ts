@@ -21,7 +21,7 @@ export const PLATFORM_CODE_MAP: Record<Platform, number> = {
   [Platform.wangYiMusic]: 6,
 };
 
-export const enumPlatform = new Set([
+export const enumPlatform: Set<Platform> = new Set([
   Platform.douYin,
   Platform.bilibili,
   Platform.v5sing,

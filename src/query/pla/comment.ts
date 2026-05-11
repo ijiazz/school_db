@@ -1,5 +1,5 @@
 import type { CommentExtra, DbPlaComment, DbPlaCommentCreate, Platform } from "@ijia/data/db";
-import { SqlTextStatementDataset, TableDefined, YourTable } from "@asla/yoursql";
+import { SqlTextStatementDataset, TableDefined, TypeChecker, YourTable } from "@asla/yoursql";
 import { createConflictUpdate, UpdateBehaver } from "./_statement.ts";
 import { insertIntoValues } from "../../common/sql.ts";
 import { dbTypeMap, getTableRawMeta } from "./_base.ts";
@@ -49,14 +49,18 @@ export const pla_comment_create_key = [
   "comment_type",
   "reply_count",
 ] as const;
-export const pla_comment = new YourTable<DbPlaComment>("pla_comment", TABLE);
-export const pla_pla_comment_check = pla_comment.createTypeChecker<DbPlaCommentCreate>(pla_comment_create_key);
+export const pla_comment: YourTable<DbPlaComment> = new YourTable<DbPlaComment>("pla_comment", TABLE);
+export const pla_pla_comment_check: TypeChecker<DbPlaCommentCreate> = pla_comment.createTypeChecker<DbPlaCommentCreate>(
+  pla_comment_create_key,
+);
 
 /**
  * 如果已存在，则更新
  * 返回执行插入的行 id
  */
-export function savePlaCommentList(values: DbPlaCommentCreate[]) {
+export function savePlaCommentList(
+  values: DbPlaCommentCreate[],
+): SqlTextStatementDataset<{ comment_id: string; platform: Platform }> {
   if (!values.length) throw new Error("values不能为空");
   pla_pla_comment_check.checkList(values);
 

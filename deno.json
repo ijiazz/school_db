@@ -9,6 +9,7 @@
     "@ijia/data/query": "./src/query.ts",
     "@ijia/data/testlib": "./src/testlib.ts"
   },
+  "license": "MIT",
   "exports": {
     "./db": "./src/db.ts",
     "./oss": "./src/oss.ts",
@@ -16,7 +17,9 @@
     "./testlib": "./src/testlib.ts",
     "./auth": "./src/auth.ts"
   },
-  "include": ["sql/**/*.sql", "sql/**/*.sh"],
+  "publish": {
+    "include": ["./sql/init", "./sql/create_merge.sh", "./src", "./README.md", "./LICENSE"]
+  },
   "compilerOptions": {
     "lib": ["deno.window"]
   },
@@ -32,7 +35,9 @@
     "build": "deno run -c build/deno.jsonc -A build/build.ts",
     "test": "deno x vitest run",
     "test:node": "node ./node_modules/vitest/vitest.mjs run",
-    "gen:types": "deno types > lib.deno.d.ts"
+    "gen:types": "deno types > lib.deno.d.ts",
+    "publish-dry-run": "deno publish --dry-run --allow-dirty",
+    "recreate-db": "deno eval 'await import(\"@ijia/data/testlib\").then((mod) => mod.createInitIjiaDbForTest())'"
   },
   "nodeModulesDir": "manual"
 }
