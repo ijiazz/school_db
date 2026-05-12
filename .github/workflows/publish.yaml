@@ -1,0 +1,82 @@
+name: Publish
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: Optional prerelease suffix, for example alpha, beta, rc.1
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ^2
+          cache: true
+      - run: deno install --frozen
+      - name: Resolve publish version
+        id: version
+        shell: bash
+        env:
+          PRERELEASE_INPUT: ${{ github.event.inputs.prerelease }}
+        run: |
+          version="$(deno eval 'console.log(JSON.parse(Deno.readTextFileSync("deno.json")).version ?? "")')"
+          prerelease="$(echo "$PRERELEASE_INPUT" | xargs)"
+
+          if [[ -z "$version" ]]; then
+            echo "::error::Missing version in deno.json"
+            exit 1
+          fi
+
+          if [[ -n "$prerelease" && ! "$prerelease" =~ ^[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*$ ]]; then
+            echo "::error::Prerelease suffix must be dot-separated alphanumeric or hyphen identifiers"
+            exit 1
+          fi
+
+          if [[ -n "$prerelease" ]]; then
+            publish_version="${version}-${prerelease}"
+            is_stable=false
+          else
+            publish_version="$version"
+            is_stable=true
+          fi
+
+          echo "publish_version=$publish_version" >> "$GITHUB_OUTPUT"
+          echo "is_stable=$is_stable" >> "$GITHUB_OUTPUT"
+
+      - name: Guard stable release branch
+        if: ${{ steps.version.outputs.is_stable == 'true' }}
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_NAME" != "main" ]]; then
+            echo "::error::Stable releases can only be published from the main branch"
+            exit 1
+          fi
+
+      - name: Publish
+        shell: bash
+        run: |
+          if [[ "${{ steps.version.outputs.is_stable }}" == "true" ]]; then
+            deno publish
+          else
+            deno publish --set-version "${{ steps.version.outputs.publish_version }}"
+          fi
+
+      - name: Create GitHub release
+        if: ${{ steps.version.outputs.is_stable == 'true' }}
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.version.outputs.publish_version }}
+          name: v${{ steps.version.outputs.publish_version }}
+          commit: ${{ github.sha }}
+          generateReleaseNotes: true
