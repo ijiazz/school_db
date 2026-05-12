@@ -59,7 +59,7 @@ export async function createInitIjiaDb(
 }
 /**
  * 为测试创建并初始化 ijia_db
- * 注意：
+ * 注意：这会创建并覆盖一个名为 ijia_test 的数据库，连接用户需要有创建数据库的权限，
  */
 export async function createInitIjiaDbForTest() {
   await createInitIjiaDb(
