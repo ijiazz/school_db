@@ -2,14 +2,21 @@
   "name": "@ijia/school-db",
   "version": "0.0.1",
   "imports": {
+    "@asla/pg": "jsr:@asla/pg@^0.2.4",
+    "@asla/yoursql": "jsr:@asla/yoursql@^0.14.0",
+
     "@/": "./src/",
     "@test/": "./test/",
     "@ijia/data/db": "./src/db.ts",
     "@ijia/data/oss": "./src/oss.ts",
     "@ijia/data/query": "./src/query.ts",
-    "@ijia/data/testlib": "./src/testlib.ts"
+    "@ijia/data/testlib": "./src/testlib.ts",
+
+    "vitest": "npm:vitest@^4.1.0",
+    "evlib": "jsr:evlib@^3.1.3",
+    "@types/node": "npm:@types/node@^25.5.0"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "exports": {
     "./db": "./src/db.ts",
     "./oss": "./src/oss.ts",
@@ -18,7 +25,7 @@
     "./auth": "./src/auth.ts"
   },
   "publish": {
-    "include": ["./sql/init", "./sql/create_merge.sh", "./src", "./README.md", "./LICENSE"]
+    "include": ["./sql/init", "./sql/create-merge.sh", "./src", "./LICENSE"]
   },
   "compilerOptions": {
     "lib": ["deno.window"]
@@ -31,11 +38,9 @@
     "commit-lint": "deno task check-fmt & deno task check-type",
     "check-fmt": "deno fmt --check ./src ./test ./scripts deno.json package.json",
     "check-type": "deno check src test",
-    "doc:gen": "deno doc --name @ijia/school-db --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/util.ts src/yoursql.ts",
+    "doc:gen": "deno doc --name @ijia/school-db --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/auth.ts",
     "build": "deno run -c build/deno.jsonc -A build/build.ts",
     "test": "deno x vitest run",
-    "test:node": "node ./node_modules/vitest/vitest.mjs run",
-    "gen:types": "deno types > lib.deno.d.ts",
     "publish-dry-run": "deno publish --dry-run --allow-dirty",
     "recreate-db": "deno eval 'await import(\"@ijia/data/testlib\").then((mod) => mod.createInitIjiaDbForTest())'"
   },
