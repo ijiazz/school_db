@@ -2,7 +2,7 @@ import { createUser } from "@ijia/data/query";
 import { dbPool } from "../common/dbclient.ts";
 import { v } from "@asla/yoursql";
 /** 获取数据库级别的自增唯一 ID */
-export async function getUniqueIdFormDb() {
+export async function getUniqueIdFormDb(): Promise<number> {
   const { id } = await dbPool.queryFirstRow<{ id: number }>("SELECT nextval('test_id_seq') AS id");
   return id;
 }

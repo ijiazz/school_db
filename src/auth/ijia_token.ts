@@ -1,4 +1,4 @@
-export function checkIjiaTokenData(raw: unknown) {
+export function checkIjiaTokenData(raw: unknown): AccessJwtPayload {
   const payload = raw as Record<string, unknown>;
   if (typeof payload !== "object" || payload === null) {
     throw new Error("无效的访问令牌负载");

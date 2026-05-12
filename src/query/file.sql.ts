@@ -1,6 +1,6 @@
 import { AudioFileMeta, DbSysFileCreate, ImageFileMeta, MediaFileMeta, MediaType, VideoFileMeta } from "@ijia/data/db";
 import { deleteFrom, v } from "@asla/yoursql";
-import type { DbTransaction } from "@asla/yoursql/client";
+import type { DbTransaction } from "@asla/pg";
 import { insertIntoValues } from "../common/sql.ts";
 import { dbPool } from "../common/dbclient.ts";
 import { getOSS } from "@ijia/data/oss";

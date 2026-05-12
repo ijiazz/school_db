@@ -17,7 +17,7 @@ export enum TaskType {
   syncCommentReply = "syncCommentReply",
   saveAsset = "saveAsset",
 }
-export const enumTaskType = new Set([
+export const enumTaskType: Set<TaskType> = new Set([
   TaskType.syncAssetList,
   TaskType.syncAssetComment,
   TaskType.saveAsset,

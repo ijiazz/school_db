@@ -1,22 +1,11 @@
 {
   "files.eol": "\n",
+  "vitest.runtime": "deno",
   "code-runner.executorMap": {
     "javascript": "node"
   },
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[yaml]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "vitest.debugExclude": ["<node_internals>/**"]
+  "editor.defaultFormatter": "denoland.vscode-deno",
+  "vitest.debugExclude": [
+    "<node_internals>/**"
+  ]
 }

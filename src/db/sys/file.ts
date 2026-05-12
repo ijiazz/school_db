@@ -10,14 +10,14 @@ export const AssetMediaType = MediaType;
 /** @deprecated 改用 MediaType */
 export type AssetMediaType = MediaType;
 
-export const enumAssetMediaType = new Set([MediaType.video, MediaType.audio, MediaType.image]);
+export const enumAssetMediaType: Set<MediaType> = new Set([MediaType.video, MediaType.audio, MediaType.image]);
 
 export enum MediaLevel {
   other = "other",
   origin = "origin",
   thumb = "thumb",
 }
-export const enumMediaLevel = new Set([MediaLevel.other, MediaLevel.origin, MediaLevel.thumb]);
+export const enumMediaLevel: Set<MediaLevel> = new Set([MediaLevel.other, MediaLevel.origin, MediaLevel.thumb]);
 
 export interface ImageFileMeta {
   width: number;

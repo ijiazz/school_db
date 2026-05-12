@@ -2,7 +2,7 @@ import type { DbPlaUser, DbPlaUserCreate, UserExtra } from "@ijia/data/db";
 import { dbTypeMap, getTableRawMeta } from "./_base.ts";
 import { insertIntoValues } from "../../common/sql.ts";
 import { createConflictUpdate, UpdateBehaver } from "./_statement.ts";
-import { TableDefined, YourTable } from "@asla/yoursql";
+import { SqlStatementDataset, TableDefined, YourTable } from "@asla/yoursql";
 
 const TABLE_DEFINE = {
   create_time: dbTypeMap.genColumn("TIMESTAMPTZ", true, "now()"),
@@ -22,7 +22,7 @@ const TABLE_DEFINE = {
   signature_struct: dbTypeMap.genColumn("JSONB"),
 } satisfies TableDefined;
 
-export const pla_user = new YourTable<DbPlaUser>("pla_user", TABLE_DEFINE);
+export const pla_user: YourTable<DbPlaUser> = new YourTable<DbPlaUser>("pla_user", TABLE_DEFINE);
 
 const pla_user_create_key = [
   "pla_uid",
@@ -47,7 +47,11 @@ const pla_user_check = pla_user.createTypeChecker<DbPlaUserCreate>(pla_user_crea
  *
  * @param avatarList uid -> fileInfo。 需要更新的头像映射
  */
-export function savePlaUserList(values: DbPlaUserCreate[]) {
+export function savePlaUserList(
+  values: DbPlaUserCreate[],
+): SqlStatementDataset<
+  Pick<DbPlaUser, "pla_uid" | "platform" | "create_time" | "crawl_check_time" | "pla_avatar_uri">
+> {
   if (!values.length) throw new Error("values不能为空");
   pla_user_check.checkList(values);
   // 未来表字段新增时，需要考虑那些值可以覆盖, 所以使用 Exclude

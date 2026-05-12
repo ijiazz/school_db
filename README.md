@@ -25,13 +25,6 @@ pg_dump -s -f ./ijia_db_schema.sql -h 127.0.0.1 -p 5432 -U postgres -d ijia # -f
 
 ## 在项目中使用库
 
-可以使用 git submodules 引入项目。
-
-如果是 deno， 配置 workspace 后可以直接导入。
-
-如果是 node， 需要编译 ts。\
-在你项目安装 npm 依赖`tslib` 和 `@rollup/plugin-typescript`。 然后运行
-`pnpm dlx rollup -c school_db/build/rollup.config.mjs` 或 `npx rollup -c school_db/build/rollup.config.mjs`\
-`-c` 选项指向 `school_db` 的 `rollup.config.mjs` 即可
-
-或者，可以直接用 deno 进行编译, 直接在项目根目录下执行 `deno task build`
+如果是仅用到库，可以在 jsr import.\
+如果要用到 @ijia/school-db/testlib 或 初始化数据库脚本，需要在通过 npm 安装 `deno add npm:@jsr/@ijia__school-db` 或
+`pnpm add jsr:@ijia/school-db`

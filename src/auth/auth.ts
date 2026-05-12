@@ -1,4 +1,4 @@
-export async function hashPwd(pwd: string, salt: string = "") {
+export async function hashPwd(pwd: string, salt: string = ""): Promise<string> {
   const data = await crypto.subtle.digest("SHA-512", new TextEncoder().encode(salt + pwd));
   const u8Arr = new Uint8Array(data, 0, data.byteLength);
   let str = "";

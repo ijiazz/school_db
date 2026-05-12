@@ -2,7 +2,9 @@ import type { ToInsertType } from "@asla/yoursql";
 import type { AssetExtra, Platform } from "./init.ts";
 import type { TextStructure } from "../type.ts";
 
-export function getResourceTypeNumber(meta: { text?: boolean; video?: boolean; audio?: boolean; image?: boolean }) {
+export function getResourceTypeNumber(
+  meta: { text?: boolean; video?: boolean; audio?: boolean; image?: boolean },
+): number {
   let number = 0;
   if (meta.video) number |= 0b1000;
   if (meta.audio) number |= 0b0100;

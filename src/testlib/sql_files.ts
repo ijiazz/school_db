@@ -48,7 +48,7 @@ async function* readDirSqlFiles(dir: string): AsyncIterable<string> {
     }
   }
 }
-export async function getMergedFiles() {
+export async function getMergedFiles(): Promise<string> {
   let stat: Stats;
   try {
     stat = await fs.stat(MERGE_SQL_FILE);

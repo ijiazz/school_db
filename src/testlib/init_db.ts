@@ -57,6 +57,25 @@ export async function createInitIjiaDb(
     await mange.close();
   }
 }
+/**
+ * 为测试创建并初始化 ijia_db
+ * 注意：这会创建并覆盖一个名为 ijia_test 的数据库，连接用户需要有创建数据库的权限，
+ */
+export async function createInitIjiaDbForTest() {
+  await createInitIjiaDb(
+    {
+      database: "postgres", //这是要连接的数据库，不是要创建的数据库
+      user: "postgres",
+      // password: "pwd",
+      hostname: "127.0.0.1",
+      port: 5432,
+    },
+    "ijia_test",
+    { ensureOwner: true, owner: "ijia_mr", dropIfExists: true, test: true },
+  );
+  console.log("创建完成: 数据名称：ijia_test, owner：ijia_mr");
+}
+
 async function execCreateInitIjiaDb(
   mange: DbManage,
   connect: DbConnectOption | URL | string,
@@ -115,20 +134,4 @@ function addUserRole(userId: number, roleId: string): ExecutableSQL<void> {
   const sql = insertIntoValues("user_role_bind", { user_id: userId, role_id: roleId });
 
   return dbPool.createQueryableSQL(sql.toString(), (pool, sql) => pool.queryCount(sql).then(() => {}));
-}
-
-/**
- * 清空传入连接的数据库的所有表的所有数据
- */
-export async function clearAllTablesData(client: DbQuery) {
-  await client.execute(`DO $$
-DECLARE
-    r RECORD;
-BEGIN
-    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema'))
-    LOOP
-        EXECUTE 'TRUNCATE public.' || quote_ident(r.tablename) || ' CASCADE';
-    END LOOP;
-END $$;
- `);
 }

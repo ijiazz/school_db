@@ -1,15 +1,16 @@
-import {
-  createDbPoolTransaction,
+import { createDbPoolTransaction, DbQueryPool } from "@asla/pg";
+import type {
   DbCursor,
   DbPoolConnection,
-  DbQueryPool,
+  DbTransaction,
   MultipleQueryInput,
   MultipleQueryResult,
   QueryInput,
   SqlLike,
-} from "@asla/yoursql/client";
-import { DbTransaction, TransactionMode } from "@asla/yoursql/client";
-export type { ExecutableSQL } from "@asla/yoursql/client";
+  TransactionMode,
+} from "@asla/pg";
+
+export type { ExecutableSQL } from "@asla/pg";
 
 class InnDbPool extends DbQueryPool {
   close() {

@@ -1,11 +1,13 @@
 import type { ViteUserConfig } from "vitest/config";
 import process from "node:process";
 import path from "node:path";
+import deno from "@deno/vite-plugin";
 const dirname = import.meta.dirname!;
 
 const PG_URL = process.env.PG_URL || "pg://test@127.0.0.1:5432/postgres";
 
 export default {
+  plugins: [deno()],
   test: {
     alias: [
       { find: /^@ijia\/data\//, replacement: path.join(dirname, "./src") + "/" },
