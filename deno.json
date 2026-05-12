@@ -26,12 +26,12 @@
     "./auth": "./src/auth.ts"
   },
   "publish": {
-    "include": ["./sql/init", "./sql/create-merge.sh", "./src", "./LICENSE"]
+    "include": ["./sql/init/**", "./sql/create-merge.sh", "./src/**", "./LICENSE", "./README.md"]
   },
   "compilerOptions": {
     "lib": ["deno.window"]
   },
-  "exclude": ["./lib.deno.d.ts", "./dist", "./build"],
+  "exclude": ["./dist", "./node_modules"],
   "fmt": {
     "lineWidth": 120
   },

@@ -10,7 +10,6 @@ on:
 permissions:
   contents: write
   id-token: write
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -24,35 +23,50 @@ jobs:
           deno-version: ^2
           cache: true
       - run: deno install --frozen
-      - name: Resolve publish version
+      - name: Resolve and update publish version
         id: version
         shell: bash
         env:
           PRERELEASE_INPUT: ${{ github.event.inputs.prerelease }}
         run: |
-          version="$(deno eval 'console.log(JSON.parse(Deno.readTextFileSync("deno.json")).version ?? "")')"
           prerelease="$(echo "$PRERELEASE_INPUT" | xargs)"
-
-          if [[ -z "$version" ]]; then
-            echo "::error::Missing version in deno.json"
-            exit 1
-          fi
 
           if [[ -n "$prerelease" && ! "$prerelease" =~ ^[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*$ ]]; then
             echo "::error::Prerelease suffix must be dot-separated alphanumeric or hyphen identifiers"
             exit 1
           fi
 
-          if [[ -n "$prerelease" ]]; then
-            publish_version="${version}-${prerelease}"
-            is_stable=false
-          else
-            publish_version="$version"
-            is_stable=true
-          fi
+          deno eval '
+            const prerelease = Deno.env.get("PRERELEASE_INPUT")?.trim() ?? "";
+            const configPath = "deno.json";
+            const config = JSON.parse(Deno.readTextFileSync(configPath));
+            const version = config.version ?? "";
 
-          echo "publish_version=$publish_version" >> "$GITHUB_OUTPUT"
-          echo "is_stable=$is_stable" >> "$GITHUB_OUTPUT"
+            if (!version) {
+              throw new Error("Missing version in deno.json");
+            }
+
+            const publishVersion = prerelease ? `${version}-${prerelease}` : version;
+            const isStable = prerelease ? "false" : "true";
+
+            if (isStable === "false") {
+              Deno.writeTextFileSync(
+                configPath,
+                `${JSON.stringify({ ...config, version: publishVersion }, null, 2)}\n`,
+              );
+            }
+
+            const output = Deno.env.get("GITHUB_OUTPUT");
+            if (!output) {
+              throw new Error("Missing GITHUB_OUTPUT");
+            }
+
+            Deno.writeTextFileSync(
+              output,
+              `publish_version=${publishVersion}\nis_stable=${isStable}\n`,
+              { append: true },
+            );
+          '
 
       - name: Guard stable release branch
         if: ${{ steps.version.outputs.is_stable == 'true' }}
@@ -65,12 +79,7 @@ jobs:
 
       - name: Publish
         shell: bash
-        run: |
-          if [[ "${{ steps.version.outputs.is_stable }}" == "true" ]]; then
-            deno publish
-          else
-            deno publish --set-version "${{ steps.version.outputs.publish_version }}"
-          fi
+        run: deno publish  --allow-dirty
 
       - name: Create GitHub release
         if: ${{ steps.version.outputs.is_stable == 'true' }}
