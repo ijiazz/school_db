@@ -7,11 +7,11 @@ export class JWTAuth<T> {
   ) {
     this.#verifyAccessToken = config.verifyAccessToken;
     this.accessToken = config.accessToken;
-    this.#verifyError = config.verifyError || ((info) => {
+    this.#createError = config.createError || ((info) => {
       return new Error(info.message);
     });
   }
-  #verifyError: CreateError;
+  #createError: CreateError;
   #verifyAccessToken: (token: string) => Promise<AccessToken<T>>;
   private accessToken?: string;
 
@@ -51,12 +51,12 @@ export class JWTAuth<T> {
    */
   async getJwtInfo(): Promise<T> {
     const accessToken = this.accessToken;
-    if (!accessToken) throw new RequiredLoginError();
+    if (!accessToken) throw this.#createError({ code: ERRORS.RequiredLogin, message: "需要登录" });
 
     if (!this.#jwtInfo) {
       const promise = this.#verifyAccessToken(accessToken).catch(
         (e) => {
-          throw this.#verifyError({ code: ERRORS.RequiredLogin, message: "未登录" });
+          throw this.#createError({ code: ERRORS.RequiredLogin, message: "需要登录" });
         },
       );
       this.#jwtInfo = promise;
@@ -65,17 +65,12 @@ export class JWTAuth<T> {
     this.#jwtInfo = token;
 
     if (token.isExpired) {
-      throw this.#verifyError({ code: ERRORS.TokenExpired, message: "身份认证已过期" });
+      throw this.#createError({ code: ERRORS.TokenExpired, message: "身份认证已过期" });
     }
     return token.data;
   }
 }
-class RequiredLoginError extends Error {
-  constructor(message = "需要登录") {
-    super(message);
-    this.name = "RequiredLoginError";
-  }
-}
+
 export interface CheckUpdateTokenResult {
   needDelete?: boolean;
   needRefresh?: boolean;
@@ -83,5 +78,5 @@ export interface CheckUpdateTokenResult {
 export type JWTAuthConfig<T> = {
   accessToken?: string;
   verifyAccessToken: (token: string) => Promise<AccessToken<T>>;
-  verifyError?: CreateError;
+  createError?: CreateError;
 };

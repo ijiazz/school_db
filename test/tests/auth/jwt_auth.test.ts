@@ -19,11 +19,13 @@ describe("JWTAuth", () => {
   }
 
   it("没有 access token 时 getJwtInfo 会抛出需要登录", async () => {
+    const createError = vi.fn(({ code, message }) => new Error(`${code}:${message}`));
     const auth = new JWTAuth<{ userId: number }>({
       verifyAccessToken: vi.fn(),
+      createError: createError,
     });
 
-    await expect(auth.getJwtInfo()).rejects.toThrow("需要登录");
+    await expect(auth.getJwtInfo()).rejects.toThrow(`${ERRORS.RequiredLogin}:需要登录`);
   });
 
   it("首次校验成功后会缓存令牌信息", async () => {
@@ -49,11 +51,11 @@ describe("JWTAuth", () => {
     const auth = new JWTAuth<{ userId: number }>({
       accessToken: "invalid-token",
       verifyAccessToken: vi.fn().mockRejectedValue(new Error("boom")),
-      verifyError,
+      createError: verifyError,
     });
 
-    await expect(auth.getJwtInfo()).rejects.toThrow(`${ERRORS.RequiredLogin}:未登录`);
-    expect(verifyError).toHaveBeenCalledWith({ code: ERRORS.RequiredLogin, message: "未登录" });
+    await expect(auth.getJwtInfo()).rejects.toThrow(`${ERRORS.RequiredLogin}:需要登录`);
+    expect(verifyError).toHaveBeenCalledWith({ code: ERRORS.RequiredLogin, message: "需要登录" });
   });
 
   it("已过期 token 会抛出 TokenExpired，并允许 checkUpdateToken 返回 needDelete", async () => {
@@ -64,7 +66,7 @@ describe("JWTAuth", () => {
         data: { userId: 2 },
         isExpired: true,
       })),
-      verifyError,
+      createError: verifyError,
     });
 
     await expect(auth.getJwtInfo()).rejects.toThrow(`${ERRORS.TokenExpired}:身份认证已过期`);

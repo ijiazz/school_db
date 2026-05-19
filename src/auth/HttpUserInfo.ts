@@ -110,7 +110,11 @@ export interface CreateUserInfoOptions extends Partial<HttpUserConfig> {
   verifyAccessToken: (token: string) => Promise<AccessToken<AccessUserData>>;
 }
 export function createHttpUserInfo(options: CreateUserInfoOptions): HttpUserInfo {
-  const { rootRoleId, createError } = options;
-  const jwtAuth = new JWTAuth(options);
+  const { rootRoleId, createError, verifyAccessToken, accessToken } = options;
+  const jwtAuth = new JWTAuth({
+    verifyAccessToken,
+    accessToken,
+    createError,
+  });
   return new HttpUserInfoImpl(jwtAuth, { rootRoleId, createError });
 }
