@@ -27,9 +27,9 @@ export class JWTAuth<T> {
     const accessToken = await this.#jwtInfo;
     return accessToken.refresh();
   }
-  /** 
+  /**
    * 检查令牌是否需要刷新或删除，并返回结果。
-   * 
+   *
    * 如果令牌过期，返回 { needDelete: true }，如果令牌需要刷新，返回 { needRefresh: true }，否则返回 {}。
    */
   async checkUpdateToken(): Promise<CheckUpdateTokenResult> {
@@ -46,7 +46,7 @@ export class JWTAuth<T> {
     return {};
   }
 
-  /** 
+  /**
    * 获取令牌中的数据。如果令牌无效或过期，则抛出相应的错误。
    */
   async getJwtInfo(): Promise<T> {

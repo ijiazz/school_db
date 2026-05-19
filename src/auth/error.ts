@@ -7,7 +7,6 @@ export const ERRORS = {
   AccountNotExist: "AccountNotExist",
   /** 账号已被冻结 */
   AccountFrozen: "AccountFrozen",
-
 } as const;
 
 export type CreateError = (info: { code: string; message: string }) => Error;

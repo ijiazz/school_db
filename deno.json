@@ -37,7 +37,8 @@
   },
   "tasks": {
     "commit-lint": "deno task check-fmt & deno task check-type",
-    "check-fmt": "deno fmt --check ./src ./test deno.json package.json",
+    "check-fmt": "deno fmt --check ./src ./test deno.json",
+    "fmt": "deno fmt ./src ./test deno.json",
     "check-type": "deno check src test",
     "doc:gen": "deno doc --name @ijia/school-db --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/auth.ts",
     "test": "deno x vitest run",
