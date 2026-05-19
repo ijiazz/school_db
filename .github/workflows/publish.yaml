@@ -80,12 +80,3 @@ jobs:
       - name: Publish
         shell: bash
         run: deno publish  --allow-dirty
-
-      - name: Create GitHub release
-        if: ${{ steps.version.outputs.is_stable == 'true' }}
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v${{ steps.version.outputs.publish_version }}
-          name: v${{ steps.version.outputs.publish_version }}
-          commit: ${{ github.sha }}
-          generateReleaseNotes: true
