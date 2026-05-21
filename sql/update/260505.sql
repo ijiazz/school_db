@@ -166,7 +166,7 @@ END; $$ LANGUAGE PLPGSQL;
 /* -------- */
 
 
-ALTER TABLE public.user ADD COLUMN exam_question_count INT NOT NULL DEFAULT 0; -- 出题数
+ALTER TABLE user_profile ADD COLUMN exam_question_count INT NOT NULL DEFAULT 0; -- 出题数
  
 
 /* -------- */
