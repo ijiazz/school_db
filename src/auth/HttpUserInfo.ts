@@ -1,45 +1,16 @@
 import { getUserRoleNameList, getValidUserSampleInfoByUserId, SampleUserInfo, UserWithRole } from "@ijia/data/query";
-import { type CheckUpdateTokenResult, JWTAuth } from "./JWTAuth.ts";
+import type { CheckUpdateTokenResult, JWTAuth } from "./JWTAuth.ts";
 import type { AccessUserData } from "./ijia_token.ts";
 import type { AccessToken } from "./auth.ts";
 import { type CreateError, ERRORS } from "@/auth/error.ts";
 
-export interface HttpUserInfo {
-  /**
-   * 检查令牌是否需要刷新或删除，并返回结果。
-   *
-   * 如果令牌过期，返回 { needDelete: true }，如果令牌需要刷新，返回 { needRefresh: true }，否则返回 {}。
-   */
-  checkUpdateToken(): Promise<CheckUpdateTokenResult>;
-  /**
-   * 刷新令牌，返回一个重置了签发时间和过期时间的新的令牌，数据不变。
-   */
-  refreshToken(): Promise<AccessToken<AccessUserData>>;
-
-  /**
-   * 获取用户 ID。
-   */
-  getUserId(): Promise<number>;
-  /**
-   * 获取有效用户的角色列表。
-   */
-  getRolesFromDb(): Promise<UserWithRole>;
-  /**
-   * 检查用户是否具有指定的角色权限。
-   */
-  hasRolePermission(requiredAnyRoles: Set<string> | string): Promise<boolean>;
-  /**
-   * 获取有效用户的基本信息。
-   */
-  getValidUserSampleInfo(): Promise<SampleUserInfo>;
-}
-interface HttpUserConfig {
+export interface HttpUserConfig {
   /** 当 token 校验错误时创建错误的 */
   createError: CreateError;
   /** 超级管理员角色 ID，如果用户存在这个 ID，则拥有所有角色权限 */
   rootRoleId: string;
 }
-class HttpUserInfoImpl {
+export class HttpUserInfo {
   constructor(
     jwtAuth: JWTAuth<AccessUserData>,
     config: Partial<HttpUserConfig> = {},
@@ -104,17 +75,4 @@ class HttpUserInfoImpl {
     }
     return this.#userInfo;
   }
-}
-export interface CreateUserInfoOptions extends Partial<HttpUserConfig> {
-  accessToken?: string;
-  verifyAccessToken: (token: string) => Promise<AccessToken<AccessUserData>>;
-}
-export function createHttpUserInfo(options: CreateUserInfoOptions): HttpUserInfo {
-  const { rootRoleId, createError, verifyAccessToken, accessToken } = options;
-  const jwtAuth = new JWTAuth({
-    verifyAccessToken,
-    accessToken,
-    createError,
-  });
-  return new HttpUserInfoImpl(jwtAuth, { rootRoleId, createError });
 }

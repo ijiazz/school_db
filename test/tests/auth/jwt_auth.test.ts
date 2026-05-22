@@ -105,4 +105,17 @@ describe("JWTAuth", () => {
 
     await expect(auth.refreshToken()).rejects.toThrow("没有令牌信息可供刷新");
   });
+
+  it("force 参数会强制重新校验令牌", async () => {
+    const auth = new JWTAuth<{ userId: number }>({
+      accessToken: "force-token",
+      verifyAccessToken: vi.fn().mockResolvedValue(createAccessToken({
+        data: { userId: 2 },
+        needRefresh: true,
+      })),
+    });
+
+    await expect(auth.checkUpdateToken()).resolves.toEqual({});
+    await expect(auth.checkUpdateToken(true)).resolves.toEqual({ needRefresh: true });
+  });
 });

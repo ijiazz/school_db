@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AccessToken, createHttpUserInfo, ERRORS } from "@/auth.ts";
+import { AccessToken, ERRORS, HttpUserConfig, HttpUserInfo, JWTAuth } from "@/auth.ts";
 import { type AccessUserData, AuthTokenType } from "@/auth/ijia_token.ts";
 
 const queryMock = vi.hoisted(() => ({
@@ -108,3 +108,16 @@ describe("HttpUserInfo", () => {
     expect(createError).toHaveBeenCalledWith({ code: ERRORS.AccountFrozen, message: "账号已被冻结" });
   });
 });
+export interface CreateUserInfoOptions extends Partial<HttpUserConfig> {
+  accessToken?: string;
+  verifyAccessToken: (token: string) => Promise<AccessToken<AccessUserData>>;
+}
+export function createHttpUserInfo(options: CreateUserInfoOptions): HttpUserInfo {
+  const { rootRoleId, createError, verifyAccessToken, accessToken } = options;
+  const jwtAuth = new JWTAuth({
+    verifyAccessToken,
+    accessToken,
+    createError,
+  });
+  return new HttpUserInfo(jwtAuth, { rootRoleId, createError });
+}

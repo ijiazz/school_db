@@ -32,11 +32,17 @@ export class JWTAuth<T> {
    *
    * 如果令牌过期，返回 { needDelete: true }，如果令牌需要刷新，返回 { needRefresh: true }，否则返回 {}。
    */
-  async checkUpdateToken(): Promise<CheckUpdateTokenResult> {
+  async checkUpdateToken(force: boolean = false): Promise<CheckUpdateTokenResult> {
+    let accessToken: AccessToken<T>;
     if (!this.#jwtInfo) {
-      return {};
+      if (force) {
+        accessToken = await this.#parseJwt();
+      } else {
+        return {};
+      }
+    } else {
+      accessToken = await this.#jwtInfo;
     }
-    const accessToken = await this.#jwtInfo;
     if (accessToken.isExpired) {
       return { needDelete: true }; // 删除令牌
     }
@@ -45,11 +51,7 @@ export class JWTAuth<T> {
     }
     return {};
   }
-
-  /**
-   * 获取令牌中的数据。如果令牌无效或过期，则抛出相应的错误。
-   */
-  async getJwtInfo(): Promise<T> {
+  #parseJwt() {
     const accessToken = this.accessToken;
     if (!accessToken) throw this.#createError({ code: ERRORS.RequiredLogin, message: "需要登录" });
 
@@ -61,7 +63,13 @@ export class JWTAuth<T> {
       );
       this.#jwtInfo = promise;
     }
-    const token = await this.#jwtInfo;
+    return this.#jwtInfo;
+  }
+  /**
+   * 获取令牌中的数据。如果令牌无效或过期，则抛出相应的错误。
+   */
+  async getJwtInfo(): Promise<T> {
+    const token = await this.#parseJwt();
     this.#jwtInfo = token;
 
     if (token.isExpired) {
