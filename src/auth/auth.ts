@@ -68,22 +68,34 @@ export type SignInfo<T = unknown> = {
   /** 令牌刷新 */
   refresh?: {
     /**
-     * 刷新令牌存活时间，单位秒，相对于 signTime。超过这个时间，不允许刷新。也就是说，必须在这个时间内容使用过刷新令牌，用于保活
+     * 刷新令牌存活秒数，单位秒，由 refreshKeepAliveSeconds 配置。
+     * 它相对于 issueTime，当前时间超 issueTime + refreshKeepAliveSeconds 后 refresh 将过期
      * 如果不存在，则没有刷新时间
      */
     keepAliveSeconds?: number;
-    /** 刷新令牌存活时间, 单位秒。如果不存在，则没有期限。它必须大于 keepAliveSeconds */
+    /** 刷新令牌过期时间, 单位秒。如果不存在，则没有期限。它必须晚于 issueTime + keepAliveSeconds */
     exp?: number;
   };
   /** 令牌版本号 */
   version: number;
 };
 
+/**
+ * 令牌有有效时长计算方式：
+ *  不存在刷新 token 则直接为 survivalSeconds，单位秒
+ *  存在刷新 token 则为 survivalSeconds + refresh token 有效时长
+ * 刷新 token 有效时长计算方式：
+ *  在 refreshKeepAliveSeconds
+ *  不存在 refresh.exp 则为 refresh.keepAliveSeconds，单位秒
+ */
 export type SignAccessTokenOption = {
-  survivalSeconds?: number; // 访问令牌存活时间
+  /** 访问令牌存活时间，单位秒 */
+  survivalSeconds?: number;
 
-  refreshKeepAliveSeconds?: number; // 可选的访问令牌刷新间隔时间
-  refreshSurvivalSeconds?: number; // 可选的刷新令牌存活时间
+  /** 刷新令牌保活时间，单位秒 */
+  refreshKeepAliveSeconds?: number;
+  /** 刷新令牌存活时间，单位秒 */
+  refreshSurvivalSeconds?: number;
 };
 
 export interface AccessToken<T = void> {
