@@ -2,7 +2,7 @@ import type { INT, VARCHAR } from "../db_type.ts";
 
 export type DbExamPaperTemplate = {
   id: INT;
-  owner_id: INT;
+  owner_id: INT | null;
   create_time: Date;
   title: VARCHAR | null;
 
@@ -21,7 +21,7 @@ export type DbExamPaperTemplateQuestion = {
 };
 
 export type DbExamination = {
-  id:number,
+  id: number;
   user_id: INT;
   template_id: INT;
   start_time: Date | null;

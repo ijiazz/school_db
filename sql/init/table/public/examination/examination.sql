@@ -1,6 +1,6 @@
 CREATE TABLE exam_paper_template(-- 试卷模板
     id SERIAL PRIMARY KEY,
-    owner_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 出题人 id
+    owner_id INT REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 出题人 id
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
     title VARCHAR(100), -- 考试名称
 

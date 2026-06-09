@@ -22,7 +22,7 @@ export type DbCompetition = {
   difficulty_total: INT[] | null;
 };
 
-export type DbCompetitionClassList = {
+export type DbCompetitionClass = {
   competition_id: INT;
   class_id: INT;
   prepare_rank: INT | null;
@@ -32,7 +32,7 @@ export type DbCompetitionClassList = {
   do_total_time: INT | null;
 };
 
-export type DbCompetitionUserList = {
+export type DbCompetitionUser = {
   competition_id: INT;
   user_id: INT;
   create_time: Date;
@@ -42,7 +42,7 @@ export type DbCompetitionUserList = {
   grade: INT | null;
   rank: INT | null;
   do_total_time: INT | null;
-  exam_paper_template_id: INT | null;
+  examination_id: INT | null;
 };
 
 export type DbCompetitionQuestionStat = {

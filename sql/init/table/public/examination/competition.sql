@@ -24,7 +24,7 @@ CREATE INDEX idxfk_competition_comment_id ON competition(comment_id);
 CREATE INDEX idx_competition_owner_list ON competition(owner_id, create_time); -- 发起人比赛列表查询
 CREATE INDEX idx_competition_global ON competition(weight, publish_time); -- 置顶比赛列表查询
 
-CREATE TABLE competition_class_list( -- 参与竞赛的班级列表
+CREATE TABLE competition_class( -- 参与竞赛的班级列表
     competition_id INT NOT NULL REFERENCES competition(id) ON DELETE CASCADE, -- 比赛 id
     class_id INT NOT NULL REFERENCES class(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 班级 id
     prepare_rank INT, -- 班级准备阶段排名
@@ -35,11 +35,11 @@ CREATE TABLE competition_class_list( -- 参与竞赛的班级列表
 
     PRIMARY KEY (class_id, competition_id)
 );
-CREATE INDEX idx_competition_class_list_list ON competition_class_list(competition_id, prepare_rank, class_id); -- 比赛班级列表查询
-CREATE INDEX idx_competition_class_list_rank_list ON competition_class_list(competition_id, rank, class_id); -- 比赛班级排名查询
+CREATE INDEX idx_competition_class_list ON competition_class(competition_id, prepare_rank, class_id); -- 比赛班级列表查询
+CREATE INDEX idx_competition_class_rank_list ON competition_class(competition_id, rank, class_id); -- 比赛班级排名查询
 
 
-CREATE TABLE competition_user_list( -- 参与竞赛的用户列表
+CREATE TABLE competition_user( -- 参与竞赛的用户列表
     competition_id INT NOT NULL REFERENCES competition(id) ON DELETE CASCADE, -- 比赛 id
     user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 用户 id
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
@@ -49,13 +49,13 @@ CREATE TABLE competition_user_list( -- 参与竞赛的用户列表
     grade INT, -- 最终成绩
     rank INT, -- 最终排名
     do_total_time INT, -- 答题总耗时，单位毫秒。
-    exam_paper_template_id INT REFERENCES exam_paper_template(id), -- 试卷模板 ID
+    examination_id INT REFERENCES examination(id), -- 考试 ID
 
     PRIMARY KEY (user_id, competition_id)
 );
 
-CREATE INDEX idx_competition_user_list_list ON competition_user_list(competition_id, prepare_rank, user_id); -- 比赛用户列表查询
-CREATE INDEX idx_competition_user_list_rank_list ON competition_user_list(competition_id, rank, user_id); -- 比赛用户排名查询
+CREATE INDEX idx_competition_user_list ON competition_user(competition_id, prepare_rank, user_id); -- 比赛用户列表查询
+CREATE INDEX idx_competition_user_rank_list ON competition_user(competition_id, rank, user_id); -- 比赛用户排名查询
 
 -- 竞赛题目错题统计
 CREATE TABLE competition_question_stat(
