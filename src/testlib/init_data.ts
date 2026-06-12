@@ -1,4 +1,4 @@
-import { DbClassCreate, PUBLIC_CLASS_ROOT_ID } from "@ijia/data/db";
+import { DbClassCreate, PUBLIC_CLASS_ROOT_ID } from "@ijia/school-db/db";
 import { dbPool, ExecutableSQL } from "../common/dbclient.ts";
 import { insertIntoValues } from "../common/sql.ts";
 

@@ -1,9 +1,16 @@
-import { AudioFileMeta, DbSysFileCreate, ImageFileMeta, MediaFileMeta, MediaType, VideoFileMeta } from "@ijia/data/db";
+import {
+  AudioFileMeta,
+  DbSysFileCreate,
+  ImageFileMeta,
+  MediaFileMeta,
+  MediaType,
+  VideoFileMeta,
+} from "@ijia/school-db/db";
 import { deleteFrom, v } from "@asla/yoursql";
 import type { DbTransaction } from "@asla/pg";
 import { insertIntoValues } from "../common/sql.ts";
 import { dbPool } from "../common/dbclient.ts";
-import { getOSS } from "@ijia/data/oss";
+import { getOSS } from "@ijia/school-db/oss";
 
 export async function beginCreateFileTransaction<T>(
   sourceFilePath: string,

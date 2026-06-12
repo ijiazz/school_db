@@ -1,4 +1,9 @@
-import { getUserRoleNameList, getValidUserSampleInfoByUserId, SampleUserInfo, UserWithRole } from "@ijia/data/query";
+import {
+  getUserRoleNameList,
+  getValidUserSampleInfoByUserId,
+  SampleUserInfo,
+  UserWithRole,
+} from "@ijia/school-db/query";
 import type { CheckUpdateTokenResult, JWTAuth } from "./JWTAuth.ts";
 import type { AccessUserData } from "./ijia_token.ts";
 import type { AccessToken } from "./auth.ts";

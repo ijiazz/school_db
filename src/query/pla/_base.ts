@@ -8,7 +8,7 @@ import {
   MediaLevel,
   MediaType,
   Platform,
-} from "@ijia/data/db";
+} from "@ijia/school-db/db";
 
 export const dbTypeMap = YourTypeMap.create({
   TIMESTAMPTZ: Date,

@@ -1,6 +1,6 @@
 import { SqlTextStatementDataset, type TableDefined, YourTable } from "@asla/yoursql";
 import { dbTypeMap, getTableRawMeta } from "./_base.ts";
-import type { AssetExtra, DbPlaAsset, DbPlaAssetCreate, Platform } from "@ijia/data/db";
+import type { AssetExtra, DbPlaAsset, DbPlaAssetCreate, Platform } from "@ijia/school-db/db";
 import { insertIntoValues } from "../../common/sql.ts";
 import { createConflictUpdate, UpdateBehaver } from "./_statement.ts";
 

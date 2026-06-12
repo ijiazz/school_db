@@ -1,4 +1,4 @@
-import { createUser } from "@ijia/data/query";
+import { createUser } from "@ijia/school-db/query";
 import { dbPool } from "../common/dbclient.ts";
 import { v } from "@asla/yoursql";
 /** 获取数据库级别的自增唯一 ID */

@@ -2,7 +2,7 @@ import { dbPool } from "@/common/dbclient.ts";
 import { test } from "../../fixtures/db_connect.ts";
 import { insertIntoValues, v } from "@/common/sql.ts";
 import { expect } from "vitest";
-import type { DbSysFileCreate } from "@ijia/data/db";
+import type { DbSysFileCreate } from "@ijia/school-db/db";
 
 let id = 0;
 function genId(prefix: string) {

@@ -1,4 +1,4 @@
-import type { DbPlaUser, DbPlaUserCreate, UserExtra } from "@ijia/data/db";
+import type { DbPlaUser, DbPlaUserCreate, UserExtra } from "@ijia/school-db/db";
 import { dbTypeMap, getTableRawMeta } from "./_base.ts";
 import { insertIntoValues } from "../../common/sql.ts";
 import { createConflictUpdate, UpdateBehaver } from "./_statement.ts";

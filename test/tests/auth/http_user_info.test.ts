@@ -7,7 +7,7 @@ const queryMock = vi.hoisted(() => ({
   getValidUserSampleInfoByUserId: vi.fn(),
 }));
 
-vi.mock("@ijia/data/query", () => ({
+vi.mock("@ijia/school-db/query", () => ({
   getUserRoleNameList: queryMock.getUserRoleNameList,
   getValidUserSampleInfoByUserId: queryMock.getValidUserSampleInfoByUserId,
 }));

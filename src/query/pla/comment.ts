@@ -1,4 +1,4 @@
-import type { CommentExtra, DbPlaComment, DbPlaCommentCreate, Platform } from "@ijia/data/db";
+import type { CommentExtra, DbPlaComment, DbPlaCommentCreate, Platform } from "@ijia/school-db/db";
 import { SqlTextStatementDataset, TableDefined, TypeChecker, YourTable } from "@asla/yoursql";
 import { createConflictUpdate, UpdateBehaver } from "./_statement.ts";
 import { insertIntoValues } from "../../common/sql.ts";
