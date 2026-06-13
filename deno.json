@@ -1,6 +1,6 @@
 {
   "name": "@ijia/school-db",
-  "version": "0.0.4",
+  "version": "0.0.5-alpha.6",
   "imports": {
     "@asla/pg": "jsr:@asla/pg@^0.2.4",
     "@asla/yoursql": "jsr:@asla/yoursql@^0.14.0",
@@ -36,6 +36,7 @@
     "lineWidth": 120
   },
   "tasks": {
+    "build":"deno run -A npm:typescript/tsc -p tsconfig.json",
     "commit-lint": "deno task check-fmt & deno task check-type",
     "check-fmt": "deno fmt --check ./src ./test deno.json",
     "fmt": "deno fmt ./src ./test deno.json",
@@ -43,7 +44,7 @@
     "doc:gen": "deno doc --name @ijia/school-db --html --output=docs/api src/db.ts src/oss.ts src/query.ts src/testlib.ts src/auth.ts",
     "test": "deno x vitest run",
     "publish-dry-run": "deno publish --dry-run --allow-dirty",
-    "recreate-db": "deno eval 'await import(\"@ijia/data/testlib\").then((mod) => mod.createInitIjiaDbForTest())'"
+    "recreate-db": "deno eval 'await import(\"@ijia/school-db/testlib\").then((mod) => mod.createInitIjiaDbForTest())'"
   },
   "nodeModulesDir": "manual"
 }

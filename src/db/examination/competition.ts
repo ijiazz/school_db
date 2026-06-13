@@ -1,11 +1,11 @@
-import type { INT, VARCHAR } from "../db_type.ts";
+import type { INT, SMALLINT, VARCHAR } from "../db_type.ts";
 
 export type DbCompetition = {
   id: INT;
   owner_id: INT;
   create_time: Date;
   publish_time: Date;
-  weight: INT;
+  weight: SMALLINT;
   name: VARCHAR;
   remark: VARCHAR | null;
 
@@ -18,8 +18,8 @@ export type DbCompetition = {
   end_time: Date | null;
 
   time_limit: INT;
-  question_total: INT;
-  difficulty_total: INT[] | null;
+  question_total: SMALLINT;
+  difficulty_total: SMALLINT[] | null;
 };
 
 export type DbCompetitionClass = {
@@ -27,7 +27,7 @@ export type DbCompetitionClass = {
   class_id: INT;
   prepare_rank: INT | null;
   count: INT;
-  grade: INT | null;
+  grade: SMALLINT | null;
   rank: INT | null;
   do_total_time: INT | null;
 };
@@ -39,7 +39,7 @@ export type DbCompetitionUser = {
   class_id: INT | null;
   prepare_rank: INT | null;
 
-  grade: INT | null;
+  grade: SMALLINT | null;
   rank: INT | null;
   do_total_time: INT | null;
   examination_id: INT | null;

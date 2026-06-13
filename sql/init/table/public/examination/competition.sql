@@ -3,7 +3,7 @@ CREATE TABLE competition( -- 竞赛
     owner_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 发起人 id
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 创建时间
     publish_time TIMESTAMPTZ NOT NULL DEFAULT now(), -- 发布时间
-    weight INT NOT NULL DEFAULT 0, -- 比赛权重，权重高的比赛排在前面
+    weight SMALLINT NOT NULL DEFAULT 0, -- 比赛权重，权重高的比赛排在前面
     name VARCHAR(50) NOT NULL, -- 比赛名称
     remark VARCHAR(200), -- 比赛备注
 
@@ -16,8 +16,8 @@ CREATE TABLE competition( -- 竞赛
     end_time TIMESTAMPTZ, -- 竞赛结束时间
 
     time_limit INT NOT NULL DEFAULT 0, -- 答题时间限制，单位毫秒。如果为0，表示不限制
-    question_total INT NOT NULL DEFAULT 0, -- 试题总数
-    difficulty_total INT[] -- 不同难度的题目数量
+    question_total SMALLINT NOT NULL DEFAULT 0, -- 试题总数
+    difficulty_total SMALLINT[] -- 不同难度的题目数量
 );
 CREATE INDEX idxfk_competition_ref_competition_id ON competition(ref_competition_id);
 CREATE INDEX idxfk_competition_comment_id ON competition(comment_id);
@@ -29,7 +29,7 @@ CREATE TABLE competition_class( -- 参与竞赛的班级列表
     class_id INT NOT NULL REFERENCES class(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 班级 id
     prepare_rank INT, -- 班级准备阶段排名
     count INT NOT NULL, -- 该班级参加考试的人数
-    grade INT, -- 班级总成绩
+    grade SMALLINT, -- 班级总成绩
     rank INT, -- 班级总排名
     do_total_time INT, -- 班级总用时，单位毫秒
 
@@ -46,7 +46,7 @@ CREATE TABLE competition_user( -- 参与竞赛的用户列表
     class_id INT REFERENCES class(id) ON DELETE SET NULL ON UPDATE CASCADE, -- 代表班级
     prepare_rank INT, -- 班级准备阶段排名
 
-    grade INT, -- 最终成绩
+    grade SMALLINT, -- 最终成绩
     rank INT, -- 最终排名
     do_total_time INT, -- 答题总耗时，单位毫秒。
     examination_id INT REFERENCES examination(id), -- 考试 ID
