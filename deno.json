@@ -36,7 +36,7 @@
     "lineWidth": 120
   },
   "tasks": {
-    "build":"deno run -A npm:typescript/tsc -p tsconfig.json",
+    "build": "deno run -A npm:typescript/tsc -p tsconfig.json",
     "commit-lint": "deno task check-fmt & deno task check-type",
     "check-fmt": "deno fmt --check ./src ./test deno.json",
     "fmt": "deno fmt ./src ./test deno.json",
