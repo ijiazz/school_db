@@ -8,7 +8,7 @@ CREATE TABLE exam_paper_template_question( -- 试卷试题绑定
     index SMALLINT NOT NULL, -- 题目序号
     paper_template_id INT NOT NULL REFERENCES exam_paper_template(id) ON DELETE CASCADE, -- 试卷模板 id
     question_id INT REFERENCES exam_question(id) ON DELETE SET NULL, -- 试题 id
-    weight SMALLINT NOT NULL, -- 分数权重
+    score SMALLINT NOT NULL, -- 分数
     option_map INT [] , -- 选项映射, 打乱顺序
     PRIMARY KEY (paper_template_id, index),
     UNIQUE (paper_template_id, question_id)
@@ -44,13 +44,12 @@ CREATE TABLE examination(
 CREATE TABLE examination_user_answer( -- 试卷作答
     exam_id INT NOT NULL REFERENCES examination(id) ON DELETE CASCADE, -- 试卷 id
     index SMALLINT NOT NULL, -- 题目序号
-    user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE, -- 用户 id
     score SMALLINT, -- 得分
     
-    user_answer_select SMALLINT[], -- 用户选择的答案
+    user_answer_select SMALLINT[], -- 用户选择的答案。如果为空，表示未答题
     start_time TIMESTAMPTZ, -- 开始答题时间
-    use_time INT, -- 回答耗时，单位毫秒。如果为空，表示未答题
-    PRIMARY KEY (exam_id, index, user_id),
+    use_time INT, -- 回答耗时，单位毫秒。
+    PRIMARY KEY (exam_id, index),
 
     CHECK(use_time IS NULL OR use_time >= 0), -- 确保答题时间为正数或为空
     CHECK(user_answer_select IS NULL OR array_length(user_answer_select, 1) >= 0) -- 确保用户选择的答案为正数或为空

@@ -10,7 +10,7 @@ export type DbExamPaperTemplateQuestion = {
   index: SMALLINT;
   paper_template_id: INT;
   question_id: INT | null;
-  weight: SMALLINT;
+  score: SMALLINT;
   option_map: SMALLINT[] | null;
 };
 
@@ -40,7 +40,6 @@ export type DbExamination = {
 
 export type DbExamPaperUserAnswer = {
   paper_id: INT;
-  user_id: INT;
   score: SMALLINT | null;
 
   user_answer_select: SMALLINT[] | null;
