@@ -53,8 +53,9 @@ export type DbExamination = {
   effective_time_consumption: INT | null;
 };
 
-export type DbExamPaperUserAnswer = {
-  paper_id: INT;
+export type DbExaminationUserAnswer = {
+  exam_id: INT;
+  index: SMALLINT;
   score: SMALLINT | null;
 
   user_answer_select: SMALLINT[] | null;
