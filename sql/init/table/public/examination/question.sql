@@ -54,6 +54,16 @@ CREATE TABLE exam_question_option(
     CHECK(text IS NOT NULL OR media IS NOT NULL) -- 选项文本和媒体至少有一个不为空
 );
 
+CREATE VIEW exam_question_real_option AS
+SELECT question_id, index, text, media_type, media
+FROM exam_question_option
+WHERE index >= 0; -- 只包含选项，不包含题目附件
+
+CREATE VIEW exam_question_attachment AS
+SELECT question_id, (-index) AS index, text, media_type, media
+FROM exam_question_option
+WHERE index < 0; -- 只包含题目附件，不包含选项
+
 CREATE TABLE exam_question_theme_bind(
     theme_id VARCHAR(100) NOT NULL, -- 主题名称
     question_id INT NOT NULL REFERENCES exam_question(id) ON DELETE CASCADE, -- 试题 id

@@ -14,3 +14,4 @@ table/public/tables_post_comment.sql
 
 table/public/comment.sql
 table/public/examination/question.sql
+table/public/examination/examination.sql
