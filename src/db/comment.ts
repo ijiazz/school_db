@@ -1,6 +1,8 @@
+import type { ReviewStatus } from "./review.ts";
 import type { TextStructure } from "./type.ts";
 
 export enum CommentGroup {
+  Post = "post",
   Question = "question",
   Competition = "competition",
 }
@@ -22,11 +24,13 @@ export type DbComment = {
   user_id: number;
 
   create_time: Date;
-  is_delete: boolean;
   like_count: number;
   dislike_count: number;
   content_text: string | null;
   content_text_struct: TextStructure[] | null;
+
+  review_status: ReviewStatus | null;
+  review_id: number | null;
 };
 
 export type DbCommentLike = {

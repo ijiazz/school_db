@@ -14,7 +14,7 @@ BEGIN
 	WITH updated AS (
 		UPDATE post SET is_delete=TRUE
 		WHERE id=post_id AND is_delete=FALSE AND (userId IS NULL OR user_id=userId)
-		RETURNING id AS post_id, user_id, like_count
+		RETURNING id AS post_id, user_id, like_count, comment_tree_id
 	), update_user_stat AS (
 		UPDATE user_profile
 		SET
@@ -22,6 +22,9 @@ BEGIN
 			post_like_get_count = user_profile.post_like_get_count - updated.like_count
 		FROM updated
 		WHERE user_profile.user_id = updated.user_id
+	), delete_comment AS (
+		DELETE FROM comment_tree
+		WHERE id = (SELECT comment_tree_id FROM updated)
 	)
 	SELECT count(*) INTO count FROM updated;
 	RETURN count;

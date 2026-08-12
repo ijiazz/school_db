@@ -1,5 +1,6 @@
 CREATE TYPE comment_group_type AS ENUM (
-    'question', -- 帖子评论
+    'post', -- 帖子评论
+    'question', -- 问题评论
     'competition' -- 竞赛评论
 );
 
@@ -9,6 +10,7 @@ CREATE TABLE comment_tree(
     group_type comment_group_type -- 评论类型
 );
 CREATE INDEX idx_comment_tree_group ON comment_tree(group_type);
+
 
 CREATE TABLE comment(
     id SERIAL PRIMARY KEY,
@@ -21,11 +23,14 @@ CREATE TABLE comment(
     user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
-    is_delete BOOLEAN NOT NULL DEFAULT FALSE,
+    
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
     dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
     content_text VARCHAR(5000), -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
+
+    review_status review_status, -- 审核状态
+    review_id INT REFERENCES review(id) ON DELETE SET NULL, -- 审核记录 id
 
     CONSTRAINT chk_root_parent_null
     CHECK ( (root_comment_id IS NULL AND parent_comment_id IS NULL)
@@ -35,9 +40,9 @@ CREATE TABLE comment(
 
 
 CREATE INDEX idxfk_comment_comment_tree_id ON comment(comment_tree_id,root_comment_id,parent_comment_id,create_time);
-CREATE INDEX idxfk_comment_user_id ON comment(user_id,is_delete);
-CREATE INDEX idxfk_comment_parent_comment_id ON comment(parent_comment_id,create_time,is_delete);
-CREATE INDEX idxfk_comment_root_comment_id ON comment(root_comment_id,parent_comment_id,create_time,is_delete);
+CREATE INDEX idxfk_comment_user_id ON comment(user_id);
+CREATE INDEX idxfk_comment_parent_comment_id ON comment(parent_comment_id,create_time);
+CREATE INDEX idxfk_comment_root_comment_id ON comment(root_comment_id,parent_comment_id,create_time);
 
 CREATE INDEX idx_comment_user_insert_limit ON comment(user_id,create_time);
 
