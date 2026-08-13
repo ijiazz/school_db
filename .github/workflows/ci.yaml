@@ -3,13 +3,6 @@ on:
   push:
     branches:
       - "**"
-    paths:
-      - src/**
-      - test/**
-      - sql/**
-      - .github/workflows/ci.yaml
-      - deno.json
-      - deno.lock
 jobs:
   test:
     runs-on: ubuntu-latest

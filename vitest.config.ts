@@ -11,5 +11,6 @@ export default {
       { find: /^@\//, replacement: path.join(dirname, "./src") + "/" },
       { find: /^@test\//, replacement: path.join(dirname, "./test") + "/" },
     ],
+    globalSetup: ["./test/setup/global_setup.ts"],
   },
 } satisfies ViteUserConfig;
