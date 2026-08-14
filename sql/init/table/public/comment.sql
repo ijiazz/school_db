@@ -7,7 +7,8 @@ CREATE TYPE comment_group_type AS ENUM (
 CREATE TABLE comment_tree(
     id SERIAL PRIMARY KEY,
     comment_total INT NOT NULL DEFAULT 0, -- 评论数量
-    group_type comment_group_type -- 评论类型
+    group_type comment_group_type, -- 评论类型
+    owner_id INT REFERENCES public.user(id) ON DELETE SET NULL -- 评论所属的对象ID
 );
 CREATE INDEX idx_comment_tree_group ON comment_tree(group_type);
 
