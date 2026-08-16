@@ -61,15 +61,6 @@ BEGIN
 		RAISE EXCEPTION 'review id % missing target_id info', arg_review_id;
 	END IF;
 	
-  IF arg_is_pass THEN
-    UPDATE comment
-      SET review_status= 'passed'::review_status
-      WHERE id = review_target_id;
-  ELSE
-		-- 删除评论
-		PERFORM comment_delete(review_target_id, NULL);
-	END IF;  
-
 	-- 更新举报者的正确率
   UPDATE user_profile AS u SET
     report_subjective_correct_count = u.report_subjective_correct_count + (CASE WHEN arg_is_pass THEN 1 ELSE 0 END),
@@ -80,6 +71,15 @@ BEGIN
 		WHERE l.comment_id = review_target_id AND l.weight < 0
   ) AS ref 
   WHERE u.user_id = ref.user_id;
+
+  IF arg_is_pass THEN
+    UPDATE comment
+      SET review_status= 'passed'::review_status
+      WHERE id = review_target_id;
+  ELSE
+		-- 删除评论
+		PERFORM comment_delete(review_target_id, NULL);
+	END IF;
 
 	RETURN 1;
 
