@@ -76,7 +76,7 @@ BEGIN
     report_subjective_error_count = u.report_subjective_error_count + (CASE WHEN arg_is_pass THEN 0 ELSE 1 END)
   FROM ( 
 		SELECT l.user_id AS user_id
-		FROM post_comment_like AS l
+		FROM comment_like AS l
 		WHERE l.comment_id = review_target_id AND l.weight < 0
   ) AS ref 
   WHERE u.user_id = ref.user_id;
