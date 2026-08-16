@@ -67,7 +67,7 @@ BEGIN
       WHERE id = review_target_id;
   ELSE
 		-- 删除评论
-		PERFORM post_delete_comment(review_target_id, NULL); 
+		PERFORM comment_delete(review_target_id, NULL);
 	END IF;  
 
 	-- 更新举报者的正确率

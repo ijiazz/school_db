@@ -13,6 +13,7 @@ export type DbCommentTree = {
   comment_total: INT;
   group_type: CommentGroup | null;
   owner_id: INT | null;
+  is_closed: boolean;
 };
 
 export type DbComment = {

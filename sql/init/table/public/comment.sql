@@ -8,7 +8,8 @@ CREATE TABLE comment_tree(
     id SERIAL PRIMARY KEY,
     comment_total INT NOT NULL DEFAULT 0, -- 评论数量
     group_type comment_group_type, -- 评论类型
-    owner_id INT REFERENCES public.user(id) ON DELETE SET NULL -- 评论所属的对象ID
+    owner_id INT REFERENCES public.user(id) ON DELETE SET NULL, -- 评论所属的对象ID
+    is_closed BOOLEAN NOT NULL DEFAULT FALSE -- 是否关闭评论，禁用后，只有 owner_id 可以评论，其他人无法评论
 );
 CREATE INDEX idx_comment_tree_group ON comment_tree(group_type);
 
@@ -17,13 +18,14 @@ CREATE TABLE comment(
     id SERIAL PRIMARY KEY,
     root_comment_id INT REFERENCES comment(id) ON DELETE CASCADE,
     parent_comment_id INT REFERENCES comment(id) ON DELETE CASCADE,
-    is_root_reply_count INT NOT NULL DEFAULT 0, -- 根评论的回复数
-    reply_count INT NOT NULL DEFAULT 0, -- 回复数量
+    is_root_reply_count INT NOT NULL DEFAULT 0, -- 根评论的所有子评论和孙评论的数量
+    reply_count INT NOT NULL DEFAULT 0, -- 子评论回复数量（不包含子孙评论）
 
     comment_tree_id INT NOT NULL REFERENCES comment_tree(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
+    is_delete BOOLEAN NOT NULL DEFAULT FALSE,
     
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
     dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
@@ -41,9 +43,9 @@ CREATE TABLE comment(
 
 
 CREATE INDEX idxfk_comment_comment_tree_id ON comment(comment_tree_id,root_comment_id,parent_comment_id,create_time);
-CREATE INDEX idxfk_comment_user_id ON comment(user_id);
-CREATE INDEX idxfk_comment_parent_comment_id ON comment(parent_comment_id,create_time);
-CREATE INDEX idxfk_comment_root_comment_id ON comment(root_comment_id,parent_comment_id,create_time);
+CREATE INDEX idxfk_comment_user_id ON comment(user_id,is_delete);
+CREATE INDEX idxfk_comment_parent_comment_id ON comment(parent_comment_id,create_time,is_delete);
+CREATE INDEX idxfk_comment_root_comment_id ON comment(root_comment_id,parent_comment_id,create_time,is_delete);
 
 CREATE INDEX idx_comment_user_insert_limit ON comment(user_id,create_time);
 

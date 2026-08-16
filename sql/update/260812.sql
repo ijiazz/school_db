@@ -1,6 +1,3 @@
-
-DELETE FROM post_comment WHERE is_delete=TRUE;
-
 ALTER TABLE post_comment RENAME TO comment;
 ALTER TABLE post_comment_like RENAME TO comment_like;
 
@@ -9,13 +6,15 @@ ALTER TYPE comment_group_type ADD VALUE 'post';
 CREATE TABLE _tree_map AS
 SELECT
 	p.id AS post_id,
+	p.user_id AS owner_id,
+	get_bit(p.options, 1)::BOOL OR p.is_hide AS is_closed,
   comment_num,
 	nextval(pg_get_serial_sequence('comment_tree', 'id'))::INT AS comment_tree_id
 FROM post AS p
-WHERE p.comment_tree_id IS NULL;
+WHERE p.comment_tree_id IS NULL AND NOT p.is_delete;
 
 -- comment_tree 生成
-INSERT INTO comment_tree(id,comment_total,group_type) SELECT comment_tree_id,comment_num,'post' FROM _tree_map;
+INSERT INTO comment_tree(id,comment_total,owner_id,group_type,is_closed) SELECT comment_tree_id,comment_num,owner_id,'post',is_closed FROM _tree_map;
 
 -- post 表字段更改
 ALTER TABLE post ADD COLUMN comment_tree_id INT REFERENCES comment_tree(id) ON DELETE SET NULL;
