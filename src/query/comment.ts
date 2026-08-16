@@ -1,5 +1,5 @@
 import { dbPool } from "@/common/dbclient.ts";
-import type { DbComment, DbCommentTree } from "@ijia/school-db/db";
+import type { DbComment } from "@ijia/school-db/db";
 import { insertIntoValues, v } from "@/common/sql.ts";
 
 export type CreateCommentOption = { userId: number; comment_tree_id: number; text: string; replyCommentId?: number };
@@ -8,14 +8,6 @@ export async function createComment(
   option: CreateCommentOption,
 ): Promise<{ id: number; error?: undefined } | { error: string; id?: undefined }> {
   const { userId, comment_tree_id, text, replyCommentId } = option;
-
-  const [commentTree] = await dbPool.queryRows<Pick<DbCommentTree, "owner_id" | "is_closed">>(
-    v.gen`SELECT owner_id, is_closed FROM comment_tree WHERE id=${v(comment_tree_id)} LIMIT 1`,
-  );
-  if (!commentTree || (commentTree.is_closed && commentTree.owner_id !== userId)) {
-    // 如果已关闭评论区(is_closed=true)，只有帖子作者能创建评论
-    return { error: `comment tree "${comment_tree_id}" 不存在` };
-  }
 
   await using t = dbPool.begin();
   let rootCommentId: number | undefined;
@@ -28,6 +20,11 @@ export async function createComment(
     if (!parent) return { error: `parent comment "${replyCommentId}" 不存在` };
     rootCommentId = parent.root_comment_id ?? parent.id;
   }
+  const count = await t.queryCount(v.gen`
+    UPDATE comment_tree SET comment_total = comment_total + 1 WHERE id = ${comment_tree_id}`);
+  if (count === 0) {
+    return { error: `comment tree "${comment_tree_id}" 不存在` };
+  }
 
   const insert = insertIntoValues("comment", {
     content_text: text,
@@ -37,8 +34,6 @@ export async function createComment(
     root_comment_id: rootCommentId,
   }).returning("id");
   const { id } = await t.queryFirstRow<{ id: number }>(insert);
-  await t.execute(v.gen`
-    UPDATE comment_tree SET comment_total = comment_total + 1 WHERE id = ${comment_tree_id}`);
 
   if (replyCommentId !== undefined) {
     await t.execute(v.gen`

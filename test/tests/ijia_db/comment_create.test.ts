@@ -81,21 +81,3 @@ test(
     ).resolves.toMatchObject({ root_comment_id: rootId, parent_comment_id: replyId });
   },
 );
-
-test("评论关闭后，只有 owner 能评论", async function ({ publicDbPool }) {
-  const context = await prepareComments();
-  const author = await newTestUser("author");
-  await publicDbPool.execute(`UPDATE comment_tree SET is_closed = TRUE WHERE id = ${context.treeId}`);
-
-  {
-    const { error } = await createComment({ userId: author.id, comment_tree_id: context.treeId, text: "forbidden" });
-    expect(error).toBeTypeOf("string");
-  }
-  await expect(getCommentTotal(context.treeId)).resolves.toBe(0);
-
-  {
-    const { error } = await createComment({ userId: context.ownerId, comment_tree_id: context.treeId, text: "owner" });
-    expect(error).toBeUndefined();
-  }
-  await expect(getCommentTotal(context.treeId)).resolves.toBe(1);
-});
