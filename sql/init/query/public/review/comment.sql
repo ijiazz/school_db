@@ -1,3 +1,5 @@
+SET client_encoding = 'UTF8';
+
 /* 直接将指定评论设置为审核中 */
 CREATE OR REPLACE FUNCTION review_comment_set_to_reviewing(arg_comment_id INT)
 RETURNS INT AS $$

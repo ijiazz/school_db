@@ -1,3 +1,17 @@
+
+--
+DROP TABLE comment_like;
+DROP TABLE comment;
+--
+
+-- review 表
+UPDATE review SET target_type = 'comment' WHERE target_type = 'post_comment';
+-- end
+
+-- comment_tree
+ALTER TABLE comment_tree ADD COLUMN owner_id INT REFERENCES "user"(id) ON DELETE SET NULL;
+-- end
+
 ALTER TABLE post_comment RENAME TO comment;
 ALTER TABLE post_comment_like RENAME TO comment_like;
 
@@ -10,27 +24,40 @@ SELECT
   comment_num,
 	nextval(pg_get_serial_sequence('comment_tree', 'id'))::INT AS comment_tree_id
 FROM post AS p
-WHERE p.comment_tree_id IS NULL AND NOT p.is_delete;
+WHERE NOT p.is_delete;
 
 -- comment_tree 生成
 INSERT INTO comment_tree(id,comment_total,owner_id,group_type) SELECT comment_tree_id,comment_num,owner_id,'post' FROM _tree_map;
+-- end
 
 -- post 表字段更改
 ALTER TABLE post ADD COLUMN comment_tree_id INT REFERENCES comment_tree(id) ON DELETE SET NULL;
-UPDATE TABLE post SET comment_tree_id = map.comment_tree_id FROM _tree_map AS map WHERE post.id = map.post_id;
+UPDATE post SET comment_tree_id = map.comment_tree_id FROM _tree_map AS map WHERE post.id = map.post_id;
 ALTER TABLE post DROP COLUMN comment_num;
+-- end
 
--- post_id -> comment_tree_id
+-- post_comment 表 post_id -> comment_tree_id
 ALTER TABLE comment ADD COLUMN comment_tree_id INT REFERENCES comment_tree(id) ON DELETE CASCADE;
-UPDATE TABLE comment SET comment_tree_id = map.comment_tree_id FROM _tree_map AS map WHERE comment.post_id = map.post_id;
-ALTER TABLE comment ADD CONSTRAINT comment_tree_id_not_null CHECK (comment_tree_id IS NOT NULL);
-ALTER TABLE comment DROP COLUMN post_id, is_delete;
+UPDATE comment SET comment_tree_id = map.comment_tree_id FROM _tree_map AS map WHERE comment.post_id = map.post_id;
+ALTER TABLE comment ALTER COLUMN comment_tree_id SET NOT NULL;
+ALTER TABLE comment DROP COLUMN post_id;
+-- end
 
 
 DROP TABLE _tree_map;
 
+CREATE TABLE _tree_map AS
+SELECT
+	q.id,
+	nextval(pg_get_serial_sequence('comment_tree', 'id'))::INT AS comment_tree_id
+FROM exam_question AS q;
+
+INSERT INTO comment_tree(id,group_type) SELECT comment_tree_id,'question' FROM _tree_map;
+UPDATE exam_question SET comment_id = map.comment_tree_id FROM _tree_map AS map WHERE exam_question.id = map.id;
+
+DROP TABLE _tree_map;
+
 -- 索引重命名
-DROP INDEX idxfk_post_comment_post_id;
 DROP INDEX idxfk_post_comment_user_id;
 DROP INDEX idxfk_post_comment_parent_comment_id;
 DROP INDEX idxfk_post_comment_root_comment_id;
@@ -41,9 +68,229 @@ DROP INDEX idxfk_post_comment_like_user_id;
 
 
 CREATE INDEX idxfk_comment_comment_tree_id ON comment(comment_tree_id,root_comment_id,parent_comment_id,create_time);
-CREATE INDEX idxfk_comment_user_id ON comment(user_id);
-CREATE INDEX idxfk_comment_parent_comment_id ON comment(parent_comment_id,create_time);
-CREATE INDEX idxfk_comment_root_comment_id ON comment(root_comment_id,parent_comment_id,create_time);
+CREATE INDEX idxfk_comment_user_id ON comment(user_id,is_delete);
+CREATE INDEX idxfk_comment_parent_comment_id ON comment(parent_comment_id,create_time,is_delete);
+CREATE INDEX idxfk_comment_root_comment_id ON comment(root_comment_id,parent_comment_id,create_time,is_delete);
+CREATE INDEX idxfx_comment_review_id ON comment(review_id) WHERE review_id IS NOT NULL;
 CREATE INDEX idx_comment_user_insert_limit ON comment(user_id,create_time);
 
 CREATE INDEX idxfk_comment_like_user_id ON comment_like(user_id);
+-- end
+
+
+
+-- 函数
+
+
+DROP FUNCTION review_post_comment_set_to_reviewing(arg_comment_id INT);
+DROP FUNCTION review_post_comment_commit(arg_review_id INT, arg_is_pass BOOLEAN, arg_reviewer_id INT, arg_remark TEXT);
+
+
+CREATE OR REPLACE FUNCTION post_delete(post_id INT, userId INT)
+RETURNS INT AS $$
+DECLARE
+	count INT;
+BEGIN
+	WITH updated AS (
+		UPDATE post SET is_delete=TRUE
+		WHERE id=post_id AND is_delete=FALSE AND (userId IS NULL OR user_id=userId)
+		RETURNING id AS post_id, user_id, like_count, comment_tree_id
+	), update_user_stat AS (
+		UPDATE user_profile
+		SET
+			post_count = user_profile.post_count - 1,
+			post_like_get_count = user_profile.post_like_get_count - updated.like_count
+		FROM updated
+		WHERE user_profile.user_id = updated.user_id
+	), delete_comment AS (
+		DELETE FROM comment_tree
+		WHERE id = (SELECT comment_tree_id FROM updated)
+	)
+	SELECT count(*) INTO count FROM updated;
+	RETURN count;
+
+END; $$ LANGUAGE PLPGSQL;
+
+
+DROP FUNCTION post_recursive_delete_comment(arg_comment_id INT, arg_user_id INT);
+DROP FUNCTION post_delete_comment(comment_id INT, arg_user_id INT);
+
+
+/* 直接将指定评论设置为审核中 */
+CREATE OR REPLACE FUNCTION review_comment_set_to_reviewing(arg_comment_id INT)
+RETURNS INT AS $$
+DECLARE
+	new_review_id INT;
+BEGIN 
+    SELECT review_id INTO new_review_id
+        FROM comment
+        WHERE id = arg_comment_id AND NOT is_delete;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'comment id % not found or is deleted or already reviewed', arg_comment_id;
+    END IF;
+
+   IF new_review_id IS NOT NULL THEN
+			DELETE FROM review WHERE id = new_review_id;
+    END IF;
+
+
+    -- 插入审核项
+    INSERT INTO review(target_type, info, review_display)
+    VALUES (
+            'comment':: review_target_type,
+            jsonb_build_object('target_id', arg_comment_id),
+            NULL
+        )
+    RETURNING id INTO new_review_id;
+
+    UPDATE comment 
+        SET review_id = new_review_id,
+					review_status = 'pending'::review_status
+        WHERE id = arg_comment_id;
+
+    RETURN new_review_id;
+END; $$ LANGUAGE PLPGSQL;
+
+
+/**
+ * 审核评论
+ *
+ * arg_review_id: 审核记录ID
+ * arg_is_pass: 是否通过审核
+ * arg_reviewer_id: 审核人ID
+ * arg_remark: 备注
+ *
+ * 返回值: 1表示成功，0表示没有找到待审核的记录
+ */
+CREATE OR REPLACE FUNCTION review_comment_commit(arg_review_id INT, arg_is_pass BOOLEAN, arg_reviewer_id INT, arg_remark TEXT)
+RETURNS INT AS $$
+DECLARE
+	info JSONB;
+	review_target_id INT;
+BEGIN
+  info := review_approve('comment', arg_review_id, arg_is_pass, arg_reviewer_id, arg_remark);
+	
+	IF info IS NULL THEN
+		RETURN 0;
+	END IF;
+
+	review_target_id := (info->>'target_id')::INT;
+	IF review_target_id IS NULL THEN
+		RAISE EXCEPTION 'review id % missing target_id info', arg_review_id;
+	END IF;
+	
+	-- 更新举报者的正确率
+  UPDATE user_profile AS u SET
+    report_subjective_correct_count = u.report_subjective_correct_count + (CASE WHEN arg_is_pass THEN 1 ELSE 0 END),
+    report_subjective_error_count = u.report_subjective_error_count + (CASE WHEN arg_is_pass THEN 0 ELSE 1 END)
+  FROM ( 
+		SELECT l.user_id AS user_id
+		FROM comment_like AS l
+		WHERE l.comment_id = review_target_id AND l.weight < 0
+  ) AS ref 
+  WHERE u.user_id = ref.user_id;
+
+  IF arg_is_pass THEN
+    UPDATE comment
+      SET review_status= 'passed'::review_status
+      WHERE id = review_target_id;
+  ELSE
+		-- 删除评论
+		PERFORM comment_delete(review_target_id, NULL);
+	END IF;
+
+	RETURN 1;
+END; $$ LANGUAGE PLPGSQL;
+
+/**
+ * 用户可以删除自己的评论。
+ * 帖子作者可以删除所有评论
+ * 如果 arg_user_id 为 NULL ，则不判断权限，直接删除
+ */
+CREATE OR REPLACE FUNCTION comment_delete(arg_comment_id INT, arg_user_id INT)
+RETURNS INT AS $$
+DECLARE
+	count INT;
+BEGIN
+	SELECT 
+		CASE WHEN c.root_comment_id IS NULL 
+			THEN comment_recursive_delete(arg_comment_id)
+			ELSE comment_delete_mark(arg_comment_id)
+			END
+		INTO count
+		FROM comment AS c
+			INNER JOIN comment_tree AS ct ON c.comment_tree_id = ct.id
+			WHERE c.id = arg_comment_id AND NOT c.is_delete 
+				AND (arg_user_id IS NULL OR ct.owner_id = arg_user_id OR c.user_id = arg_user_id);
+	RETURN COALESCE(count, 0);
+END; $$ LANGUAGE PLPGSQL;
+
+
+CREATE OR REPLACE FUNCTION comment_delete_mark(arg_comment_id INT)
+RETURNS INT AS $$
+DECLARE
+	target_tree_id INT;
+	target_parent_id INT;
+	target_root_id INT;
+BEGIN
+	UPDATE comment AS c SET is_delete = TRUE WHERE c.id = arg_comment_id AND NOT c.is_delete
+	RETURNING c.comment_tree_id, c.parent_comment_id, c.root_comment_id
+	INTO target_tree_id, target_parent_id, target_root_id; -- 标记删除评论
+	IF NOT FOUND THEN
+		RETURN 0;
+	END IF;
+
+	UPDATE comment_tree SET comment_total = comment_total - 1 WHERE id = target_tree_id; -- 更新评论树的评论总数
+
+	-- 更新父评论的回复数和根评论的回复总数
+	IF target_parent_id IS NOT NULL THEN
+		UPDATE comment SET reply_count = reply_count - 1 WHERE id = target_parent_id;
+		UPDATE comment SET is_root_reply_count = is_root_reply_count - 1 WHERE id = target_root_id;
+	END IF;
+	
+	RETURN 1;
+
+END; $$ LANGUAGE PLPGSQL;
+
+/** 
+ * 删除 commentId 以及所有子评论，更新父级评论回复数和跟评论回复总数。非软删除
+ */
+CREATE OR REPLACE FUNCTION comment_recursive_delete(arg_comment_id INT)
+RETURNS INT AS $$
+DECLARE
+	target_tree_id INT;
+	target_parent_id INT;
+	target_root_id INT;
+	delete_total INT;
+BEGIN
+	-- 判断评论是否存在且未删除
+	SELECT c.parent_comment_id, c.root_comment_id, c.comment_tree_id 
+		INTO target_parent_id, target_root_id, target_tree_id
+	FROM comment AS c
+	WHERE id = arg_comment_id AND NOT is_delete;
+	IF NOT FOUND THEN
+		RETURN 0;
+	END IF;
+	
+	-- 递归查询所有子评论，计算总数
+	WITH RECURSIVE tree AS(
+		SELECT arg_comment_id AS cid
+		UNION ALL
+		SELECT c.id FROM comment AS c
+		INNER JOIN tree ON tree.cid = c.parent_comment_id AND NOT c.is_delete
+	)
+	SELECT count(*) AS count INTO delete_total FROM tree;	
+	
+	DELETE FROM comment WHERE id = arg_comment_id; -- 删除评论（外键约束会级联删除子评论）
+
+	UPDATE comment_tree SET comment_total = comment_total - delete_total WHERE id = target_tree_id; -- 更新评论树的评论总数
+
+	-- 更新父评论的回复数和根评论的回复总数
+	IF target_parent_id IS NOT NULL THEN
+		UPDATE comment SET reply_count = reply_count - 1 WHERE id = target_parent_id;
+		UPDATE comment SET is_root_reply_count = is_root_reply_count - delete_total WHERE id = target_root_id;
+	END IF;
+	
+	RETURN delete_total;
+
+END; $$ LANGUAGE PLPGSQL;
