@@ -6,3 +6,7 @@ export type NULL = null;
 
 export type BOOL = BOOLEAN;
 export type TEXT = string;
+
+export type TIMESTAMPTZ = Date;
+
+export type BYTEA = Uint8Array;

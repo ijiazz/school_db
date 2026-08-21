@@ -70,3 +70,22 @@ CREATE TABLE exam_question_theme_bind(
     PRIMARY KEY(theme_id, question_id)
 );
 CREATE INDEX idxfk_exam_question_theme_bind_question_id ON exam_question_theme_bind(question_id);
+
+
+
+CREATE TABLE exam_question_pla_asset(
+    id SERIAL PRIMARY KEY,
+
+    pla_uid VARCHAR NOT NULL, -- 作品作者 id
+    asset_id VARCHAR NOT NULL, -- 作品 id
+    platform platform_flag NOT NULL, -- 平台
+
+    publish_time TIMESTAMPTZ NOT NULL, -- 发布时间
+
+    text VARCHAR, -- 作品文本
+    audio BYTEA, -- 作品音频
+    audio_mime VARCHAR(100), -- 作品音频类型
+
+    cover BYTEA, -- 作品封面
+    cover_mime VARCHAR(100) -- 作品封面类型
+);

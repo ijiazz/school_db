@@ -1,4 +1,5 @@
-import type { BOOLEAN, INT, SMALLINT, VARCHAR } from "../db_type.ts";
+import type { BOOLEAN, BYTEA, INT, SMALLINT, TIMESTAMPTZ, VARCHAR } from "../db_type.ts";
+import type { Platform } from "@/db/pla.ts";
 import type { ReviewStatus } from "../review.ts";
 import type { TextStructure } from "../type.ts";
 
@@ -59,4 +60,21 @@ export type DbExamQuestionThemeBind = {
 
 export type DbExamQuestionHiddenList = {
   question_id: INT;
+};
+
+export type DbExamQuestionPlatformAsset = {
+  id: INT;
+  pla_uid: VARCHAR;
+  asset_id: VARCHAR;
+  platform: Platform;
+
+  publish_time: TIMESTAMPTZ;
+
+  text: VARCHAR | null;
+
+  audio: BYTEA | null;
+  audio_mime: VARCHAR | null;
+
+  cover: BYTEA | null;
+  cover_mime: VARCHAR | null;
 };
