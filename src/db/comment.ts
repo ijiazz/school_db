@@ -1,4 +1,4 @@
-import type { INT } from "@/db/db_type.ts";
+import type { BOOLEAN, INT } from "@/db/db_type.ts";
 import type { ReviewStatus } from "./review.ts";
 import type { TextStructure } from "./type.ts";
 
@@ -26,6 +26,7 @@ export type DbComment = {
   user_id: INT;
 
   create_time: Date;
+  is_delete: BOOLEAN;
   like_count: number;
   dislike_count: number;
   content_text: string | null;

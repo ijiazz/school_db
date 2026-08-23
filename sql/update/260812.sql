@@ -87,24 +87,14 @@ RETURNS INT AS $$
 DECLARE
 	count INT;
 BEGIN
-	WITH updated AS (
-		UPDATE post SET is_delete=TRUE
-		WHERE id=post_id AND is_delete=FALSE AND (userId IS NULL OR user_id=userId)
-		RETURNING id AS post_id, user_id, like_count, comment_tree_id
-	), update_user_stat AS (
-		UPDATE user_profile
-		SET
-			post_count = user_profile.post_count - 1,
-			post_like_get_count = user_profile.post_like_get_count - updated.like_count
-		FROM updated
-		WHERE user_profile.user_id = updated.user_id
-	), delete_comment AS (
-		DELETE FROM comment_tree
-		WHERE id = (SELECT comment_tree_id FROM updated)
-	)
-	SELECT count(*) INTO count FROM updated;
-	RETURN count;
+	IF userId IS NULL THEN
+		DELETE FROM post WHERE id=post_id AND NOT is_delete;
+	ELSE
+		DELETE FROM post WHERE id=post_id AND user_id=userId AND NOT is_delete;
+	END IF;
 
+	GET DIAGNOSTICS count = ROW_COUNT;
+	RETURN count;	
 END; $$ LANGUAGE PLPGSQL;
 
 
@@ -290,3 +280,44 @@ BEGIN
 	RETURN delete_total;
 
 END; $$ LANGUAGE PLPGSQL;
+
+
+CREATE OR REPLACE FUNCTION post_delete_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    CASE TG_OP
+        WHEN 'DELETE' THEN
+            IF NOT OLD.is_delete THEN
+                UPDATE user_profile
+                SET
+                    post_count = user_profile.post_count - 1,
+                    post_like_get_count = user_profile.post_like_get_count - OLD.like_count
+                WHERE user_profile.user_id = OLD.user_id;
+            END IF;
+            DELETE FROM comment_tree WHERE id = OLD.comment_tree_id;
+        WHEN 'UPDATE' THEN
+            IF OLD.is_delete IS DISTINCT FROM NEW.is_delete THEN
+                IF NEW.is_delete THEN
+                    UPDATE user_profile
+                    SET
+                        post_count = user_profile.post_count - 1,
+                        post_like_get_count = user_profile.post_like_get_count - OLD.like_count
+                    WHERE user_profile.user_id = OLD.user_id;
+                ELSE
+                    UPDATE user_profile
+                    SET
+                        post_count = user_profile.post_count + 1,
+                        post_like_get_count = user_profile.post_like_get_count + OLD.like_count
+                    WHERE user_profile.user_id = OLD.user_id;
+                END IF;
+            END IF;
+    END CASE;
+    RETURN NULL;
+END; $$ LANGUAGE PLPGSQL;
+
+CREATE TRIGGER post_trigger_mark_delete AFTER UPDATE OF is_delete ON post
+    FOR EACH ROW
+    WHEN (OLD.is_delete IS DISTINCT FROM NEW.is_delete)
+    EXECUTE FUNCTION post_delete_trigger();
+
+CREATE TRIGGER post_trigger_delete AFTER DELETE ON post

@@ -11,22 +11,12 @@ RETURNS INT AS $$
 DECLARE
 	count INT;
 BEGIN
-	WITH updated AS (
-		UPDATE post SET is_delete=TRUE
-		WHERE id=post_id AND is_delete=FALSE AND (userId IS NULL OR user_id=userId)
-		RETURNING id AS post_id, user_id, like_count, comment_tree_id
-	), update_user_stat AS (
-		UPDATE user_profile
-		SET
-			post_count = user_profile.post_count - 1,
-			post_like_get_count = user_profile.post_like_get_count - updated.like_count
-		FROM updated
-		WHERE user_profile.user_id = updated.user_id
-	), delete_comment AS (
-		DELETE FROM comment_tree
-		WHERE id = (SELECT comment_tree_id FROM updated)
-	)
-	SELECT count(*) INTO count FROM updated;
-	RETURN count;
+	IF userId IS NULL THEN
+		DELETE FROM post WHERE id=post_id AND NOT is_delete;
+	ELSE
+		DELETE FROM post WHERE id=post_id AND user_id=userId AND NOT is_delete;
+	END IF;
 
+	GET DIAGNOSTICS count = ROW_COUNT;
+	RETURN count;	
 END; $$ LANGUAGE PLPGSQL;
