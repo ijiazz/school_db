@@ -60,19 +60,17 @@ INSERT INTO comment_like(comment_id, user_id, create_time, weight, reason)
 SELECT comment_id, user_id, create_time, weight, reason
 FROM post_comment_like;
 
-SELECT setval('comment_like_comment_id_seq', (SELECT last_value FROM post_comment_like_comment_id_seq));
-
-DROP TABLE post_comment;
 DROP TABLE post_comment_like;
+DROP TABLE post_comment;
 
 --------------
 
-
+DROP TABLE _tree_map;
 CREATE TEMPORARY TABLE _tree_map AS
 SELECT
 	q.id,
 	nextval(pg_get_serial_sequence('comment_tree', 'id'))::INT AS comment_tree_id
-FROM exam_question AS q;
+FROM exam_question AS q WHERE q.comment_id IS NULL;
 
 INSERT INTO comment_tree(id,group_type) SELECT comment_tree_id,'question' FROM _tree_map;
 UPDATE exam_question SET comment_id = map.comment_tree_id FROM _tree_map AS map WHERE exam_question.id = map.id;
