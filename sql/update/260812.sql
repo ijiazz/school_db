@@ -29,6 +29,9 @@ UPDATE post SET comment_tree_id = map.comment_tree_id FROM _tree_map AS map WHER
 ALTER TABLE post DROP COLUMN comment_num;
 -- end
 
+
+ALTER TABLE comment DISABLE TRIGGER ALL; -- 关闭 comment 表的外键约束
+
 INSERT INTO comment(
   id, root_comment_id, parent_comment_id,
   is_root_reply_count, reply_count,
@@ -47,6 +50,8 @@ INSERT INTO comment(
   review_status, review_id
 FROM post_comment AS c
 INNER JOIN _tree_map AS map ON c.post_id = map.post_id;
+
+ALTER TABLE comment ENABLE TRIGGER ALL; -- 开启 comment 表的外键约束
 
 -- 将序列 comment_id_seq 设置为和 post_comment_id_seq 一样的值
 SELECT setval('comment_id_seq', (SELECT last_value FROM post_comment_id_seq));
@@ -88,9 +93,9 @@ DECLARE
 	count INT;
 BEGIN
 	IF userId IS NULL THEN
-		DELETE FROM post WHERE id=post_id AND NOT is_delete;
+		UPDATE post SET is_delete=TRUE WHERE id=post_id AND NOT is_delete;
 	ELSE
-		DELETE FROM post WHERE id=post_id AND user_id=userId AND NOT is_delete;
+		UPDATE post SET is_delete=TRUE WHERE id=post_id AND user_id=userId AND NOT is_delete;
 	END IF;
 
 	GET DIAGNOSTICS count = ROW_COUNT;

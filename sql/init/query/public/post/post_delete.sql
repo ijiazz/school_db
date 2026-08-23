@@ -12,9 +12,9 @@ DECLARE
 	count INT;
 BEGIN
 	IF userId IS NULL THEN
-		DELETE FROM post WHERE id=post_id AND NOT is_delete;
+		UPDATE post SET is_delete=TRUE WHERE id=post_id AND NOT is_delete;
 	ELSE
-		DELETE FROM post WHERE id=post_id AND user_id=userId AND NOT is_delete;
+		UPDATE post SET is_delete=TRUE WHERE id=post_id AND user_id=userId AND NOT is_delete;
 	END IF;
 
 	GET DIAGNOSTICS count = ROW_COUNT;
