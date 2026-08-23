@@ -21,7 +21,7 @@ CREATE TABLE post (
     content_text_struct JSONB, -- 文本扩展信息
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量 
     dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
-    comment_num INT  NOT NULL DEFAULT 0, -- 评论数量
+    comment_tree_id INT REFERENCES comment_tree(id) ON DELETE SET NULL, -- 评论树 id
     options BIT(8) NOT NULL DEFAULT 0::BIT(8), -- 0000_0000   高1~2位:  是否匿名，是否关闭评论
 
     review_status review_status, -- 审核状态
@@ -55,3 +55,46 @@ CREATE TABLE post_like(
     CONSTRAINT chk_post_like_weight CHECK (weight !=0) -- 权重范围
 );
 CREATE INDEX idxfk_post_like_user_id ON post_like(user_id,weight,create_time); -- 查询某个用户喜欢列表和举报列表
+
+
+CREATE OR REPLACE FUNCTION post_delete_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    CASE TG_OP
+        WHEN 'DELETE' THEN
+            IF NOT OLD.is_delete THEN
+                UPDATE user_profile
+                SET
+                    post_count = user_profile.post_count - 1,
+                    post_like_get_count = user_profile.post_like_get_count - OLD.like_count
+                WHERE user_profile.user_id = OLD.user_id;
+            END IF;
+            DELETE FROM comment_tree WHERE id = OLD.comment_tree_id;
+        WHEN 'UPDATE' THEN
+            IF OLD.is_delete IS DISTINCT FROM NEW.is_delete THEN
+                IF NEW.is_delete THEN
+                    UPDATE user_profile
+                    SET
+                        post_count = user_profile.post_count - 1,
+                        post_like_get_count = user_profile.post_like_get_count - OLD.like_count
+                    WHERE user_profile.user_id = OLD.user_id;
+                ELSE
+                    UPDATE user_profile
+                    SET
+                        post_count = user_profile.post_count + 1,
+                        post_like_get_count = user_profile.post_like_get_count + OLD.like_count
+                    WHERE user_profile.user_id = OLD.user_id;
+                END IF;
+            END IF;
+    END CASE;
+    RETURN NULL;
+END; $$ LANGUAGE PLPGSQL;
+
+CREATE TRIGGER post_trigger_mark_delete AFTER UPDATE OF is_delete ON post
+    FOR EACH ROW
+    WHEN (OLD.is_delete IS DISTINCT FROM NEW.is_delete)
+    EXECUTE FUNCTION post_delete_trigger();
+
+CREATE TRIGGER post_trigger_delete AFTER DELETE ON post
+    FOR EACH ROW
+    EXECUTE FUNCTION post_delete_trigger();

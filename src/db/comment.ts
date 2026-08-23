@@ -1,37 +1,44 @@
+import type { BOOLEAN, INT } from "@/db/db_type.ts";
+import type { ReviewStatus } from "./review.ts";
 import type { TextStructure } from "./type.ts";
 
 export enum CommentGroup {
+  Post = "post",
   Question = "question",
   Competition = "competition",
 }
 
 export type DbCommentTree = {
-  id: number;
-  comment_total: number;
+  id: INT;
+  comment_total: INT;
   group_type: CommentGroup | null;
+  owner_id: INT | null;
 };
 
 export type DbComment = {
-  id: number;
-  root_comment_id: number | null;
-  parent_comment_id: number | null;
-  is_root_reply_count: number;
-  reply_count: number;
+  id: INT;
+  root_comment_id: INT | null;
+  parent_comment_id: INT | null;
+  is_root_reply_count: INT;
+  reply_count: INT;
 
-  comment_tree_id: number;
-  user_id: number;
+  comment_tree_id: INT;
+  user_id: INT;
 
   create_time: Date;
-  is_delete: boolean;
+  is_delete: BOOLEAN;
   like_count: number;
   dislike_count: number;
   content_text: string | null;
   content_text_struct: TextStructure[] | null;
+
+  review_status: ReviewStatus | null;
+  review_id: INT | null;
 };
 
 export type DbCommentLike = {
-  comment_id: number;
-  user_id: number;
+  comment_id: INT;
+  user_id: INT;
   create_time: Date;
   weight: number;
   reason: string | null;

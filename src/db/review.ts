@@ -37,11 +37,15 @@ export type DbReviewCreate<T extends object = object> =
     >
   >
   & Pick<DbReview<T>, "info">;
-export enum ReviewTargetType {
-  post = "post",
-  post_comment = "post_comment",
-}
 
+export enum ReviewTargetType {
+  /** 帖子 */
+  post = "post",
+  /** 考试题目 */
+  exam_question = "question",
+  /** 评论 */
+  comment = "comment",
+}
 export interface DbReviewRecord {
   review_id: number;
   reviewer_id: number;

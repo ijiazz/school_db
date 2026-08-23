@@ -16,7 +16,7 @@ export type DbPost = {
   content_text_struct: TextStructure | null;
   like_count: number;
   dislike_count: number;
-  comment_num: number;
+  comment_tree_id: number | null;
   options: string;
   review_status: ReviewStatus | null;
   review_id: number | null;
@@ -30,7 +30,7 @@ export type DbPostCreate = Omit<
     | "update_time"
     | "like_count"
     | "dislike_count"
-    | "comment_num"
+    | "comment_tree_id"
     | "options"
   >,
   "id"

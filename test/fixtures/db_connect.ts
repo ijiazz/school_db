@@ -1,8 +1,10 @@
-import { afterAll, test as viTest } from "vitest";
+import { test as viTest } from "vitest";
 import { dbPool, setDbPoolConnect } from "@/common/dbclient.ts";
 import { createInitIjiaDb } from "@ijia/school-db/testlib";
 import process from "node:process";
-import { DbManage, DbQueryPool, parserDbConnectUrl, PgDbQueryPool } from "@asla/pg";
+import { DbManage, DbQueryPool, PgDbQueryPool } from "@asla/pg";
+import { DB_CONNECT_INFO, PUBLIC_CONNECT_INFO } from "@test/utils/db.ts";
+
 export interface BaseContext {
   /** 初始化一个空的数据库（初始表和初始数据） */
   ijiaDbPool: DbQueryPool;
@@ -10,23 +12,10 @@ export interface BaseContext {
   emptyDbPool: DbQueryPool;
 }
 const VITEST_WORKER_ID = +process.env.VITEST_WORKER_ID!;
-const DB_NAME = `test_${VITEST_WORKER_ID}`;
-const DB_NAME_IJIA = DB_NAME + "_ijia";
-const DB_NAME_IJIA_PUB = DB_NAME_IJIA + "_pub";
-
-const DB_CONNECT_INFO = getConfigEnv(process.env);
-
-let publicDbPool: Promise<PgDbQueryPool> | PgDbQueryPool | undefined;
-
-afterAll(async function () {
-  if (publicDbPool) {
-    const pool = await publicDbPool;
-    await clearDropDb(pool, DB_NAME_IJIA_PUB);
-  }
-});
 
 export const test = viTest.extend<BaseContext>({
   async emptyDbPool({}, use) {
+    const DB_NAME = "test_empty_" + VITEST_WORKER_ID;
     const manage = await DbManage.connect(DB_CONNECT_INFO);
     try {
       await manage.createDb(DB_NAME);
@@ -39,39 +28,24 @@ export const test = viTest.extend<BaseContext>({
     await clearDropDb(pool, DB_NAME);
   },
   async ijiaDbPool({}, use) {
-    const dbName = DB_NAME_IJIA;
-    await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
+    const DB_NAME = "test_ijia_" + VITEST_WORKER_ID;
+    await createInitIjiaDb(DB_CONNECT_INFO, DB_NAME, { dropIfExists: true });
 
-    const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
+    const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: DB_NAME });
     setDbPoolConnect(pool.connect.bind(pool));
 
     await use(dbPool);
 
-    await clearDropDb(pool, dbName);
+    await clearDropDb(pool, DB_NAME);
   },
   async publicDbPool({}, use) {
-    const dbName = DB_NAME_IJIA_PUB;
-    if (!publicDbPool) {
-      publicDbPool = (async () => {
-        await createInitIjiaDb(DB_CONNECT_INFO, dbName, { dropIfExists: true });
-        const pool = new PgDbQueryPool({ ...DB_CONNECT_INFO, database: dbName });
-        pool.open();
-        publicDbPool = pool;
-        return pool;
-      })();
-    }
-    const pool = await publicDbPool;
-    pool.open();
+    const pool = new PgDbQueryPool(PUBLIC_CONNECT_INFO);
     setDbPoolConnect(pool.connect.bind(pool));
-
-    await use(dbPool);
+    await use(pool);
+    await pool.close();
   },
 });
-function getConfigEnv(env: Record<string, string | undefined>) {
-  const url = env["TEST_LOGIN_DB"];
-  if (!url) throw new Error("缺少 TEST_LOGIN_DB 环境变量");
-  return parserDbConnectUrl(url);
-}
+
 async function clearDropDb(pool: PgDbQueryPool, dbName: string) {
   await pool.close(true);
   const useCount = pool.totalCount - pool.idleCount;

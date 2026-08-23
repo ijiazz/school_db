@@ -8,10 +8,9 @@ table/pla/tables_comment.sql
 
 table/public/tables_user.sql
 table/public/review.sql
+table/public/comment.sql
 
 table/public/tables_post.sql
-table/public/tables_post_comment.sql
 
-table/public/comment.sql
 table/public/examination/question.sql
 table/public/examination/examination.sql

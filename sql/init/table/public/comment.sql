@@ -1,31 +1,38 @@
 CREATE TYPE comment_group_type AS ENUM (
-    'question', -- 帖子评论
+    'post', -- 帖子评论
+    'question', -- 问题评论
     'competition' -- 竞赛评论
 );
 
 CREATE TABLE comment_tree(
     id SERIAL PRIMARY KEY,
     comment_total INT NOT NULL DEFAULT 0, -- 评论数量
-    group_type comment_group_type -- 评论类型
+    group_type comment_group_type, -- 评论类型
+    owner_id INT REFERENCES public.user(id) ON DELETE SET NULL -- 评论所属的用户 ID
 );
 CREATE INDEX idx_comment_tree_group ON comment_tree(group_type);
+
 
 CREATE TABLE comment(
     id SERIAL PRIMARY KEY,
     root_comment_id INT REFERENCES comment(id) ON DELETE CASCADE,
     parent_comment_id INT REFERENCES comment(id) ON DELETE CASCADE,
-    is_root_reply_count INT NOT NULL DEFAULT 0, -- 根评论的回复数
-    reply_count INT NOT NULL DEFAULT 0, -- 回复数量
+    is_root_reply_count INT NOT NULL DEFAULT 0, -- 根评论的所有子评论和孙评论的数量
+    reply_count INT NOT NULL DEFAULT 0, -- 子评论回复数量（不包含子孙评论）
 
     comment_tree_id INT NOT NULL REFERENCES comment_tree(id) ON DELETE CASCADE,
     user_id INT NOT NULL REFERENCES public.user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     
     create_time TIMESTAMPTZ NOT NULL DEFAULT now(),
     is_delete BOOLEAN NOT NULL DEFAULT FALSE,
+    
     like_count INT NOT NULL DEFAULT 0, -- 点赞数量
     dislike_count SMALLINT NOT NULL DEFAULT 0, -- 异常阈值。当值达到100时，会触发人工审核。举报会提高这个数值
     content_text VARCHAR(5000), -- 内容文本
     content_text_struct JSONB, -- 文本扩展信息
+
+    review_status review_status, -- 审核状态
+    review_id INT REFERENCES review(id) ON DELETE SET NULL, -- 审核记录 id
 
     CONSTRAINT chk_root_parent_null
     CHECK ( (root_comment_id IS NULL AND parent_comment_id IS NULL)
