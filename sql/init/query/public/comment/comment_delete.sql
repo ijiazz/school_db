@@ -51,7 +51,7 @@ BEGIN
 END; $$ LANGUAGE PLPGSQL;
 
 /** 
- * 删除 commentId 以及所有子评论，更新父级评论回复数和跟评论回复总数。非软删除
+ * 删除 commentId 以及所有子评论，更新父级评论回复数和根评论回复总数。非软删除
  */
 CREATE OR REPLACE FUNCTION comment_recursive_delete(arg_comment_id INT)
 RETURNS INT AS $$
@@ -75,7 +75,7 @@ BEGIN
 		SELECT arg_comment_id AS cid
 		UNION ALL
 		SELECT c.id FROM comment AS c
-		INNER JOIN tree ON tree.cid = c.parent_comment_id AND NOT c.is_delete
+		INNER JOIN tree ON tree.cid = c.parent_comment_id AND NOT c.is_delete -- is_delete 为 true 的评论不计入删除总数，且这些会被外键约束级联删除
 	)
 	SELECT count(*) AS count INTO delete_total FROM tree;	
 	
