@@ -12,7 +12,7 @@ const f = createDbFunction(dbPool, v);
 
 async function createComment(treeId: number, userId: number, text: string, replyCommentId?: number) {
   const comment = await createQueryComment({ userId, comment_tree_id: treeId, text, replyCommentId });
-  if (!comment) throw new Error("Failed to create test comment");
+  if (!comment.id) throw new Error("Failed to create test comment");
   return comment;
 }
 
