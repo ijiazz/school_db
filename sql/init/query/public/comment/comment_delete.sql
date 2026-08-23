@@ -60,26 +60,23 @@ DECLARE
 	target_parent_id INT;
 	target_root_id INT;
 	delete_total INT;
-BEGIN
-	-- 判断评论是否存在且未删除
-	SELECT c.parent_comment_id, c.root_comment_id, c.comment_tree_id 
-		INTO target_parent_id, target_root_id, target_tree_id
-	FROM comment AS c
-	WHERE id = arg_comment_id AND NOT is_delete;
-	IF NOT FOUND THEN
-		RETURN 0;
-	END IF;
-	
+BEGIN	
 	-- 递归查询所有子评论，计算总数
 	WITH RECURSIVE tree AS(
-		SELECT arg_comment_id AS cid
+		SELECT id AS cid, is_delete FROM comment WHERE id = arg_comment_id
 		UNION ALL
-		SELECT c.id FROM comment AS c
-		INNER JOIN tree ON tree.cid = c.parent_comment_id AND NOT c.is_delete -- is_delete 为 true 的评论不计入删除总数，且这些会被外键约束级联删除
+		SELECT c.id, c.is_delete FROM comment AS c
+		INNER JOIN tree ON tree.cid = c.parent_comment_id
 	)
-	SELECT count(*) AS count INTO delete_total FROM tree;	
-	
-	DELETE FROM comment WHERE id = arg_comment_id; -- 删除评论（外键约束会级联删除子评论）
+	SELECT count(*) FILTER (WHERE NOT is_delete) AS count INTO delete_total FROM tree;
+
+	DELETE FROM comment WHERE id = arg_comment_id -- 删除评论（外键约束会级联删除子评论）
+		RETURNING comment_tree_id, parent_comment_id, root_comment_id
+		INTO target_tree_id, target_parent_id, target_root_id;
+
+	IF delete_total = 0 THEN
+		RETURN 0;
+	END IF;
 
 	UPDATE comment_tree SET comment_total = comment_total - delete_total WHERE id = target_tree_id; -- 更新评论树的评论总数
 
