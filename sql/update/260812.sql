@@ -261,13 +261,13 @@ BEGIN
 	)
 	SELECT count(*) FILTER (WHERE NOT is_delete) AS count INTO delete_total FROM tree;
 
-	DELETE FROM comment WHERE id = arg_comment_id -- 删除评论（外键约束会级联删除子评论）
-		RETURNING comment_tree_id, parent_comment_id, root_comment_id
-		INTO target_tree_id, target_parent_id, target_root_id;
-
 	IF delete_total = 0 THEN
 		RETURN 0;
 	END IF;
+
+	DELETE FROM comment WHERE id = arg_comment_id -- 删除评论（外键约束会级联删除子评论）
+		RETURNING comment_tree_id, parent_comment_id, root_comment_id
+		INTO target_tree_id, target_parent_id, target_root_id;
 
 	UPDATE comment_tree SET comment_total = comment_total - delete_total WHERE id = target_tree_id; -- 更新评论树的评论总数
 
