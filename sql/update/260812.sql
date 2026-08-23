@@ -320,4 +320,6 @@ CREATE TRIGGER post_trigger_mark_delete AFTER UPDATE OF is_delete ON post
     WHEN (OLD.is_delete IS DISTINCT FROM NEW.is_delete)
     EXECUTE FUNCTION post_delete_trigger();
 
-CREATE TRIGGER post_trigger_delete AFTER DELETE ON post
+CREATE TRIGGER post_trigger_delete AFTER DELETE ON post 
+		FOR EACH ROW
+		EXECUTE FUNCTION post_delete_trigger();
